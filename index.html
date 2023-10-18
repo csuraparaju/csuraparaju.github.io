@@ -1,182 +1,329 @@
-<!--
-	HTML template obtained from: Dimension by HTML5 UP
-	html5up.net | @ajlkn
-	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
--->
-<!DOCTYPE HTML>
-<html>
-	<head>
-		<title>Krish Suraparaju</title>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-		<link rel="stylesheet" href="assets/css/main.css" />
-		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
-	</head>
-	<body class="is-preload">
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta property="og:title" content="Krish Suraparaju's Portfolio"/>
+    <meta property="og:description" content="Krish Suraparaju's personal portfolio website"/>
+    <meta property="og:type" content="website" />
+    <!-- <meta
+        property="og:image"
+        content="https://freefolio.web.app/images/outlines.png"
+    /> -->
+    <!-- <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" /> -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image:alt" content="Krish Suraparaju's twitter">
+    <meta name="twitter:title" content="Krish Suraparaju's twitter" />
+    <meta name="twitter:description" content="Kirsh Suraparaju's twitter" />
 
-		<!-- Wrapper -->
-			<div id="wrapper">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="manifest" href="site.webmanifest">
+    
+    <link rel="stylesheet" type="text/css" href="./css/styles.css" />
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
-				<!-- Header -->
-					<header id="header">
-						<div class="logo">
-							 <span class="icon fa-code"></span> 
-						</div>
-						<div class="content">
-							<div class="inner">
-								<h1>Krish Suraparaju</h1>
-								<p>Student at Carnegie Mellon University Studying Mathematics and Computer Science</p>
-							</div>
-						</div>
-						<nav>
-							<ul>
-								<li><a href="#intro">About Me</a></li>
-								<li><a href="#work">Projects</a></li>
-								<li><a href="#about">MAMS Work</a></li>
-								<li><a href="#contact">Contact</a></li>
-							</ul>
-						</nav>
-					</header>
+    <script src="./js/script.js" defer></script>
+    <title>Krish Suraparaju's Portfolio</title>
+  </head>
+  <body>
+    <header>
+      <nav class="navbar-nav">
+        <div class="nav-logo">
 
-				<!-- Main -->
-					<div id="main">
+          <h1>KS</h1>
 
-						<!-- Intro -->
-							<article id="intro">
-								<h2 class="major">About</h2>
-								<span class="image main"><img src="images/pic01.jpeg" alt="" /></span> 
-								<p>Hello there, my name is Krish Suraparaju! I'm studying mathematics at Carnegie Mellon University, with an interest in computational biology.
-								<br><br>My academic interests mainly lie in research areas concerning  mathematics, computer science, and neuroscience. In highschool, I won the 2nd place award at Worcester Regional Science 
-								and Engineering Fair and the 3rd place award at the state Massachusetts Science and Engineering fair for my research in computational neuroscience. Read more about it <a href="#work">here.</a>
+        </div> 
+        <button
+          class="mobile-nav-toggle"
+          aria-controls="primary-nav"
+          aria-expanded="false"
+        ></button>
 
-								<br></br>In my free time, I love to play tennis, pencil sketch and/or paint, and game with my friends. Although I'm not the best at tennis, I try to play whenever I can because of
-								 its relaxing, monotone nature. As far as sketching goes, I generally like to draw landscapes, but I have recently started drawing portraits of my friends. 
-								 <br></br>
-								</p>
-								
-							</article>
+        <ul id="primary-nav" class="primary-nav" data-visible="false">
+          <li>
+            <a class="nav-link" href="index.html">Home</a>
+          </li>
+          <li>
+            <a class="nav-link" href="#about">About</a>
+          </li>
+          <li>
+            <a class="nav-link" href="#portfolio">Portfolio</a>
+          </li>
+          <li>
+            <a class="nav-link" href="./course-review.html">CMU Courses</a>
+          </li>
+          <li>
+            <a class="nav-link" href="#contact">Contact</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
 
-						<!-- Projects -->
-							<article id="work">
-								<h2 class="main">Using Deep Neural Networks for  the Early Diagnosis of Parkinson's Disease</h2></h2>
-								<span class="image main"><img src="images/pic02.jpg" alt="" /></span>
-								<p>Last year, I decided to work on developing a predictive diagnosis method for the early detection of Parkinson's Disease (PD). 
-									In brief, PD is a neurological disorder that hinders a person's movement and cognitive abilities. Traditionally, the method of 
-									diagnosis has been a clinical examination, which is not very good at predicting future prognosis. In order to solve this 
-									problem, I decided to develop a neural network that analyzes a patient's brain MRI scans and determines if they are showing any early signs
-									for PD. Using this newly developed tool, I then tested two different diagnostic protocols and determine which one produced the highest accuracies. 
-									Refer to my work <b><a href="https://doi.org/10.17605/OSF.IO/4SAVU">here</a></b> for more details.</p>
-								
+    <main>
+      <section id="hero">
+        <div class="hero-container">
+          <div class="hero-text-container" data-aos="fade-up">
+            <p>Hey there,</p>
+            <h2>I am Krish Suraparaju</h2>
+            <p>a mathematics student at Carnegie Mellon Univeristy</p>
+          </div>
+          <a href="#contact" class="hero-button" data-aos="fade-up">Let's connect!</a>
+        </div>
+      </section>
 
-								<br></br>
-								<h2 class="main">Modeling Neural Circuits As Interconnected Graphs</h2></h2>
-								<span class="image main"><img src="images/connectome.jpeg" alt="" /></span>
-								<p>Intrigued by the brain, I wanted to learn more about the inner workings of its functionality. That's why I'm currently working with Dr. 
-									Elizabeth Ryder, a professor of Computational Biology at WPI, to model neural circuits as a physical structure that can be visualized and simulated. 
-									Click <b><a href="https://www.suraparajuneuralcircuits.software/">here</a></b> to see my current progress.
+      <section id="about">
+        <!-- <div class="section-highlight" data-aos="fade-up">ABOUT</div> -->
+        <div class="about-container" data-aos="fade-up">
+          <div class="about-card">
+            <section class="about-content">
+              <h2>> About</h2>
+              <!-- About template -->
+              <p>
+                I am a candidate for BS in Mathematics at Carnegie Mellon University. On campus, I am a teaching assistant for
+                CMU's 15-122: Principles of Imperative Computation course, and work as an AI 
+                research assistant for the Mohimani Lab.</p> 
+              <br>
+              <p> 
+                I am interested in the intersection of mathematics and computer science, and
+                am currently exploring the fields of machine learning. Specifically, I am working at
+                Mohimani Lab to help use machine learning models for predicting the structures of non-ribosomal peptide
+                synthetases (NRPSs) from their amino acid sequences. NRPSs are large, modular enzymes
+                that produce a wide variety of natural products, including antibiotics, antifungals, 
+                and even anticancer drugs. 
+              </p> <br>
+              <!-- <p>
+                In my free time, I enjoy playing tennis, running, and playing formula 1 racing games. 
+                During breaks, I like to travel back home to Grafton, Massachusetts and spend time with
+                my family and friends. 
+              </p> -->
+            </section>
+          
 
-								<br></br>
-								<h2 class="main">A Comprehensive Application for the Early Detection of Dementia</h2></h2>
-								<span class="image main"><img src="images/pic03.jpg" alt="" /></span>
-								<p>In recent years, I noticed a lack of comprehensive tools that elderly people can use to keep 
-									track of their mental state of being. So, I decided to work on creating a cohesive web application 
-									that users can use intermittently to make sure they are not showing early signs of dementia. 
-									
-									<br></br>The general data flow for the 
-									app is as follows: users upload speech recordings of themselves answering certain questions taken from the Mini Mental Status Examination (MMSE) to the website.
-									These files are then sent to a private server hosted by Flask, where they are analyzed for speech biomarkers. At the end, the custom written algorithm will produce 
-									a score that represents the user's mental well-being. This score is sent back to the website so that the user can see how they performed. The user is asked to 
-									take the test again over the next few months. If there is a general downward trend to the user's scores, they are alerted to visit the doctor's office
-									and get tested for neurological diseases. Refer to my <b><a href="https://github.com/csuraparaju/CSIndepProj.git">Github repo</a></b> for more information.
-								
+            <!-- <section class="about-content tech-stack-section">
+              <h3>My current tech stack</h3>
+              <div class="tech-stack-grid">
+                <div class="tech-stack">
+                  <img src="./assets/icons/html5.svg" alt="html5-icon" />
+                </div>
 
-								</p>
- 							</article>
+                <div class="tech-stack">
+                  <img src="./assets/icons/css.svg" alt="html5-icon" />
+                </div>
 
-							 
-						<!-- School Work -->
-							<article id="about">
-								<h2 class="main">Selected Examples of my Work During my Junior year</h2>
-								<p>During my junior year at MAMS, I've had the opportunity to learn countless skills. So, I've decided to pick ones that I'm most proud of and showcase
-									some of them here.</p>
-								<br>
+                <div class="tech-stack">
+                  <img src="./assets/icons/javascript.svg" alt="html5-icon" />
+                </div>
 
-								<h2 class="main">Modeling a Rocket Using Elementary Calculus </h2>
-								<span class="image right"><img src="images/pic04.jpg" alt="" /></span>
-								<p>During my time in the MAMS Physics class, I often had the opportunity to pick a real world physics problem and apply the concepts we learned in class to solve it. 
-									For this particular assignment, I was asked to model the motion of a rocket that is under non-constant acceleration (caused by rocket engine as well as a parachute).
-									So, I used elementary calculus topics such as the derivative definition of acceleration and velocity to accurately model its motion and determine how 
-									long the rocket would remain in the air. Click <b><a href="docs/Uber_Rocket_Calculus_Problem.pdf">here</a></b> for more details.</p>
-								
-								<br>
-								
-								<h2 class="main">Models for Easing Traffic in Tunnels </h2>
-								<span class="image left"><img src="images/pic05.png" alt="" /></span>
-								<p>One skill emphasized in my math class was using Mathematical to model solutions for real world problems. At the beginning of the year, we were asked to 
-									come up with a plan that would ease traffic in a tunnel during morning/evening rush hours. My solution to this problem consisted of four models builds
-									 upon the results of the previous one to create a final recommendations. Click <b><a href="docs/Easing_Traffic.pdf">here</a></b> for more details.</p>
-								
-								<br>
-								
-								<h2 class="main">Project Euler Problems</h2>
-								<span class="image right"><img src="images/pic06.png" alt="" /></span>
-								<p>Before starting work on our independent project, the Advanced CS students were asked to program solutions for some Project Euler problems. These are a series of 
-									challenging computer programming problems. Most of these questions could not be solved using brute force approaches, so developing space and time efficient algorithms
-									were crucial. Click <b><a href="docs/Project_Euler.pdf">here</a></b> to view my solutions to the problems.</p>
-								
-								<br>
-			
- 							</article>
-						
+                <div class="tech-stack">
+                  <img src="./assets/icons/react.svg" alt="html5-icon" />
+                </div>
+              </div>
+            </section> -->
+          </div>
+        </div>
+      </section>
 
-						<!-- Contact -->
-							<article id="contact">
-								<h2 class="major">Contact</h2>
-								<form method="post" action="">
-									<div class="fields">
-										<div class="field half">
-											<label for="name">Name</label>
-											<input type="text" name="name" id="name" />
-										</div>
-										<div class="field half">
-											<label for="email">Email</label>
-											<input type="text" name="email" id="email" />
-										</div>
-										<div class="field">
-											<label for="message">Message</label>
-											<textarea name="message" id="message" rows="4"></textarea>
-										</div>
-									</div>
-									<ul class="actions">
-										<li><input type="submit" value="Send Message" class="primary" /></li>
-										<li><input type="reset" value="Reset" /></li>
-									</ul>
-								</form>
-								<ul class="icons">
-									<li><a href="https://github.com/csuraparaju" class="icon brands fa-github"><span class="label">GitHub</span></a></li>
-									<li><a href="https://www.instagram.com/krish_suraparaju/" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
-									<li><a href="https://www.linkedin.com/in/krish-suraparaju-9890481b7/" class="icon brands fa-linkedin"><span class="label">Linkedin</span></a></li>
-								</ul>
-							</article>
+      <section id="portfolio">
+        <!-- <div class="section-highlight" data-aos="fade-up">Portfolio</div> -->
+        <div class="portfolio-container" data-aos="fade-up">
+          <div class="portfolio-card">
+            <div class="portfolio-content">
+              <h2>> Portfolio</h2>
 
-					</div>
+              <!-- input projects inside project container -->
+              <div class="project-container">
+                <section class="project-card">
+                  <img
+                    class="project-img"
+                    src="./assets/images/mindTune.jpeg"
+                    alt="project-1"
+                  />
+                  <h3>MindTune</h3>
+                  <h5>JavaScript, ReactJS, PostgreSQL, AWS</h5>
+                  <p>
+                    Designed and implemented a ReactJS web application meant to help users track their cognitive health.
+                    Program asks users to record responses to a series of questions, which are designed to assess cognitive function
+                    by analyzing vocal biomarkers such as pitch, intonation, and speech rate, and determine a cognitive score.
+                    Utilized ReactJS to create the front end of the website, PostgresSQL for database management relating to user
+                    data and Amazon Web Services for hosting
+                  </p>
 
-				<!-- Footer -->
-					<footer id="footer">
-						<p class="copyright">&copy; Krish Suraparaju</p>
-					</footer>
+                  <!-- <div class="project-card-links">
+                    <a href="#">
+                      <img
+                        class="project-icons"
+                        src="./assets/icons/live-demo.svg"
+                        alt="live-demo"
+                      />
+                      Live demo
+                    </a>
+                    <a href="#">
+                      <img
+                        class="project-icons"
+                        src="./assets/icons/github-icon.svg"
+                        alt="live-demo"
+                      />
+                      Repository
+                    </a>
+                  </div> -->
+                </section>
 
-			</div>
+                <section class="project-card">
+                  <img
+                    class="project-img"
+                    src="./assets/images/nrps.png"
+                    alt="project-2"
+                  />
+                  <h3>AdenPredictor</h3>
+                  <h5>Python, Rust</h5>
+                  <p>
+                    Working as part of Mohimani Lab on improving the accuracy of a machine learning model that predicts the 
+                    Adenylation (A) domain of a non-ribosomal peptide synthetase (NRPS) given its amino acid sequence. 
+                    A-domains are responsible for selecting and activating amino acids for incorporation into the 
+                    peptide product. I am working on parsing the MIBiG database of NRPSs genes and 
+                    analyzing the data to determine local and global contexts that help predict the A-domain specificity.
+                    For example, an A-domain preceded by a heterocyclization (Cy) domain is more likely to select
+                    Serine (Ser) as its amino acid substrate. 
+                  </p>
 
-		<!-- BG -->
-			<div id="bg"></div>
+                  <!-- <div class="project-card-links">
+                    <a href="#">
+                      <img
+                        class="project-icons"
+                        src="./assets/icons/live-demo.svg"
+                        alt="live-demo"
+                      />
+                      Live demo
+                    </a>
+                    <a href="#">
+                      <img
+                        class="project-icons"
+                        src="./assets/icons/github-icon.svg"
+                        alt="live-demo"
+                      />
+                      Repository
+                    </a>
+                  </div> -->
+                </section>
 
-		<!-- Scripts -->
-			<script src="assets/js/jquery.min.js"></script>
-			<script src="assets/js/browser.min.js"></script>
-			<script src="assets/js/breakpoints.min.js"></script>
-			<script src="assets/js/util.js"></script>
-			<script src="assets/js/main.js"></script>
+                <section class="project-card">
+                  <img
+                    class="project-img"
+                    src="./assets/images/dataopen.png"
+                    alt="project-3"
+                  />
+                  <h3>ParkWell: NYC</h3>
+                  <h5>Python, Seaborn, Pandas, Tensorflow</h5>
+                  <p>
+                  Collaborated with a team for the Citadel Data Open competition to answer
+                  the question: how can publicly available and crowdsourced data be used to diagnose park health and pinpoint
+                  areas for intervention in New York City? Answered this research question by developing a Convolutional Neural
+                  Network for predictively diagnosing the eco health of various parks in New York City using geo satellite images.
+                  Performed Exploratory Data Analysis on collected datasets, ran regression analysis on several
+                  predictive metrics, and worked on developing the convolutional autoencoder
+                  </p>
 
-	</body>
+                  <div class="project-card-links">
+                    <a href="./assets/pdf/Team_12_report.pdf">
+                      <img
+                        class="project-icons"
+                        src="./assets/icons/pdf_icon.png"
+                        alt="Report"
+                      />
+                      Paper
+                    </a>
+                  </div>
+                </section>
+
+                
+                <section class="project-card">
+                  <img
+                    class="project-img"
+                    src="./assets/images/rnapred.png"
+                    alt="project-4"
+                  />
+                  <h3>RNAPredictor</h3>
+                  <h5>Python, Pandas, Tensorflow</h5>
+                  <p>
+                    Worked with a team to develop a deep learning framework for RNA secondary structure prediction by calculating structure probabilities and then maximizing probability using dynamic programming. 
+                    Wrote the DP recurrence relations and helped clean dataset for the Convolutional Neural Network (CNN) model. Compared deep learning model performance against existing Nussinov
+                    and Zuker algorithms on 1000 sequences from bprna dataset. Results showed that our framework outperformed the Nussinov algorithm, but not the
+                    Zucker algorithm. We concluded this is likely because our model was not trained on pseudo-knotted sequences, which the Zuker algorithm is able to handle. 
+                  </p>
+
+                  <div class="project-card-links">
+                    <a href="./assets/pdf/RNA_Secondary_Structure_Prediction.pdf">
+                      <img
+                        class="project-icons"
+                        src="./assets/icons/pdf_icon.png"
+                        alt="Report"
+                      />
+                      Paper
+                    </a>
+                  </div>
+                </section>
+
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <section id="contact">
+        <!-- <h2 class="section-highlight" data-aos="fade-up">Contacts</h2> -->
+        <div class="contact-container" data-aos="fade-up">
+          <div class="contact-card">
+            <h2>> Contacts</h2>
+            <p>You can contact directly me through these following links</p>
+
+            <div class="contact-links">
+
+
+              <a href="mailto:csurapar@cs.cmu.edu">
+                <img
+                  class="contact-icons"
+                  src="./assets/icons/email.png"
+                  alt="emai;-icon"
+                />
+                Email
+              </a>
+
+              <a href="https://www.linkedin.com/in/krish-suraparaju-9890481b7/">
+                <img
+                  class="contact-icons"
+                  src="./assets/icons/linkedin.png"
+                  alt="linkedin-icon"
+                />
+                LinkedIn
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="footer-content">
+        <p>
+          Made by Krish Suraparaju. Written in HTML, CSS, and JavaScript. Hosted 
+          on a simple <a href="https://github.com/csuraparaju/portfolio_server" style="color: #a7c957;">webserver</a> that I wrote in C.
+        </p>
+      </div>
+    </footer>
+    
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script>       
+      AOS.init({
+        once: true,
+        delay: 0
+      });
+    </script>
+  </body>
 </html>
