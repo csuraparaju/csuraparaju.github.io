@@ -116,14 +116,14 @@ h1 {
   }
 
   .mobile-nav-toggle[aria-expanded="true"] {
-    background: url(root/assets/icons/mobilenav.png) center center no-repeat;
+    background-image: url(root/assets/icons/mobilenav.png) center center no-repeat;
+
   }
 
   .mobile-nav-toggle {
     display: block;
     position: absolute;
-    background: url(/assets/icons/mobilenav.png) center center no-repeat;
-
+    background-image: url(/assets/icons/mobilenav.png) center center no-repeat;
     width: 2.5rem;
     aspect-ratio: 1;
 
