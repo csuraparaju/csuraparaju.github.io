@@ -49,7 +49,7 @@ h1 {
 }
 
 a:link {
-  color: green;
+  color: var(--accent-1);
   background-color: transparent;
   text-decoration: none;
 }
