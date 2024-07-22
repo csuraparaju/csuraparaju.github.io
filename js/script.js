@@ -41,3 +41,31 @@ window.addEventListener('DOMContentLoaded', function() {
 });
 
 window.addEventListener('resize', adjustPositions);
+
+// Get the height of the sticky navigation bar
+const sectionHeaderHeight = document.querySelector('.section-header').offsetHeight;
+const headerHeight = document.querySelector('header').offsetHeight;
+
+// Function to scroll to a section
+function scrollToSection(sectionId) {
+  const section = document.querySelector(sectionId);
+  if (section) {
+    const sectionTop = section.offsetTop - headerHeight - sectionHeaderHeight;
+    window.scrollTo({
+      top: sectionTop,
+      behavior: 'smooth'
+    });
+  }
+}
+
+// Add click event listeners to navigation links
+const navLinks = document.querySelectorAll('.sticky-table-of-contents a[href^="#"]');
+navLinks.forEach(link => {
+  link.addEventListener('click', (event) => {
+    event.preventDefault();
+    const targetId = event.currentTarget.getAttribute('href');
+    scrollToSection(targetId);
+  });
+});
+
+
