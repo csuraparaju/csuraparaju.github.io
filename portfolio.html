@@ -65,18 +65,80 @@
 </header>
 
 <main>
+    <div class="section-header" data-aos="fade-up">Portfolio</div>
     <section id="portfolio">
-        <!-- <div class="section-highlight" data-aos="fade-up">ABOUT</div> -->
-        <div class="portfolio-card" data-aos="fade-up">
-                <section class="portfolio-content">
-                    <h2>> Portfolio</h2>
-                    <!-- About template -->
-                    <p>Coming Soon</p>
-                </section>
+        <div class="project-container">
+            <div class="project-card" data-aos="fade-up">
+                <div class="project-details">
+                    <h3>UChicago Trading Competition</h3>
+                    <br></br>
+                    <p>Going into the UChicago Trading Competition, I had zero experience with algorithmic trading.
+                        It was completely new territory for me, but being selected as one of around 150 students to
+                        participate was an awesome opportunity to learn.
+                        <br><br>
+                        I worked with my team for about 3 weeks and came up with  a pairs trading algorithm for trading
+                        seven correlated assets. This was a form of statistical arbitrage that
+                        computed fair values for a set of assets based on a rolling window of historical
+                        price data. The algorithm would identify potential trading opportunities when the prices of these
+                        assets deviated from their expected "mean", and execute trades to capitalize on the eventual
+                        convergence back to equilibrium.
+                    </p>
+                    <a href="https://github.com/csuraparaju/utc_2024" class="project-link">Learn More</a>
+                </div>
             </div>
+            <div class="project-card" data-aos="fade-up">
+                <div class="project-details">
+                    <h3>Citadel/Citadel Securities Data Open Invitational</h3>
+                    <br></br>
+                    <p>Participating in the Data Open was a great experience that
+                        allowed me to learn more about data analysis and machine learning. Working in a team of four, we solved
+                        an interesting problem – developing a model to identify parks in New York City that
+                        need maintenance. Our breakthrough came from creating a mixed dataset consisting of geo-satellite
+                        images of parks and user-uploaded pictures from social media platforms like Twitter and Flickr.
+                        Using this diverse dataset, we trained a Convolutional Neural Network capable of
+                        classifying the health and maintenance needs of over 1,500 parks across the city.
+                    </p>
+                    <a href="assets/pdf/Team_12_report.pdf" class="project-link">Learn More</a>
+                </div>
+            </div>
+            <!-- Add more project cards as needed -->
+            <div class="project-card" data-aos="fade-up">
+                <div class="project-details">
+                    <h3>Algorithm for RNA Structure Prediction</h3>
+                    <br></br>
+                    <p> I worked with in a team of four to produce a novel algorithm for predicting the secondary structure of
+                        RNA, a famous open problem in computer science. In RNA secondary structure prediction,
+                        base-pair probabilities refer to the likelihood of two  nucleotides (bases) in an RNA sequence forming a
+                        bond. These probabilities provide valuable about the potential secondary structure of the RNA molecule.
+
+                        <br></br>
+                        My teammates worked on developing a convolutional neural network that can take in a sequence of RNA string,
+                        and output the base pair probabilities. However, the probabilities alone do not directly translate
+                        into the full secondary structure sequence. So, I worked on a dynamic programming algorithm could decode
+                        and construct the most likely secondary structure. It did this by identifying the optimal combination
+                        of base pairs that maximized the overall probability of the sequence. This approach allowed us to leverage the predictive power of
+                        the neural network while incorporating algorithmic techniques to derive the final RNA secondary structure predictions accurately.
+                    </p>
+                    <a href="assets/pdf/RNA_Secondary_Structure_Prediction.pdf" class="project-link">Learn More</a>
+                </div>
+            </div>
+            <div class="project-card" data-aos="fade-up">
+                <div class="project-details">
+                    <h3>High Performance Deep Learning Library</h3>
+                    <br></br>
+                    <p> For the past couple of months, I've been working on a high performance deep learning library
+                        written in C++, similar to PyTorch. I am diving deep into the linear algebra and calculus concepts
+                        behind neural networks, making sure to derive important concepts (such as the gradient descent algorithm )
+                        myself. By using C++ and the Eigen library, I'm prioritizing speed and performance, taking advantage of Eigen's
+                        ability to execute large matrix operations at blazing speeds over 16,000 MFLOPS. Although challenging,
+                        this project is solidifying my understanding of neural network fundamentals and sharpening my C++ skills.
+                    </p>
+                    <a href="https://github.com/csuraparaju/dnn_cpp/" class="project-link">Learn More</a>
+                </div>
+            </div>
+        </div>
     </section>
 </main>
-
 <footer>
     <div class="footer-content">
         <p>

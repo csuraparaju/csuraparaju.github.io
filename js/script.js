@@ -25,3 +25,19 @@ navToggle.addEventListener("click", () => {
     }
   });
 });
+
+function adjustPositions() {
+  const pageHeader = document.querySelector('header');
+  const sectionHeader = document.querySelector('.section-header');
+  const stickyTOC = document.querySelector('.sticky-table-of-contents');
+  const pageHeaderHeight = pageHeader.offsetHeight;
+  const sectionHeaderHeight = sectionHeader.offsetHeight;
+  sectionHeader.style.top = `${pageHeaderHeight - 1}px`;
+  stickyTOC.style.top = `${pageHeaderHeight + sectionHeaderHeight - 1.4}px`;
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+  adjustPositions();
+});
+
+window.addEventListener('resize', adjustPositions);
