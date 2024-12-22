@@ -64,6 +64,14 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
  * Mozilla scrollbar styling
  */
 
+
+ pre, code {
+        white-space: pre; /* Preserve whitespace and prevent wrapping */
+        overflow-x: auto; /* Add horizontal scrolling */
+        word-wrap: normal; /* Disable word wrapping */
+}
+
+
 /* use standard opaque scrollbars for most nodes */
 [data-jp-theme-scrollbars='true'] {
   scrollbar-color: rgb(var(--jp-scrollbar-thumb-color))
