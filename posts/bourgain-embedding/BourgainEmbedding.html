@@ -2745,6 +2745,7 @@ button.jp-ToolbarButtonComponent .jp-ToolbarButtonComponent-label {
 body {
   color: var(--jp-ui-font-color1);
   font-size: var(--jp-ui-font-size1);
+  margin: 0px;
 }
 
 /* Disable native link decoration styles everywhere outside of dialog boxes */
@@ -6396,7 +6397,7 @@ cell outputs.
 }
 
 .jp-Notebook {
-  padding: var(--jp-notebook-padding);
+  /* padding: var(--jp-notebook-padding); */ /* TODO CHANGE THIS */
   outline: none;
   overflow: auto;
   background: var(--jp-layout-color0);
@@ -7531,8 +7532,8 @@ a.anchor-link {
 </ol>
 <p>Some examples of metric spaces:</p>
 <ol>
-<li>A weighted graph $G = (V, E)$ is a metric space, with $X = V$ and $d(x, y) = \text{length of the shortest path between } x \text{ and } y$.</li>
-<li>The DNA space with $X = \{A, C, G, T\}^n$ and $d(x, y) = \text{number of positions where } x \text{ and } y \text{ differ}$.</li>
+<li>A weighted graph $G = (V, E)$ is a metric space, with $X = V$ and $d(x, y) =$ length of the shortest path between $x$ and $y$.</li>
+<li>The DNA space with $X = \{A, C, G, T\}^n$ and $d(x, y) = $number of positions where $x$  and  $y$ differ.</li>
 <li>The Euclidean space $\mathbb{R}^n$ with $X = \mathbb{R}^n$ and $d(x, y) = \|x - y\|_2$.</li>
 </ol>
 <h4 id="Maps">Maps<a class="anchor-link" href="#Maps">¶</a></h4><p>A map $f: X \to Y$ between two metric spaces $(X, d_X)$ and $(Y, d_Y)$ is called an embedding that maps elements of $X$ to elements of $Y$. The embedding is said to be distance-preserving (isometric) if $d_Y(f(x), f(y)) = d_X(x, y)$ for all $x, y \in X$. However, very rarely do we have distance-preserving embeddings between metric spaces. Instead, we often consider embeddings that are "almost" distance-preserving.</p>
@@ -7564,14 +7565,14 @@ a.anchor-link {
 </li>
 <li><p>For each point $x \in X$, define its embedding vector $f(x)$ in the following steps:</p>
 <ul>
-<li>For $i \in \{1, 2, \dots, \lfloor \log_2(n) \rfloor \}$:<ul>
-<li><p>For $j \in \{1, 2, \dots, c \cdot \lfloor \log_2(n) \rfloor \}$:</p>
+<li>For $i \in \{1, 2, \dots, \lceil \log_2(n) \rceil \}$:<ul>
+<li><p>For $j \in \{1, 2, \dots, c \cdot \lceil \log_2(n) \rceil \}$:</p>
 <ol>
 <li>Choose a random subset $S_{ij} \subseteq X$, where each $y \in X$ is included in $S_{ij}$ with probability $2^{-i}$.</li>
 <li>Compute $d(x, S_{ij})$, the minimum distance from $x$ to any point in $S_{ij}$:</li>
 </ol>
 </li>
-<li><p>Construct the embedding vector: $f(x) = \langle d(x, S_{11}), d(x, S_{12}), \dots, d(x, S_{\lfloor \log_2(n) \rfloor \cdot c \cdot \lfloor \log_2(n) \rfloor})\rangle.$</p>
+<li><p>Construct the embedding vector: $f(x) = \langle d(x, S_{11}), d(x, S_{12}), \dots, d(x, S_{\lceil \log_2(n) \rceil \cdot c \cdot \lceil \log_2(n) \rceil})\rangle.$</p>
 </li>
 </ul>
 </li>

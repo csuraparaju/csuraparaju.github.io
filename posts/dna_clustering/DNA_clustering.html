@@ -2747,6 +2747,7 @@ button.jp-ToolbarButtonComponent .jp-ToolbarButtonComponent-label {
 body {
   color: var(--jp-ui-font-color1);
   font-size: var(--jp-ui-font-size1);
+  margin: 0px;
 }
 
 /* Disable native link decoration styles everywhere outside of dialog boxes */
@@ -6398,7 +6399,7 @@ cell outputs.
 }
 
 .jp-Notebook {
-  padding: var(--jp-notebook-padding);
+  /* padding: var(--jp-notebook-padding); */ /* TODO CHANGE THIS */
   outline: none;
   overflow: auto;
   background: var(--jp-layout-color0);
@@ -7525,8 +7526,8 @@ a.anchor-link {
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h1 id="Clustering-DNA-Sequences-with-Bourgain-Embedding">Clustering DNA Sequences with Bourgain Embedding<a class="anchor-link" href="#Clustering-DNA-Sequences-with-Bourgain-Embedding">¶</a></h1><p>This blog post is a continuation of the previous blog post on <a href="https://csuraparaju.github.io/posts/bourgain-embedding/Bindex.html" target="_top">Bourgain Embedding</a>. TLDR: Bourgain Embedding is a technique used to embed an arbitrary finite metric space (eg. DNA sequences) into $\mathbb{R}^{O(\log^2 n)}$ with the $l^2$-norm with distortion at most $O(\log n)$. The previous blog post explains the Bourgain Embedding in detail and provides a Python implementation. In this blog post, we will use Bourgain Embedding to cluster DNA sequences.</p>
-<p>The dataset consists of 1000 DNA sequences of various lengths. Each DNA sequence has a corresponding "Target" attached to it, which determines if the DNA sequence is non-coding (0) or coding (1) for a gene. The goal is the cluster the sequences based on the similarity of the DNA sequences. We will use Bourgain Embedding to embed the DNA sequences into $\mathbb{R}^{O(\log^2 n)}$ space and then use K-means clustering to cluster the sequences.</p>
-<h2 id="Why-Bourgain-Embedding?">Why Bourgain Embedding?<a class="anchor-link" href="#Why-Bourgain-Embedding?">¶</a></h2><p>The embedding is necessary because K-means clustering requires the input data to be in Euclidean space. The DNA sequences are not vectors in Euclidean space, and hence we need to embed them into Euclidean space using Bourgain Embedding.</p>
+<p>The dataset consists of 1000 DNA sequences of various lengths. Each DNA sequence has a corresponding "Target" attached to it, which determines if the DNA sequence is non-coding (0) or coding (1) for a gene. The goal is the cluster the sequences based on the similarity of the DNA sequences. We will use Bourgain Embedding to embed the DNA sequences into $\mathbb{R}^{O(\log^2 n)}$ vector space and then use K-means clustering to make predictions.</p>
+<h2 id="Why-Bourgain-Embedding?">Why Bourgain Embedding?<a class="anchor-link" href="#Why-Bourgain-Embedding?">¶</a></h2><p>The embedding is necessary because K-means clustering requires the input data to be in $(\mathbb{R}^k, ||\cdot||_{2})$ metric space. The DNA sequences are not vectors in Euclidean space, and hence we need to embed these sequences as vectors in $\mathbb{R}^k$ using Bourgain Embedding.</p>
 <p>Recently, there has been a lot of interest in embedding strings (e.g. texts) into a latent space using
 deep learning techniques. However, not every problem requires such a complicated machinery. Bourgain Embedding is a simple and elegant technique that can be used to embed strings into Euclidean space, and it has theoretical guarantees on the distortion!</p>
 </div>
@@ -7599,7 +7600,7 @@ deep learning techniques. However, not every problem requires such a complicated
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h2 id="Embed-the-data-into-$(%5Cmathbb%7BR%7D%5E%7BO(%5Clog%5E2-n)%7D,-%7C%7C%5Ccdot%7C%7C_2)$">Embed the data into $(\mathbb{R}^{O(\log^2 n)}, ||\cdot||_2)$<a class="anchor-link" href="#Embed-the-data-into-$(%5Cmathbb%7BR%7D%5E%7BO(%5Clog%5E2-n)%7D,-%7C%7C%5Ccdot%7C%7C_2)$">¶</a></h2><p>This class is imported from the previous blog post. It contains the Bourgain Embedding implementation, with $c = 10$. Therefore, for this dataset, the embedding will be in $\mathbb{R}^{10 \cdot \lceil \log(1000) \rceil} = \mathbb{R}^{1000}$ .</p>
+<h2 id="Embed-the-data-into-$(%5Cmathbb%7BR%7D%5E%7BO(%5Clog%5E2-n)%7D,-%7C%7C%5Ccdot%7C%7C_2)$">Embed the data into $(\mathbb{R}^{O(\log^2 n)}, ||\cdot||_2)$<a class="anchor-link" href="#Embed-the-data-into-$(%5Cmathbb%7BR%7D%5E%7BO(%5Clog%5E2-n)%7D,-%7C%7C%5Ccdot%7C%7C_2)$">¶</a></h2><p>This class is imported from the previous blog post. It contains the Bourgain Embedding implementation, with $c = 10$. Therefore, for this dataset, the embedding will be in $\mathbb{R}^{10 \cdot \lceil \log^2(1000) \rceil} = \mathbb{R}^{1000}$ .</p>
 <div class="highlight"><pre><span></span>
 </pre></div>
 </div>
@@ -7843,7 +7844,7 @@ deep learning techniques. However, not every problem requires such a complicated
     <span class="k">for</span> <span class="n">sequences</span><span class="p">,</span> <span class="n">labels</span> <span class="ow">in</span> <span class="n">test_loader</span><span class="p">:</span>
         <span class="n">sequences</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">sequences</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">labels</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
         <span class="n">outputs</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">sequences</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
-        <span class="n">predictions</span> <span class="o">=</span> <span class="p">(</span><span class="n">outputs</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>  <span class="c1"># Convert probabilities to binary predictions</span>
+        <span class="n">predictions</span> <span class="o">=</span> <span class="p">(</span><span class="n">outputs</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>  <span class="c1"></span>
         <span class="n">correct</span> <span class="o">+=</span> <span class="p">(</span><span class="n">predictions</span> <span class="o">==</span> <span class="n">labels</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
         <span class="n">total</span> <span class="o">+=</span> <span class="n">labels</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
