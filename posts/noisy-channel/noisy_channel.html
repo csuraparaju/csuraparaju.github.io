@@ -7532,10 +7532,10 @@ a.anchor-link {
 <p style="text-align:center;">
   An illustration of a dense sphere packing in a cubic space.
 </p>
-<h3 id="Definitions">Definitions<a class="anchor-link" href="#Definitions">¶</a></h3><p>But first, let's define the noisy channel problem more formally. Let $T &gt; 0$ be a fixed length of time corresponding to the length of a signal transmission.</p>
+<h3 id="Signals-Code">Signals and Code<a class="anchor-link" href="#Signals-Code">¶</a></h3><p>But first, let's define the noisy channel problem more formally. Let $T &gt; 0$ be a fixed length of time corresponding to the length of a signal transmission.</p>
 <p>Define a signal to be a continuous function $s: [0, T] \to \mathbb{R}$, where $s(t)$ is the amplitude of the signal at time $t$, and the frequencies do not surpass some fixed limit $W$. Think of $s(t)$ as the voltage of the signal at time $t$ (for copper wires), or the intensity of a light signal at time $t$ (for fiber optic cables).</p>
 <p>Define a code to be a finite set of signals $\{s_1, s_2, \ldots, s_n\}$. This can be thought of as a symbolic alphabet for the two computers to communicate with via the channel. A simple example of a code is the set of signals $\{s_1(t) = 1, s_2(t) = -1\}$, which can be used to send binary messages over a channel.</p>
-<p>The Shannon-Nyquist Sampling Theorem (which is a fundamental result in signal processing) states that any signal $s(t)$ with frequencies less than $W$ can be uniquely represented by a finite set of samples $\{s(0), s(\frac{1}{W}), s(\frac{1}{2W}), \ldots, s(\frac{n-1}{2W})\}$. This means that we can represent any signal $s(t)$ as a vector in $\mathbb{R}^n$, where $n = 2TW$. This means that we can represent any signal $s(t)$ as a vector in $\vec{s} \in \mathbb{R}^n$, and any code as a finite subset $C \subseteq \mathbb{R}^n$, where each element of $C$ is a vector representing a signal in the code.</p>
+<p>The <a href="https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem">Shannon-Nyquist Sampling Theorem</a> states that any signal $s(t)$ with frequencies less than $W$ can be uniquely represented by a finite set of samples $\{s(0), s(\frac{1}{W}), s(\frac{1}{2W}), \ldots, s(\frac{n-1}{2W})\}$, where $n = 2WT$. This means that we can represent any signal $s(t)$ as a vector $\vec{s} \in \mathbb{R}^n$, and any code as a finite subset $C \subseteq \mathbb{R}^n$, where each element of $C$ is a vector representing a signal in the code.</p>
 <p align="center">
 <img alt="sampling signals" src="./sampling.png" width="350"/>
 <!-- <br/>
@@ -7545,8 +7545,9 @@ a.anchor-link {
 <p style="text-align:center;">
   The continuous signal $s(t)$ is represented by the discrete samples.
 </p>
-<h3 id="The-Noisy-Channel">The Noisy Channel<a class="anchor-link" href="#The-Noisy-Channel">¶</a></h3><p>However, in the real world, the sent signal $\vec{s}$ is almost never the same as the received signal $\vec{r}$. This is because the channel introduces noise, which we can model as a random perturbation to the signal. So, we will assume that the received signal $\vec{r}$ is the sent signal $\vec{s}$ plus some noise $\vec{z}$, where $\vec{z}$ is a random vector with Gaussian entries (i.e., each $z_i$ is drawn from a normal distribution with mean 0 and variance $\sigma^2$).</p>
-<p>Suppose the sender wants to send a signal $\vec{s}$ over the channel, and the receiver receives a signal $\vec{r} = \vec{s} + \vec{z}$. The receiver wants to determine which signal was sent, but the noise makes this difficult. One way to do this is to choose the signal in the code that is closest to the received signal $\vec{r}$, i.e., pick an $\vec{s}$ such that $||\vec{r} - \vec{s}||_2$ is minimized. However, consider the case when two signals in the code are very close to each other. The noise could cause the received signal to be closer to the wrong signal in the code, leading to an error in decoding.</p>
+<h3 id="The-Noisy-Channel">The Noisy Channel<a class="anchor-link" href="#The-Noisy-Channel">¶</a></h3><p>However, in the real world, the sent signal $\vec{s}$ is almost never the same as the received signal $\vec{r}$. This is because the channel introduces noise, which we can think of as a random perturbation to the signal. So, we will assume that the received signal $\vec{r}$ is the sent signal $\vec{s}$ plus some noise $\vec{z}$, where $\vec{z}$ is a random vector with Gaussian entries (i.e., each $z_i$ is drawn from a normal distribution with mean 0 and variance $\sigma^2$).</p>
+<p>Suppose the sender wants to send a signal $\vec{s}$ over the channel, and the receiver receives a signal $\vec{r} = \vec{s} + \vec{z}$. The receiver wants to determine which signal was sent, but the noise makes this difficult. One way to do this is to choose the signal in the code that is closest to the received signal $\vec{r}$ i.e., pick an $\vec{s}$ such that $||\vec{r} - \vec{s}||_2$ is minimized. However, consider the case when two signals in the code overlap like below. The noise could cause the received signal to be equidistant from both signals, making it impossible for the receiver to determine which signal was sent.</p>
+</p>
 <p align="center">
 <img alt="signals that are too close" src="./close_signals.png" width="350"/>
 </p>
@@ -7554,13 +7555,21 @@ a.anchor-link {
     Which signal does r correspond to?
 </p>
 <p>But, recall that each component $z_i$ of $z$ is Gaussian, so $\mathbb{P}[-2\sigma \leq z_i \leq 2\sigma] \approx 95\%$. Now, this means $\mathbb{P}[\|\vec{z}\|_2 \leq 2\sigma\sqrt{n}] \approx 95\%$. So, the distance
-$$|| \vec{r} - \vec{s}||_2 = ||(\vec{s} + \vec{z}) - \vec{s}||_2 = ||\vec{z}||_2 = 2\sigma\sqrt{n}$$
+$$|| \vec{r} - \vec{s}||_2 = ||(\vec{s} + \vec{z}) - \vec{s}||_2 = ||\vec{z}||_2 \leq 2\sigma\sqrt{n}$$
 with high probability. This means that if we choose the code such that the minimum distance between any two signals in the code is at least $4\sigma\sqrt{n}$, then the receiver can correctly decode the signal with high probability. Suddenly, this problem is now reduced to finding a packing of spheres in $\mathbb{R}^n$ such that the minimum distance between any two spheres is at least $4\sigma\sqrt{n}$, which of course is the sphere packing problem!</p>
-<h3 id="Epilogue">Epilogue<a class="anchor-link" href="#Epilogue">¶</a></h3><p>The attentive reader might have noticed that a naive solution to the Noisy Channel problem is choose a code such that minimum distance between any two signals is as far as possible. However, this is not feasible in practice. Recall the <a href="https://en.wikipedia.org/wiki/Energy_(signal_processing">average power</a>) exerted by a discrete signal $\vec{s}$ is given by:
+<p align="center">
+<img alt="packed signals" src="./packed_signal.png" width="350"/>
+</p>
+  <p style="text-align:center;">
+    These signals are sufficiently far apart.
+</p>
+</p>
+
+<h3 id="Epilogue">Epilogue<a class="anchor-link" href="#Epilogue">¶</a></h3><p>The attentive reader might have noticed that a naive solution to the Noisy Channel problem is to choose a code such that minimum distance between any two signals is as far as possible. However, this is not feasible in practice. Recall the <a href="https://en.wikipedia.org/wiki/Energy_(signal_processing">average power</a>) exerted by a discrete signal $\vec{s}$ is given by:
 $$
 P = \frac{1}{T} \sum_{i=1}^n |s_i|^2 = \frac{1}{T} ||\vec{s}||_2^2
 $$</p>
-<p>Therefore, the power required to transmit a signal $\vec{s}$ is proportional to the L2 norm of the signal squared. So, if we choose a code such that the minimum distance between any two signals is very large, then the power required to transmit the signal will also be very large. This is not feasible in practice, as it would require a lot of energy to transmit the signal. However, if we choose a code whose associated spheres are packed as densely as possible, then we can minimize the power required to transmit the signal, while still ensuring that the receiver can correctly decode the signal with high probability.</p>
+<p>Therefore, the power required to transmit a signal $\vec{s}$ is proportional to the L2 norm of the signal squared. So, if we choose a code such that the minimum distance between any two signals is very large, then the power required to transmit the signal will also be very large, which is not desirable. However, if we choose a code whose associated spheres are packed as densely as possible, then we can minimize the power required to transmit the signal, while still ensuring that the receiver can correctly decode the signal with high probability.</p>
 </div>
 </div>
 </div>
