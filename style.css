@@ -13,11 +13,6 @@ html {
     padding: 1.5em;
  }
 
-@media (max-width: 576px) {
-    html {
-        padding: 1em; /* Reduce padding for mobile devices */
-    }
-}
 @media (min-width: 768px) {
     html {
         font-size: 125%;
