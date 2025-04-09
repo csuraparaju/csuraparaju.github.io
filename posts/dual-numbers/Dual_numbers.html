@@ -64,6 +64,13 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
  * Mozilla scrollbar styling
  */
 
+ /* ADD THIS TO A NEW POST */
+ pre, code {
+        white-space: pre; /* Preserve whitespace and prevent wrapping */
+        overflow-x: auto; /* Add horizontal scrolling */
+        word-wrap: normal; /* Disable word wrapping */
+}
+
 /* use standard opaque scrollbars for most nodes */
 [data-jp-theme-scrollbars='true'] {
   scrollbar-color: rgb(var(--jp-scrollbar-thumb-color))
@@ -2739,6 +2746,7 @@ button.jp-ToolbarButtonComponent .jp-ToolbarButtonComponent-label {
 body {
   color: var(--jp-ui-font-color1);
   font-size: var(--jp-ui-font-size1);
+  margin: 0px; /* ADD THIS TO NEW POST */
 }
 
 /* Disable native link decoration styles everywhere outside of dialog boxes */
