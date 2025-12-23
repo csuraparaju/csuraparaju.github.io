@@ -216,7 +216,6 @@ window.Quarto = {
 <p>The structure we want to study is defined as follows <span class="math display">\[
 \mathbb{R} (\epsilon) = \{ a + b \epsilon \mid a, b \in \mathbb{R} \}
 \]</span></p>
-<p>Let’s see what we can do with this set.</p>
 </section>
 <section id="basic-arithmetic" class="level2">
 <h2 class="anchored" data-anchor-id="basic-arithmetic">Basic Arithmetic</h2>
@@ -227,8 +226,8 @@ x \cdot y &amp;:= (a \cdot c) + (a \cdot d + d \cdot c) \epsilon \\
 \end{align*}\]</span></p>
 <p>Whenever we create new objects and define operations on the objects, we should always check that they are well defined. That means, for each operation above we need to check that if <span class="math inline">\(x = y\)</span> and <span class="math inline">\(z\)</span> is any other dual number then <span class="math inline">\(x + z = y + z\)</span> and <span class="math inline">\(x - z = y - z\)</span> and <span class="math inline">\(x \cdot z = y \cdot z\)</span>. In this case, checking this is very easy so I won’t do that. We can also divide <span class="math inline">\(x / y\)</span>, given that <span class="math inline">\(c \neq 0\)</span>: <span class="math display">\[
 \frac{x}{y} := \frac{a}{c} + \frac{b \cdot c - a \cdot d}{c^2}
-\]</span> So far so good. Hopefully it is not hard to see that distributivity, associativity, and commutativity follow because we are simply using <span class="math inline">\(+, -, \cdot\)</span> from <span class="math inline">\(\mathbb{R}\)</span>. This means all the nice properties we learned in high school about algebra on real numbers (ex. FOIL) still hold. So far so good.</p>
-<p>However, things get interesting when we starting playing with multiplication and division operator a bit more. Specifically, what happens when we multiply two numbers <span class="math inline">\(0 + b \epsilon\)</span> and <span class="math inline">\(0 + d \epsilon\)</span> where <span class="math inline">\(b, d \neq 0\)</span>. Clearly these are non-zero numbers. However, note that <span class="math display">\[
+\]</span> Hopefully it is not hard to see that distributivity, associativity, and commutativity follow because we are simply using <span class="math inline">\(+, -, \cdot\)</span> from <span class="math inline">\(\mathbb{R}\)</span>. This means all the nice properties we learned in high school about algebra on real numbers (ex. FOIL) still hold. So far so good.</p>
+<p>However, things get interesting when we starting playing with multiplication and division operator a bit more. Specifically, what happens when we multiply two numbers <span class="math inline">\(0 + b \epsilon\)</span> and <span class="math inline">\(0 + d \epsilon\)</span> where <span class="math inline">\(b, d \neq 0\)</span>? Clearly these are non-zero numbers. However, note that <span class="math display">\[
 (0 + b\epsilon) + (0 + d\epsilon) = (0 \cdot 0) + (0 \cdot d + b \cdot 0)\epsilon = 0
 \]</span> This s strange! Recall that in <span class="math inline">\(\mathbb{R}\)</span> and <span class="math inline">\(\mathbb{C}\)</span> there are no zero divisors. That is, if <span class="math inline">\(a, b \in \mathbb{R} (\text{or } \mathbb{C})\)</span>, and <span class="math inline">\(a \cdot b = 0\)</span> then either <span class="math inline">\(a = 0\)</span> or <span class="math inline">\(b = 0\)</span>. We just saw that this need not be the case for dual numbers anymore! Finally, a place where dual number arithmetic breaks down. Nonetheless, it is still remarkable that most of the basic arithmetic operations and laws from <span class="math inline">\(\mathbb{R}\)</span> still hold, so let’s see what kind of algebra we can do on these numbers.</p>
 </section>
@@ -236,7 +235,7 @@ x \cdot y &amp;:= (a \cdot c) + (a \cdot d + d \cdot c) \epsilon \\
 <h2 class="anchored" data-anchor-id="polynomials">Polynomials</h2>
 <p>Let’s consider a simple polynomial function over the real numbers <span class="math inline">\(f(x) = x^2\)</span>. We can extend this function to accept dual numbers as input by replacing the real number <span class="math inline">\(x = a\)</span> with the dual number <span class="math inline">\(x = a + \epsilon\)</span>. <span class="math display">\[
 f((a + \epsilon)) = (a+\epsilon)\cdot (a + \epsilon) = a^2 + (a + a) \epsilon = a^2 + 2 a \epsilon
-\]</span> Notice what just happened! The term <span class="math inline">\(2 a \epsilon\)</span> is the derivative of the function <span class="math inline">\(f\)</span> evaluated at <span class="math inline">\(x = a\)</span>! By just computing the function <span class="math inline">\(f\)</span> at the modified dual number, we were able to get the derivative as well in one computation!</p>
+\]</span> Notice what just happened. The term <span class="math inline">\(2 a \epsilon\)</span> is the derivative of the function <span class="math inline">\(f\)</span> evaluated at <span class="math inline">\(x = a\)</span>. By just computing the function <span class="math inline">\(f\)</span> at the modified dual number, we were able to get the derivative as well in one computation.</p>
 <p>Let’s use the Binomial Theorem to see if this generalizes to <span class="math inline">\(f(a + \epsilon) = (a+\epsilon)^n\)</span> for an arbitrary <span class="math inline">\(n\)</span>: <span class="math display">\[\begin{align*}
 f(a + \epsilon) &amp;= (a + \epsilon)^n \\
 &amp;= \sum_{i = 0}^n {n \choose i} a^{n - i} \epsilon^i \\
@@ -250,11 +249,11 @@ f(a + \epsilon) &amp;= p_n (a + \epsilon)^n + p_{n-1} (a + \epsilon)^{n-1} + \cd
 &amp;= p_n a^n + p_n n a^{n-1}\epsilon + p_{n-1}a^{n-1} + p_{n-1} (n-1)a^{n-2}\epsilon + \cdots + p_1 a + p_1 \epsilon + p_0 \\
 &amp;= (p_n a^n + p_{n-1} a^{n-1} + \cdots + p_1 a + p_0) +(p_n n a^{n-1} + p_{n-1} (n-1) a^{n-2} + \cdots + p_1) \epsilon \\
 &amp;= f(a) + f'(a) \epsilon
-\end{align*}\]</span> and indeed it does!</p>
+\end{align*}\]</span> and indeed it does.</p>
 </section>
 <section id="other-functions" class="level2">
 <h2 class="anchored" data-anchor-id="other-functions">Other functions</h2>
-<p>Maybe we can actually make a stronger claim: does this property holds for all infinitely differentiable functions. So, let <span class="math inline">\(f\)</span> be such a function evaluated at the dual number <span class="math inline">\(a + c \epsilon\)</span> (note that the coefficient for the dual part need not be 1 anymore). Then we can use the taylor series expansion of <span class="math inline">\(f\)</span> to write <span class="math display">\[\begin{align*}
+<p>Maybe we can actually make a stronger claim: does this property holds for all infinitely differentiable functions? So, let <span class="math inline">\(f\)</span> be such a function evaluated at the dual number <span class="math inline">\(a + c \epsilon\)</span> (note that the coefficient for the dual part need not be 1 anymore). Then we can use the taylor series expansion of <span class="math inline">\(f\)</span> to write <span class="math display">\[\begin{align*}
 f(a + c\epsilon) &amp;= \sum_{n = 0}^\infty \frac{f^{(n)} (a)}{n!} ((a + c\epsilon) - a)^n \\
 &amp;= \sum_{n = 0}^\infty \frac{f^{(n)} (a)}{n!} (c\epsilon)^n \\
 &amp;= \frac{f^{(0)} (a)}{0!} (c\epsilon)^0 + \frac{f^{(1)} (a)}{1!} (c\epsilon)^1 + \sum_{n = 2}^\infty \frac{f^{(n)} (a)}{n!} (c\epsilon)^n \\

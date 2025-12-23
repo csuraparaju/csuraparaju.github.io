@@ -22,7 +22,6 @@ $$
 \mathbb{R} (\epsilon) = \{ a + b \epsilon \mid a, b \in \mathbb{R} \}
 $$
 
-Let's see what we can do with this set.
 
 ## Basic Arithmetic
 
@@ -37,9 +36,9 @@ Whenever we create new objects and define operations on the objects, we should a
 $$
 \frac{x}{y} := \frac{a}{c} + \frac{b \cdot c - a \cdot d}{c^2}
 $$
-So far so good. Hopefully it is not hard to see that distributivity, associativity, and commutativity follow because we are simply using $+, -, \cdot$ from $\mathbb{R}$. This means all the nice properties we learned in high school about algebra on real numbers (ex. FOIL) still hold.  So far so good.
+Hopefully it is not hard to see that distributivity, associativity, and commutativity follow because we are simply using $+, -, \cdot$ from $\mathbb{R}$. This means all the nice properties we learned in high school about algebra on real numbers (ex. FOIL) still hold.  So far so good.
 
-However, things get interesting when we starting playing with multiplication and division operator a bit more. Specifically, what happens when we multiply two numbers $0 + b \epsilon$ and $0 + d \epsilon$ where $b, d \neq 0$. Clearly these are non-zero numbers. However, note that
+However, things get interesting when we starting playing with multiplication and division operator a bit more. Specifically, what happens when we multiply two numbers $0 + b \epsilon$ and $0 + d \epsilon$ where $b, d \neq 0$? Clearly these are non-zero numbers. However, note that
 $$
 (0 + b\epsilon) + (0 + d\epsilon) = (0 \cdot 0) + (0 \cdot d + b \cdot 0)\epsilon = 0
 $$
@@ -52,7 +51,7 @@ Let's consider a simple polynomial function over the real numbers $f(x) = x^2$. 
 $$
 f((a + \epsilon)) = (a+\epsilon)\cdot (a + \epsilon) = a^2 + (a + a) \epsilon = a^2 + 2 a \epsilon
 $$
-Notice what just happened! The term $2 a \epsilon$ is the derivative of the function $f$ evaluated at $x = a$! By just computing the function $f$ at the modified dual number, we were able to get the derivative as well in one computation!
+Notice what just happened. The term $2 a \epsilon$ is the derivative of the function $f$ evaluated at $x = a$. By just computing the function $f$ at the modified dual number, we were able to get the derivative as well in one computation.
 
 Let's use the Binomial Theorem to see if this generalizes to $f(a + \epsilon) = (a+\epsilon)^n$ for an arbitrary $n$:
 \begin{align*}
@@ -72,11 +71,11 @@ f(a + \epsilon) &= p_n (a + \epsilon)^n + p_{n-1} (a + \epsilon)^{n-1} + \cdots 
 &= (p_n a^n + p_{n-1} a^{n-1} + \cdots + p_1 a + p_0) +(p_n n a^{n-1} + p_{n-1} (n-1) a^{n-2} + \cdots + p_1) \epsilon \\
 &= f(a) + f'(a) \epsilon
 \end{align*}
-and indeed it does!
+and indeed it does.
 
 ## Other functions
 
-Maybe we can actually make a stronger claim: does this property holds for all infinitely differentiable functions. So, let $f$ be such a function evaluated at the dual number $a + c \epsilon$ (note that the coefficient for the dual part need not be 1 anymore). Then we can use the taylor series expansion of $f$ to write
+Maybe we can actually make a stronger claim: does this property holds for all infinitely differentiable functions? So, let $f$ be such a function evaluated at the dual number $a + c \epsilon$ (note that the coefficient for the dual part need not be 1 anymore). Then we can use the taylor series expansion of $f$ to write
 \begin{align*}
 f(a + c\epsilon) &= \sum_{n = 0}^\infty \frac{f^{(n)} (a)}{n!} ((a + c\epsilon) - a)^n \\
 &= \sum_{n = 0}^\infty \frac{f^{(n)} (a)}{n!} (c\epsilon)^n \\
