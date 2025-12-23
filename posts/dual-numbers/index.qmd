@@ -1,0 +1,109 @@
+---
+title: "Automatic Differentiation using Dual Numbers"
+author: "Krish Suraparaju"
+date: "2025-04-08"
+categories: [math]
+bibliography: references.bib
+---
+## Introduction
+
+I recently came across a curious algebraic structure called the Dual Number system, denoted as $\mathbb{R} (\epsilon)$. The dual numbers are an extension of the real numbers, with a very interesting property: evaluating a differentiable function $f$ at a dual number $x$ will give us both $f(x)$ and $f'(x)$ at the same time. This is a powerful idea in numerical analysis and machine learning, as it allows for efficient computation of derivatives.
+
+## Dual Numbers
+
+Let $\epsilon \neq 0$ be a new "number" such that $\epsilon^2 = 0$ [@Penn2022]. Before we go any further, we must first ask ourselves if such a number can even exist. The answer is of course not if you want to work in complete fields like $\mathbb{R}$ and $\mathbb{C}$. No matter how small a real (or complex) number is, as long as it is non-zero, its square will also be non-zero.
+So why do we care about this number then?
+
+One reason is that it can help us model the notion of an "infinitesimal" from calculus, which can be thought of as a non-zero number that is "smaller" than any other number. Using the definition above then, we note that even though $\epsilon$ is non-zero, its square is zero, and so the number is somehow "smaller" than any other real (or complex) number.
+In order to study this more, let's assume that such a number actually exists and try to see if any laws we know about $\mathbb{R}$ and $\mathbb{C}$ does (or does not) break down. Then, let's see how it can be used to compute derivatives of a function.
+
+The structure we want to study is defined as follows
+$$
+\mathbb{R} (\epsilon) = \{ a + b \epsilon \mid a, b \in \mathbb{R} \}
+$$
+
+Let's see what we can do with this set.
+
+## Basic Arithmetic
+
+First, let's define how to add, subtract, and multiply. Given a dual number $x = a + b \epsilon$ and $y = c + d \epsilon$, define:
+\begin{align*}
+x + y &:= (a + c) + (b + d) \epsilon \\
+x - y &:= (a - c) + (b - d) \epsilon \\
+x \cdot y &:= (a \cdot c) + (a \cdot d + d \cdot c) \epsilon \\
+\end{align*}
+
+Whenever we create new objects and define operations on the objects, we should always check that they are well defined. That means, for each operation above we need to check that if $x = y$ and $z$ is any other dual number then $x + z = y + z$ and $x - z = y - z$ and $x \cdot z = y \cdot z$. In this case, checking this is very easy so I won't do that. We can also divide $x / y$, given that $c \neq 0$:
+$$
+\frac{x}{y} := \frac{a}{c} + \frac{b \cdot c - a \cdot d}{c^2}
+$$
+So far so good. Hopefully it is not hard to see that distributivity, associativity, and commutativity follow because we are simply using $+, -, \cdot$ from $\mathbb{R}$. This means all the nice properties we learned in high school about algebra on real numbers (ex. FOIL) still hold.  So far so good.
+
+However, things get interesting when we starting playing with multiplication and division operator a bit more. Specifically, what happens when we multiply two numbers $0 + b \epsilon$ and $0 + d \epsilon$ where $b, d \neq 0$. Clearly these are non-zero numbers. However, note that
+$$
+(0 + b\epsilon) + (0 + d\epsilon) = (0 \cdot 0) + (0 \cdot d + b \cdot 0)\epsilon = 0
+$$
+This s strange! Recall that in $\mathbb{R}$ and $\mathbb{C}$ there are no zero divisors. That is, if $a, b \in \mathbb{R} (\text{or } \mathbb{C})$, and $a \cdot b = 0$ then either $a = 0$ or $b = 0$. We just saw that this need not be the case for dual numbers anymore! Finally, a place where dual number arithmetic breaks down. Nonetheless, it is still remarkable
+that most of the basic arithmetic operations and laws from $\mathbb{R}$ still hold, so let's see what kind of algebra we can do on these numbers.
+
+## Polynomials
+
+Let's consider a simple polynomial function over the real numbers $f(x) = x^2$. We can extend this function to accept dual numbers as input by replacing the real number $x = a$ with the dual number $x = a + \epsilon$.
+$$
+f((a + \epsilon)) = (a+\epsilon)\cdot (a + \epsilon) = a^2 + (a + a) \epsilon = a^2 + 2 a \epsilon
+$$
+Notice what just happened! The term $2 a \epsilon$ is the derivative of the function $f$ evaluated at $x = a$! By just computing the function $f$ at the modified dual number, we were able to get the derivative as well in one computation!
+
+Let's use the Binomial Theorem to see if this generalizes to $f(a + \epsilon) = (a+\epsilon)^n$ for an arbitrary $n$:
+\begin{align*}
+f(a + \epsilon) &= (a + \epsilon)^n \\
+&= \sum_{i = 0}^n {n \choose i} a^{n - i} \epsilon^i \\
+&= {n \choose 0} a^n \epsilon^0 + {n \choose 1} a^{n-1} \epsilon^1 + \sum_{i = 2}^n {n \choose i} a^{n - i} \epsilon^i \\
+&= a^n + n \cdot a^{n-1} \epsilon
+\end{align*}
+Where the last step follows because $\epsilon^2 = 0$ (by definition) and so all the other terms with $\epsilon^i$ for $i \geq 2$ cancels out. Notice that this is exactly what we wanted to see: $f(a+\epsilon) = f(a) + f'(a) \epsilon$
+
+Now, lets go even futher and see if this notion generalizes to an arbitrary polynomial $f(a + \epsilon) = p_n (a + \epsilon)^n + p_{n-1} (a + \epsilon)^{n-1} + \cdots + p_1 (a + \epsilon) + p_0$:
+\begin{align*}
+f(a + \epsilon) &= p_n (a + \epsilon)^n + p_{n-1} (a + \epsilon)^{n-1} + \cdots + p_1 (a + \epsilon) + p_0 \\
+&= p_n \sum_{i = 0}^n {n \choose i} a^{n - i} \epsilon^i + p_{n-1} \sum_{i = 0}^{n-1} {n-1 \choose i} a^{n - 1- i} \epsilon^i +p_1 (a + \epsilon) + p_0  \\
+&= p_n (a^n + n ^{n-1} \epsilon) + p_{n-1} (a^{n-1} + (n-1) a^{n-2} \epsilon) + \cdots + p_1 (a + \epsilon) + p_0 \\
+&= p_n a^n + p_n n a^{n-1}\epsilon + p_{n-1}a^{n-1} + p_{n-1} (n-1)a^{n-2}\epsilon + \cdots + p_1 a + p_1 \epsilon + p_0 \\
+&= (p_n a^n + p_{n-1} a^{n-1} + \cdots + p_1 a + p_0) +(p_n n a^{n-1} + p_{n-1} (n-1) a^{n-2} + \cdots + p_1) \epsilon \\
+&= f(a) + f'(a) \epsilon
+\end{align*}
+and indeed it does!
+
+## Other functions
+
+Maybe we can actually make a stronger claim: does this property holds for all infinitely differentiable functions. So, let $f$ be such a function evaluated at the dual number $a + c \epsilon$ (note that the coefficient for the dual part need not be 1 anymore). Then we can use the taylor series expansion of $f$ to write
+\begin{align*}
+f(a + c\epsilon) &= \sum_{n = 0}^\infty \frac{f^{(n)} (a)}{n!} ((a + c\epsilon) - a)^n \\
+&= \sum_{n = 0}^\infty \frac{f^{(n)} (a)}{n!} (c\epsilon)^n \\
+&= \frac{f^{(0)} (a)}{0!} (c\epsilon)^0 + \frac{f^{(1)} (a)}{1!} (c\epsilon)^1 + \sum_{n = 2}^\infty \frac{f^{(n)} (a)}{n!} (c\epsilon)^n \\
+& f(a) + f'(a) c \epsilon
+\end{align*}
+
+
+and again, it does!
+
+But what about composition of functions? Let $f, g$ be functions extended to dual numbers such that $f(a + c \epsilon) = f(a) + f'(a) c \epsilon$ and $g(a + c \epsilon) = g(a) + g'(a) c \epsilon$. Then, note that:
+\begin{align*}
+f(g(a+\epsilon)) &= f(g(a) + g'(a)\epsilon) \\
+&= f(g(a)) + f'(g(a)) \cdot g'(a) \epsilon \\
+\end{align*}
+and notice that the dual component $f'(g(a)) \cdot g'(a)$ is exactly the chain rule of derivatives! So, now we can imagine all sorts of complicated functions like
+$$
+f(x) = \sin(e^{x^2 + 1})
+$$
+and by using the dual number representation, we can compute both the function value and its derivative in a single forward pass through the function.
+
+## Closing thoughts
+
+What I find most beautiful about dual numbers is how they transform the problem of differentiation from a difficult limiting process
+$$
+f'(x) = \lim_{h \to 0} \frac{f(x+h) - f(x)}{h}
+$$
+into a problem of pure algebraic manipulation. This is incredibly beautiful because limits are (arguably) one of the ugliest tools in mathematics, and turning it into a formulation of abstract algebra is extremely satisfying.
+
+While we gained zero divisors in dual numbers, what we got in return makes up for it: a computational method for computing derivatives that is exact (no truncation error like finite differences) and efficient (requires roughly the same number of operations as computing $f$ itself). This is why dual numbers, despite being a somewhat obscure mathematical structure, power automatic differentiation systems used in training neural networks.

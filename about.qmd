@@ -1,0 +1,41 @@
+---
+title: Krish Suraparaju
+about:
+  template: marquee
+  links:
+    - icon: linkedin
+      text: LinkedIn
+      href: https://www.linkedin.com/in/krish-suraparaju/
+    - icon: github
+      text: Github
+      href: https://github.com/csuraparaju
+---
+
+
+:::{#hero-heading}
+
+I'm an undergraduate at Carnegie Mellon University studying mathematics and computer science.
+I blog here about things I find interesting.
+
+My favorite classes at CMU have been Theoretical Computer Science (15-251), Markov Chains (21-326) and Computational Biology (02-251).
+
+
+
+## Education
+
+Carnegie Mellon University | Pittsburgh, PA | Aug 2022 - May 2026 \
+B.S. in Mathematics, Additional Major in Computer Science
+
+## Experience
+
+Meta | SWE Intern | May 2025 - Aug 2025
+
+Amazon | SDE Intern | May 2024 - Aug 2024
+
+CMU | Head TA for 15-122 | Aug 2023 - present
+
+Mohimani Lab @ CMU | Undergraduate RA | Jan 2023 - Aug 2024
+
+
+:::
+
