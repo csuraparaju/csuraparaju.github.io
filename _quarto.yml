@@ -3,9 +3,9 @@ project:
   output-dir: docs
 
 website:
-  description: "A blog built with Quarto"
-  site-url: https://your-website-url.example.com # you must change this appropriately for RSS feeds to work properly
-  title: "blog"
+  description: "Krish Suraparaju's personal website and blog."
+  site-url: https://csuraparaju.github.io/
+  title: "Krish's blog"
   navbar:
     right:
       - about.qmd
