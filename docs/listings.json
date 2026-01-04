@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/sampling/index.html",
       "/posts/dual-numbers/index.html",
       "/posts/noisy-channels/index.html",
       "/posts/bourgain-embedding/index.html"

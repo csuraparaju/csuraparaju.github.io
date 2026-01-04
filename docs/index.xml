@@ -10,7 +10,262 @@
 <atom:link href="https://csuraparaju.github.io/index.xml" rel="self" type="application/rss+xml"/>
 <description>Krish Suraparaju&#39;s personal website and blog.</description>
 <generator>quarto-1.8.26</generator>
-<lastBuildDate>Tue, 08 Apr 2025 04:00:00 GMT</lastBuildDate>
+<lastBuildDate>Wed, 08 Oct 2025 04:00:00 GMT</lastBuildDate>
+<item>
+  <title>Algorithms for Sampling from a probability distribution</title>
+  <dc:creator>Krish Suraparaju</dc:creator>
+  <link>https://csuraparaju.github.io/posts/sampling/</link>
+  <description><![CDATA[ 
+
+
+
+
+
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Drawing samples from a probability distribution <img src="https://latex.codecogs.com/png.latex?%5Cpi"> is a problem that arises often in computer science. For example in generative AI, language models sample tokens from learned probability distributions to generate new text. In computer graphics, many graphical engines randomly sample light paths bouncing around to simulate realistic lighting. But what exactly does it mean for a computer or an algorithm to sample from a probability distribution? How can a deterministic machine like a modern computer sample “randomly” from a distribution?</p>
+</section>
+<section id="hardware-assumptions" class="level2">
+<h2 class="anchored" data-anchor-id="hardware-assumptions">Hardware Assumptions</h2>
+<p>On most modern computers, one bit represents an atom of data or computation. So, if we want our computer to generate random samples, we would probably need it to be able to generate uniformly random bits. Let’s assume we have a black box machine that does exactly that.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Note
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p>Above assumption is not an unrealistic one since we have <a href="https://en.wikipedia.org/wiki/Hardware_random_number_generator">hardware random bit generators</a> which generate random bits from physical process that produce entropy.</p>
+</div>
+</div>
+</div>
+<p>More formally, let <img src="https://latex.codecogs.com/png.latex?B%20%5Cin%20%5C%7B0,%201%5C%7D"> be a uniform random bit with <img src="https://latex.codecogs.com/png.latex?%5Cmathbb%7BP%7D%5BB%20=%200%5D%20=%20%5Cmathbb%7BP%7D%5BB%20=%201%5D%20=%20%5Cfrac%7B1%7D%7B2%7D"> and assume that we can sample from <img src="https://latex.codecogs.com/png.latex?B">.</p>
+</section>
+<section id="the-uniform-distribution" class="level2">
+<h2 class="anchored" data-anchor-id="the-uniform-distribution">The Uniform Distribution</h2>
+<p>Let’s start the discussion by coming up with algorithms for sampling integers uniformly randomly in a fixed range.</p>
+<section id="integer-in-range-0-2n" class="level3">
+<h3 class="anchored" data-anchor-id="integer-in-range-0-2n">Integer in range <img src="https://latex.codecogs.com/png.latex?%5B0,%202%5EN%5D"></h3>
+<p>First, let’s see if we can generate a uniformly random integer <img src="https://latex.codecogs.com/png.latex?M%20%5Cin%20%5C%7B0,%20%5Ccdots,%202%5EN%20-%201%5C%7D">. That is, we want to come up with an algorithm to produce <img src="https://latex.codecogs.com/png.latex?M"> such that <img src="https://latex.codecogs.com/png.latex?%5Cmathbb%7BP%7D%5BM%20=%20m%5D%20=%20%5Cfrac%7B1%7D%7B2%5EN%7D"> for all <img src="https://latex.codecogs.com/png.latex?m%20%5Cin%20%5C%7B0,%20%5Ccdots,%202%5EN%20-%201%5C%7D">.</p>
+<p>Well, given that we only have a random bit generator, there is really only one thing we can do here. We should generate <img src="https://latex.codecogs.com/png.latex?N"> independent bits using our random bit generator and concatenate them together to get the base 2 representation of the integer we return.</p>
+<div class="algorithm">
+<p><strong>Algorithm 1</strong></p>
+<p><img src="https://latex.codecogs.com/png.latex?M%20%5Cgets%200"></p>
+<p>for <img src="https://latex.codecogs.com/png.latex?i%20=%201"> to <img src="https://latex.codecogs.com/png.latex?N"> do</p>
+<p><img src="https://latex.codecogs.com/png.latex?%5Cquad%20M%20%5Cgets%20M%20+%20B_i%20%5Ccdot%202%5Ei"></p>
+<p>return <img src="https://latex.codecogs.com/png.latex?M"></p>
+</div>
+<p>Let’s check that this gives us the desired result. Let <img src="https://latex.codecogs.com/png.latex?B_1,%20B_2,%20%5Cdots,%20B_N"> be the bits we generated. Now, note that for any integer <img src="https://latex.codecogs.com/png.latex?k%20%5Cin%20%5C%7B0,%20%5Ccdots,%202%5EN%20-%201%5C%7D">, there exists a unique binary representation: <img src="https://latex.codecogs.com/png.latex?%0Ak%20=%20%5Csum_%7Bi%20=%201%7D%5E%7BN%7D%20b_i%20%5Ccdot%202%5Ei%0A"> where each <img src="https://latex.codecogs.com/png.latex?b_i%20%5Cin%20%5C%7B0,%201%5C%7D"> is the <img src="https://latex.codecogs.com/png.latex?i">-th bit of <img src="https://latex.codecogs.com/png.latex?k">. The probability that <img src="https://latex.codecogs.com/png.latex?M%20=%20k"> is given as: <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0A%5Cmathbb%7BP%7D%5BM%20=%20k%5D%20&amp;=%20%5Cmathbb%7BP%7D%5BB_0%20=%20b_0,%20B_1%20=%20b_1,%20%5Ccdots,%20B_n%20=%20b_n%5D%20%5C%5C%0A&amp;=%20%5Cmathbb%7BP%7D%5BB_0%20=%20b_0%5D%20%5Ccdot%20%5Cmathbb%7BP%7D%5BB_1%20=%20b_1%5D%20%5Ccdots%20%5Cmathbb%7BP%7D%5BB_N%20=%20b_n%5D%20%5Ctag%7BBy%20independence%7D%20%5C%5C%0A&amp;=%20%5Cfrac%7B1%7D%7B2%7D%20%5Ccdot%20%5Cfrac%7B1%7D%7B2%7D%20%5Ccdots%20%5Cfrac%7B1%7D%7B2%7D%20%5Ctag%7B$N$%20times%7D%20%5C%5C%0A&amp;=%20%5Cfrac%7B1%7D%7B2%5EN%7D%0A%5Cend%7Balign*%7D"> as desired.</p>
+</section>
+<section id="integer-in-arbitrary-range" class="level3">
+<h3 class="anchored" data-anchor-id="integer-in-arbitrary-range">Integer in Arbitrary Range</h3>
+<p>Great, now lets move onto a slightly more difficult problem: generating a uniformly random integer in <img src="https://latex.codecogs.com/png.latex?%5C%7B0,%20%5Cdots,%20M%5C%7D">, where <img src="https://latex.codecogs.com/png.latex?M"> is not necessarily a power of <img src="https://latex.codecogs.com/png.latex?2">.</p>
+<p>A first idea would be to use the same approach as before and concatenate a string of <img src="https://latex.codecogs.com/png.latex?N"> random bits. This, however, does not work. For example, if <img src="https://latex.codecogs.com/png.latex?N%20=%203"> and <img src="https://latex.codecogs.com/png.latex?M%20=%204"> then our random bit generator produces outcomes in the range <img src="https://latex.codecogs.com/png.latex?%5C%7B0,%20%5Cdots,%202%5E3%20-%201%5C%7D%20=%20%5C%7B0,%201,%202,%203,%204,%205,%206,%207%5C%7D">. Each of these <img src="https://latex.codecogs.com/png.latex?8"> outcomes occurs with probability <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7B1%7D%7B8%7D">. However, we wanted an integer in the range <img src="https://latex.codecogs.com/png.latex?%5C%7B0,%201,%202,%203,%204%5C%7D">, and the probability of each outcome to be exactly <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7B1%7D%7B5%7D">.</p>
+<p>Another approach would be to generate <img src="https://latex.codecogs.com/png.latex?N"> random bits as before, and then return <img src="https://latex.codecogs.com/png.latex?N%20%5Cmod%20(M%20+%201)">. I leave it as an exercise to figure out why this approach also does not work (Hint: use the same counter example from above).</p>
+<p>Notice that the issue in the above two approach is that our algorithm considers values that are outside the given range. To fix this problem, one idea would be to simply ignore an integers that are outside the range. More formally, define the algorithm as</p>
+<div class="algorithm">
+<p><strong>Algorithm 2</strong></p>
+<p><img src="https://latex.codecogs.com/png.latex?P%20%5Cgets%20%5Clceil%20%5Clog_2%20(M%20+%201)%20%5Crceil"></p>
+<p>repeat</p>
+<p><img src="https://latex.codecogs.com/png.latex?%5Cquad"> Generate <img src="https://latex.codecogs.com/png.latex?N%20%5Cin%20%5C%7B0,%20%5Ccdots,%202%5EP%20-%201%5C%7D"> using Algorithm 1</p>
+<p>until <img src="https://latex.codecogs.com/png.latex?N%20%5Cleq%20M"></p>
+<p>return <img src="https://latex.codecogs.com/png.latex?N"></p>
+</div>
+<p>This algorithm is called rejection sampling. A subtle difference between this algorithm and the previous algorithm is that its running time is non-deterministic. For example, we know that algorithm 1 terminates after generating <img src="https://latex.codecogs.com/png.latex?N"> random bits. Algorithm 2, however, has no such guarantees. It is technically possible that we get really really really unlucky and always generate <img src="https://latex.codecogs.com/png.latex?N%20%3E%20M"> and so the algorithm would never return a number.</p>
+<p>So, let’s compute probability that the algorithm terminates, which only happens when <img src="https://latex.codecogs.com/png.latex?N%20%5Cleq%20M"> <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0A%5Cmathbb%7BP%7D%5BN%20%5Cleq%20M%5D%20&amp;=%20%5Csum_%7Bi%20%5Cleq%20M%7D%20%5Cmathbb%7BP%7D%5BN%20=%20i%5D%20%5Ctag%7BCDF%20of%20$N$%7D%20%5C%5C%0A&amp;=%20%5Csum_%7Bi%20=%200%7D%5EM%20%5Cfrac%7B1%7D%7B2%5EN%7D%20%5Ctag%7BFrom%20Algorithm%201%7D%20%5C%5C%0A&amp;=%20%5Cfrac%7B(M%20+%201)%7D%7B2%5EN%7D%0A%5Cend%7Balign*%7D"></p>
+<p>Note that if <img src="https://latex.codecogs.com/png.latex?M%20%5Cll%20N"> then the exponential in the denominator dominates, and the probability of terminating is near zero. When <img src="https://latex.codecogs.com/png.latex?M%20%5Cgg%20N"> then the fraction is approximately linear, and so the algorithm terminates with higher probability.</p>
+<p>However, in the case that the algorithm does return, then we can be sure that it is correct. We prove this below. Note that for any <img src="https://latex.codecogs.com/png.latex?k%20%5Cin%20%5C%7B0,%20%5Ccdots,%20M%5C%7D">, we have <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0A%5Cmathbb%7BP%7D%5BN%20=%20k%5D%20&amp;=%20%5Cmathbb%7BP%7D%5BN%20=%20k%20%7C%20N%20%5Cleq%20M%5D%20%5Ctag%7BSince%20$N%20%5Cleq%20M$%20iff%20$N$%20is%20returned%7D%20%5C%5C%0A&amp;=%20%5Cfrac%7B%5Cmathbb%7BP%7D%5BN%20=%20k,%20N%20%5Cleq%20M%5D%7D%7B%5Cmathbb%7BP%7D%5BN%20%5Cleq%20M%5D%7D%20%5Ctag%7BDefinition%20of%20conditional%20prob.%7D%20%5C%5C%0A&amp;=%20%5Cfrac%7B%5Cmathbb%7BP%7D%5BN%20=%20k%5D%7D%7B%5Cmathbb%7BP%7D%5BN%20%5Cleq%20M%5D%7D%20%5Ctag%7B$k%20%5Cleq%20M$%20so%20if%20$N%20=%20k$,%20we%20know%20$N%20%5Cleq%20M$%7D%20%5C%5C%0A&amp;=%20%5Cfrac%7B1/2%5EN%7D%7B(M+1)/2%5EN%7D%20%5C%5C%0A&amp;=%20%5Cfrac%7B1%7D%7BM%20+%201%7D%0A%5Cend%7Balign*%7D"> as desired.</p>
+</section>
+<section id="real-number-in-range-0-1" class="level3">
+<h3 class="anchored" data-anchor-id="real-number-in-range-0-1">Real number in range <img src="https://latex.codecogs.com/png.latex?%5B0,%201%5D"></h3>
+<p>Now let’s move onto the hardest problem yet: sampling a real number in the range <img src="https://latex.codecogs.com/png.latex?%5B0,%201%5D">. Note that every real number <img src="https://latex.codecogs.com/png.latex?r%20%5Cin%20%5B0,%201%5D"> can be represented as a binary expansion: <img src="https://latex.codecogs.com/png.latex?%0Ar%20=%20%5Csum_%7Bi=1%7D%5E%7B%5Cinfty%7D%20%5Cfrac%7BB_i%7D%7B2%5Ei%7D%20=%200.B_1B_2B_3%5Cdots%0A"> where each <img src="https://latex.codecogs.com/png.latex?B_i%20%5Cin%20%5C%7B0,%201%5C%7D">. Again, our first instinct should be to ask if generating an infinite string of bits and concatenating them gives us the desired result. In this case, it turns out to be true. However, the proof of this fact is non-trivial and takes quite a lot of work.</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Main Claim
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <img src="https://latex.codecogs.com/png.latex?B_1,%20B_2,%20B_3,%20%5Cdots"> are independent uniform random bits, then <img src="https://latex.codecogs.com/png.latex?%0AU%20=%20%5Csum_%7Bi=1%7D%5E%7B%5Cinfty%7D%20%5Cfrac%7BB_i%7D%7B2%5Ei%7D%0A"> is uniformly distributed on <img src="https://latex.codecogs.com/png.latex?%5B0,%201%5D">.</p>
+</div>
+</div>
+<p>To prove this, we need to show that for any interval <img src="https://latex.codecogs.com/png.latex?%5Ba,%20b)%20%5Csubseteq%20%5B0,%201%5D">, we have <img src="https://latex.codecogs.com/png.latex?%0A%5Cmathbb%7BP%7D%5BU%20%5Cin%20%5Ba,%20b)%5D%20=%20%5Ctext%7Blength%7D(%5Ba,%20b)%5D)%20=%20b%20-%20a%0A"></p>
+<section id="partitioning-0-1-and-characterizing-the-partitions" class="level4">
+<h4 class="anchored" data-anchor-id="partitioning-0-1-and-characterizing-the-partitions">Partitioning <img src="https://latex.codecogs.com/png.latex?%5B0,%201%5D"> and characterizing the partitions</h4>
+<p>The proof uses a clever partitioning argument. We’ll divide <img src="https://latex.codecogs.com/png.latex?%5B0,%201%5D"> into dyadic intervals, which are defined to be intervals whose endpoints are fractions with powers of 2 in the denominator.</p>
+<p>For any arbitrary <img src="https://latex.codecogs.com/png.latex?k%20%5Cin%20%5Cmathbb%7BN%7D">, we can partition <img src="https://latex.codecogs.com/png.latex?%5B0,%201%5D"> into <img src="https://latex.codecogs.com/png.latex?2%5Ek"> equal intervals: <img src="https://latex.codecogs.com/png.latex?%0AI_j%20=%20%5Cleft%5B%5Cfrac%7Bj%7D%7B2%5Ek%7D,%20%5Cfrac%7Bj+1%7D%7B2%5Ek%7D%5Cright)%20%5Cquad%20%5Ctext%7Bfor%20%7D%20j%20=%200,%201,%20%5Cdots,%202%5Ek%20-%201%0A"></p>
+<p>Each interval has length <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7B1%7D%7B2%5Ek%7D">, and together they cover the entire unit interval. The larger <img src="https://latex.codecogs.com/png.latex?k">, the better this approximation gets.</p>
+<p>Now, I claim that the first <img src="https://latex.codecogs.com/png.latex?k"> bits <img src="https://latex.codecogs.com/png.latex?(B_1,%20%5Cdots,%20B_k)"> of <img src="https://latex.codecogs.com/png.latex?U"> completely determine which dyadic interval <img src="https://latex.codecogs.com/png.latex?I_j"> contains the value <img src="https://latex.codecogs.com/png.latex?U">. Specifically: <img src="https://latex.codecogs.com/png.latex?%0AU%20%5Cin%20I_j%20=%20%5Cleft%5B%5Cfrac%7Bj%7D%7B2%5Ek%7D,%20%5Cfrac%7Bj+1%7D%7B2%5Ek%7D%5Cright)%20%5Ciff%20%5Csum_%7Bi=1%7D%5E%7Bk%7D%20%5Cfrac%7BB_i%7D%7B2%5E%7Bi%7D%7D%20=%20%5Cfrac%7Bj%7D%7B2%5Ek%7D%0A"></p>
+<p>To see why, we can decompose <img src="https://latex.codecogs.com/png.latex?U"> into two parts:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0AU%20=%20%5Cunderbrace%7B%5Csum_%7Bi=1%7D%5E%7Bk%7D%20%5Cfrac%7BB_i%7D%7B2%5Ei%7D%7D_%7B:=U_k%7D%20+%20%5Cunderbrace%7B%5Csum_%7Bi=k+1%7D%5E%7B%5Cinfty%7D%5Cfrac%7BB_i%7D%7B2%5Ei%7D%7D_%7B:=R_k%7D%0A"> where <img src="https://latex.codecogs.com/png.latex?U_k"> represents the first <img src="https://latex.codecogs.com/png.latex?k"> bits and <img src="https://latex.codecogs.com/png.latex?R_k"> represents the remaining bits. Now, note that The first <img src="https://latex.codecogs.com/png.latex?k"> bits can only produce discrete values because there are <img src="https://latex.codecogs.com/png.latex?2%5Ek"> possible bit strings of length <img src="https://latex.codecogs.com/png.latex?k">, and these values are <img src="https://latex.codecogs.com/png.latex?%5Cleft%5C%7B0,%20%5Cfrac%7B1%7D%7B2%5Ek%7D,%20%5Cfrac%7B2%7D%7B2%5Ek%7D,%20%5Cldots,%20%5Cfrac%7B2%5Ek-1%7D%7B2%5Ek%7D%5Cright%5C%7D"> Observe that these are exactly the left endpoints of our dyadic intervals <img src="https://latex.codecogs.com/png.latex?I_j">.</p>
+<p>Now, The remaining bits <img src="https://latex.codecogs.com/png.latex?R_k"> can be rewritten by factoring out <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7B1%7D%7B2%5Ek%7D">: <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0AR_k%20&amp;=%20%5Csum_%7Bi=k+1%7D%5E%7B%5Cinfty%7D%20%5Cfrac%7BB_i%7D%7B2%5Ei%7D%20=%20%5Cfrac%7B1%7D%7B2%5Ek%7D%20%5Csum_%7Bi=1%7D%5E%7B%5Cinfty%7D%20%5Cfrac%7BB_%7Bk+i%7D%7D%7B2%5Ei%7D%0A%5Cend%7Balign*%7D"> Since <img src="https://latex.codecogs.com/png.latex?%5Csum_%7Bi=1%7D%5E%7B%5Cinfty%7D%20%5Cfrac%7BB_%7Bk+i%7D%7D%7B2%5Ei%7D"> is a binary expansion taking values in <img src="https://latex.codecogs.com/png.latex?%5B0,%201)">, we have <img src="https://latex.codecogs.com/png.latex?0%20%5Cleq%20R_k%20%3C%20%5Cfrac%7B1%7D%7B2%5Ek%7D"> So, we have that <img src="https://latex.codecogs.com/png.latex?R_k"> is strictly less than the width of a dyadic interval.</p>
+<p>Therefore, we can now claim that if <img src="https://latex.codecogs.com/png.latex?U_k%20=%20%5Cfrac%7Bj%7D%7B2%5Ek%7D">, then <img src="https://latex.codecogs.com/png.latex?U%20=%20%5Cfrac%7Bj%7D%7B2%5Ek%7D%20+%20R_k"> must satisfy <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Bj%7D%7B2%5Ek%7D%20%5Cleq%20U%20%3C%20%5Cfrac%7Bj+1%7D%7B2%5Ek%7D"> placing <img src="https://latex.codecogs.com/png.latex?U"> in interval <img src="https://latex.codecogs.com/png.latex?I_j">. Conversely, if <img src="https://latex.codecogs.com/png.latex?U%20%5Cin%20I_j">, the constraint <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Bj%7D%7B2%5Ek%7D%20%5Cleq%20U%20%3C%20%5Cfrac%7Bj+1%7D%7B2%5Ek%7D"> combined with the fact that <img src="https://latex.codecogs.com/png.latex?U_k"> is a discrete value in this range forces <img src="https://latex.codecogs.com/png.latex?U_k%20=%20%5Cfrac%7Bj%7D%7B2%5Ek%7D">. Therefore, we have shown that</p>
+<div class="callout callout-style-simple callout-tip no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<p><img src="https://latex.codecogs.com/png.latex?%0AU%20%5Cin%20I_j%20%5Ciff%20%5Csum_%7Bi%20=%201%7D%5Ek%20%5Cfrac%7BB_i%7D%7B2%5Ei%7D%20=%20%5Cfrac%7Bj%7D%7B2%5Ek%7D%0A"></p>
+</div>
+</div>
+</div>
+</section>
+<section id="probability-of-landing-in-i_j" class="level4">
+<h4 class="anchored" data-anchor-id="probability-of-landing-in-i_j">Probability of landing in <img src="https://latex.codecogs.com/png.latex?I_j"></h4>
+<p>Now we can calculate the probability that <img src="https://latex.codecogs.com/png.latex?U"> lands in a specific dyadic interval <img src="https://latex.codecogs.com/png.latex?I_j">:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0A%5Cmathbb%7BP%7D%5BU%20%5Cin%20I_j%5D%20&amp;=%20%5Cmathbb%7BP%7D%5Cleft%5B%5Csum_%7Bi=1%7D%5E%7Bk%7D%20%5Cfrac%7BB_i%7D%7B2%5E%7Bi%7D%7D%20=%20%5Cfrac%7Bj%7D%7B2%5Ek%7D%5Cright%5D%20%5C%5C%0A&amp;=%20%5Cmathbb%7BP%7D%5BB_1%20=%20b_1,%20B_2%20=%20b_2,%20%5Cdots,%20B_k%20=%20b_k%5D%0A%5Cend%7Balign*%7D"></p>
+<p>where <img src="https://latex.codecogs.com/png.latex?(b_1,%20%5Cdots,%20b_k)"> is the binary representation of <img src="https://latex.codecogs.com/png.latex?j">.</p>
+<p>Since the bits are independent and each has probability <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7B1%7D%7B2%7D">:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0A%5Cmathbb%7BP%7D%5BU%20%5Cin%20I_j%5D%20&amp;=%20%5Cprod_%7Bi=1%7D%5E%7Bk%7D%20%5Cmathbb%7BP%7D%5BB_i%20=%20b_i%5D%20%5C%5C%0A&amp;=%20%5Cprod_%7Bi=1%7D%5E%7Bk%7D%20%5Cfrac%7B1%7D%7B2%7D%20%5C%5C%0A&amp;=%20%5Cfrac%7B1%7D%7B2%5Ek%7D%0A%5Cend%7Balign*%7D"></p>
+<p>Note that this is exactly the length of the interval <img src="https://latex.codecogs.com/png.latex?I_j">! Therefore, we have show that at least for dyadic intervals, <img src="https://latex.codecogs.com/png.latex?U"> is uniformly distributed!</p>
+</section>
+<section id="extending-to-general-intervals" class="level4">
+<h4 class="anchored" data-anchor-id="extending-to-general-intervals">Extending to General Intervals</h4>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Technical Note
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Extending this to the general interval <img src="https://latex.codecogs.com/png.latex?%5Ba,%20b%5D"> is complicated and requires careful machinery taught usually in a course in real analysis. Therefore, will handwave a lot of the technicalities, but do keep in mind that there is more careful argument to be made here.</p>
+</div>
+</div>
+</div>
+<p>For a general interval <img src="https://latex.codecogs.com/png.latex?%5Ba,%20b)%20%5Csubseteq%20%5B0,%201%5D">, we approximate it using dyadic intervals. Let <img src="https://latex.codecogs.com/png.latex?J_k"> be the set of indices where <img src="https://latex.codecogs.com/png.latex?I_j%20%5Csubseteq%20%5Ba,%20b)">. Then:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Ba,%20b)%20%5Capprox%20%5Cbigcup_%7Bj%20%5Cin%20J_k%7D%20I_j%0A"></p>
+<p>As <img src="https://latex.codecogs.com/png.latex?k"> increases, the dyadic intervals become finer, and this approximation improves.</p>
+<p>Since the dyadic intervals are disjoint:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0A%5Cmathbb%7BP%7D%5Cleft%5BU%20%5Cin%20%5Cbigcup_%7Bj%20%5Cin%20J_k%7D%20I_j%5Cright%5D%20&amp;=%20%5Csum_%7Bj%20%5Cin%20J_k%7D%20%5Cmathbb%7BP%7D%5BU%20%5Cin%20I_j%5D%20%5C%5C%0A&amp;=%20%5Csum_%7Bj%20%5Cin%20J_k%7D%20%5Cfrac%7B1%7D%7B2%5Ek%7D%20%5C%5C%0A&amp;=%20%5Cfrac%7B%7CJ_k%7C%7D%7B2%5Ek%7D%0A%5Cend%7Balign*%7D"></p>
+<p>where <img src="https://latex.codecogs.com/png.latex?%7CJ_k%7C"> is the number of dyadic intervals that fit inside <img src="https://latex.codecogs.com/png.latex?%5Ba,%20b)">.</p>
+</section>
+<section id="taking-the-limit" class="level4">
+<h4 class="anchored" data-anchor-id="taking-the-limit">Taking the Limit</h4>
+<p>Notice that <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7B%7CJ_k%7C%7D%7B2%5Ek%7D"> represents the total length of all dyadic intervals contained in <img src="https://latex.codecogs.com/png.latex?%5Ba,%20b)">:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Cfrac%7B%7CJ_k%7C%7D%7B2%5Ek%7D%20=%20%5Csum_%7Bj%20%5Cin%20J_k%7D%20%5Ctext%7Blength%7D(I_j)%0A"></p>
+<p>As <img src="https://latex.codecogs.com/png.latex?k%20%5Cto%20%5Cinfty">, these intervals cover <img src="https://latex.codecogs.com/png.latex?%5Ba,%20b)"> with increasing precision, so we expect</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Clim_%7Bk%20%5Cto%20%5Cinfty%7D%20%5Cfrac%7B%7CJ_k%7C%7D%7B2%5Ek%7D%20=%20b%20-%20a%0A"></p>
+<p>Therefore:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0A%5Cmathbb%7BP%7D%5BU%20%5Cin%20%5Ba,%20b)%5D%20&amp;=%20%5Clim_%7Bk%20%5Cto%20%5Cinfty%7D%20%5Cmathbb%7BP%7D%5Cleft%5BU%20%5Cin%20%5Cbigcup_%7Bj%20%5Cin%20J_k%7D%20I_j%5Cright%5D%20%5C%5C%0A&amp;=%20%5Clim_%7Bk%20%5Cto%20%5Cinfty%7D%20%5Cfrac%7B%7CJ_k%7C%7D%7B2%5Ek%7D%20%5C%5C%0A&amp;=%20b%20-%20a%20%5C%5C%0A&amp;=%20%5Ctext%7Blength%7D(%5Ba,%20b))%0A%5Cend%7Balign*%7D"></p>
+<p>as desired</p>
+</section>
+<section id="from-theory-to-practice-finite-bit-algorithms" class="level4">
+<h4 class="anchored" data-anchor-id="from-theory-to-practice-finite-bit-algorithms">From Theory to Practice: Finite Bit Algorithms</h4>
+<p>The theoretical result above is beautiful, but it has a glaring practical issue: we cannot generate an infinite sequence of bits! In the real world, we need to work with a finite number of bits. Fortunately, our proof gives us a natural way to approximate the uniform distribution using only a finite number of bits.</p>
+<p>The key insight is that after generating <img src="https://latex.codecogs.com/png.latex?N"> bits, we’ve already determined which of the <img src="https://latex.codecogs.com/png.latex?2%5EN"> dyadic intervals our value falls into. The remaining (ungenerated) bits would only refine our position within that interval, which has width <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7B1%7D%7B2%5EN%7D">. For large <img src="https://latex.codecogs.com/png.latex?N">, this interval is so small that the difference is negligible</p>
+<p>This leads us to the following algorithm:</p>
+<div class="algorithm">
+<p><strong>Algorithm 3</strong></p>
+<p><img src="https://latex.codecogs.com/png.latex?U%20%5Cgets%200"></p>
+<p>for <img src="https://latex.codecogs.com/png.latex?i%20=%201"> to <img src="https://latex.codecogs.com/png.latex?N"> do</p>
+<p><img src="https://latex.codecogs.com/png.latex?%5Cquad"> Generate random bit <img src="https://latex.codecogs.com/png.latex?B_i"></p>
+<p><img src="https://latex.codecogs.com/png.latex?%5Cquad"> <img src="https://latex.codecogs.com/png.latex?U%20%5Cgets%20U%20+%20B_i%20%5Ccdot%202%5E%7B-i%7D"></p>
+<p>return <img src="https://latex.codecogs.com/png.latex?U"></p>
+</div>
+<p>This algorithm generates values of the form <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7Bk%7D%7B2%5EN%7D"> where <img src="https://latex.codecogs.com/png.latex?k%20%5Cin%20%5C%7B0,%201,%20%5Cldots,%202%5EN%20-%201%5C%7D">. In other words, it produces a <em>discrete</em> uniform distribution over <img src="https://latex.codecogs.com/png.latex?2%5EN"> equally-spaced points in <img src="https://latex.codecogs.com/png.latex?%5B0,%201%5D">, rather than a truly continuous uniform distribution.</p>
+<p>Let <img src="https://latex.codecogs.com/png.latex?U_N"> denote the output of Algorithm 3 and let <img src="https://latex.codecogs.com/png.latex?U_%7B%5Ctext%7Btrue%7D%7D"> denote a truly uniform random variable on <img src="https://latex.codecogs.com/png.latex?%5B0,%201%5D">. How far off is our approximation? Well the maximum distance between any generated value and its “true” counterpart is at most the granularity of our discretization: <img src="https://latex.codecogs.com/png.latex?%0A%5Cmax_%7Bx%20%5Cin%20%5B0,%201%5D%7D%20%7CU_N%20-%20x%7C%20%5Cleq%20%5Cfrac%7B1%7D%7B2%5EN%7D%0A"> So, if <img src="https://latex.codecogs.com/png.latex?N%20=%2064">, then we have: <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0A%5Cfrac%7B1%7D%7B2%5E%7B64%7D%7D%20&amp;%5Capprox%205.42%20%5Ctimes%2010%5E%7B-20%7D%20%5C%5C%0A%5Cend%7Balign*%7D"></p>
+<p>This means our approximation error is about <img src="https://latex.codecogs.com/png.latex?10%5E%7B-20%7D">! For all practical purposes, this is indistinguishable from a true uniform distribution. In fact, 64-bit floating point numbers (the standard in most programming languages) have a precision of about <img src="https://latex.codecogs.com/png.latex?10%5E%7B-16%7D">, which is less precise than our sampling error.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Practical Implementation
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>In practice, most programming languages use 64-bit floating point numbers for representing real numbers. Algorithm 3 with <img src="https://latex.codecogs.com/png.latex?N%20=%2064"> bits produces values that are uniformly distributed on the set of representable floating point numbers in <img src="https://latex.codecogs.com/png.latex?%5B0,%201%5D">, which is the best we can do given the finite precision of computer arithmetic.</p>
+</div>
+</div>
+<p>Therefore, Algorithm 3 with <img src="https://latex.codecogs.com/png.latex?N%20=%2064"> bits gives us an excellent practical algorithm for sampling (approximately) uniform real numbers in <img src="https://latex.codecogs.com/png.latex?%5B0,%201%5D">.</p>
+</section>
+</section>
+</section>
+<section id="arbitrary-probability-distribution" class="level2">
+<h2 class="anchored" data-anchor-id="arbitrary-probability-distribution">Arbitrary Probability Distribution</h2>
+<p>That was a lot of work! If it took so much effort just to sample from the uniform distribution, how can we possibly expect to come up with algorithms for complicated probability distributions? Well, it turns out that with not too much extra work we can sample from any arbitrary distribution <img src="https://latex.codecogs.com/png.latex?%5Cpi">. More formally, lets say <img src="https://latex.codecogs.com/png.latex?%5Cpi"> is a probability distribution on a finite state space <img src="https://latex.codecogs.com/png.latex?%5Cchi%20=%20%5C%7Bx_1,%20%5Ccdots%20x_n%5C%7D">. I want to generate an <img src="https://latex.codecogs.com/png.latex?X%20%5Cin%20%5Cchi"> such that <img src="https://latex.codecogs.com/png.latex?%0A%5Cmathbb%7BP%7D%5BX%20=%20x%5D%20=%20%5Cpi(x)%0A"> Now that we can sample from the uniform distribution on <img src="https://latex.codecogs.com/png.latex?%5B0,%201%5D">, let’s use that. We will use another clever partitioning technique, similar to what we did for proving the uniform distribution result.</p>
+<p>More specifically, we divide the interval <img src="https://latex.codecogs.com/png.latex?%5B0,%201%5D"> into <img src="https://latex.codecogs.com/png.latex?N"> consecutive segments. For each <img src="https://latex.codecogs.com/png.latex?i%20%5Cin%20%5C%7B1,%202,%20%5Cldots,%20N%5C%7D">, define segment <img src="https://latex.codecogs.com/png.latex?i"> as: <img src="https://latex.codecogs.com/png.latex?%0AS_i%20=%20%5Cleft%5B%5Csum_%7Bj=1%7D%5E%7Bi-1%7D%20%5Cpi(x_j),%20%5Csum_%7Bj=1%7D%5E%7Bi%7D%20%5Cpi(x_j)%5Cright)%0A"> where by convention, <img src="https://latex.codecogs.com/png.latex?%5Csum_%7Bj=1%7D%5E%7B0%7D%20%5Cpi(x_j)%20=%200">.</p>
+<p>Observe that segment <img src="https://latex.codecogs.com/png.latex?S_i"> has length: <img src="https://latex.codecogs.com/png.latex?%0A%5Ctext%7Blength%7D(S_i)%20=%20%5Csum_%7Bj=1%7D%5E%7Bi%7D%20%5Cpi(x_j)%20-%20%5Csum_%7Bj=1%7D%5E%7Bi-1%7D%20%5Cpi(x_j)%20=%20%5Cpi(x_i)%0A"></p>
+<p>Moreover, these segments partition <img src="https://latex.codecogs.com/png.latex?%5B0,%201%5D"> since they are disjoint and: <img src="https://latex.codecogs.com/png.latex?%0A%5Cbigcup_%7Bi=1%7D%5E%7BN%7D%20S_i%20=%20%5B0,%201)%0A"> which follows from the fact that <img src="https://latex.codecogs.com/png.latex?%5Csum_%7Bi=1%7D%5E%7BN%7D%20%5Cpi(x_i)%20=%201"> (since <img src="https://latex.codecogs.com/png.latex?%5Cpi"> is a probability distribution). When we sample uniformly from <img src="https://latex.codecogs.com/png.latex?%5B0,%201%5D">, the probability of landing in segment <img src="https://latex.codecogs.com/png.latex?i"> is exactly <img src="https://latex.codecogs.com/png.latex?%5Cpi(x_i)"> (since the segment has length <img src="https://latex.codecogs.com/png.latex?%5Cpi(x_i))."> So if we return <img src="https://latex.codecogs.com/png.latex?x_i"> whenever we land in segment <img src="https://latex.codecogs.com/png.latex?i">, we get the desired distribution!</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Intuition
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Think of it like a dartboard: if you throw a dart uniformly at random on <img src="https://latex.codecogs.com/png.latex?%5B0,1%5D">, the probability of hitting a region is proportional to its length. By making segment <img src="https://latex.codecogs.com/png.latex?i"> have length <img src="https://latex.codecogs.com/png.latex?%5Cpi(x_i)">, we ensure the probability of hitting it matches our target probability.</p>
+</div>
+</div>
+<p><em>Example:</em> Suppose <img src="https://latex.codecogs.com/png.latex?%5Cmathcal%7BX%7D%20=%20%5C%7Bx_1,%20x_2,%20x_3,%20x_4,%20x_5%5C%7D"> and <img src="https://latex.codecogs.com/png.latex?%5Cpi%20=%20(0.15,%200.25,%200.20,%200.30,%200.10)">. We segment the <img src="https://latex.codecogs.com/png.latex?%5B0,%201%5D"> interval as shown below:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://csuraparaju.github.io/posts/sampling/segmented_numberline.png" class="img-fluid figure-img" style="width:50.0%"></p>
+<figcaption>Segmented [0, 1] Interval</figcaption>
+</figure>
+</div>
+<p>Now, we can sample a real number uniformly random, and return the segment that this number belongs to.</p>
+<section id="formalizing-the-algorithm" class="level4">
+<h4 class="anchored" data-anchor-id="formalizing-the-algorithm">Formalizing the Algorithm</h4>
+<p>To implement this efficiently, we use cumulative probabilities. Define: <img src="https://latex.codecogs.com/png.latex?%0AF_i%20=%20%5Csum_%7Bj=1%7D%5E%7Bi%7D%20%5Cpi(x_j)%20%5Cquad%20%5Ctext%7Bfor%20%7D%20i%20=%201,%202,%20%5Cldots,%20N%0A"> with <img src="https://latex.codecogs.com/png.latex?F_0%20=%200">. Note that <img src="https://latex.codecogs.com/png.latex?F_i"> represents the cumulative probability up to and including <img src="https://latex.codecogs.com/png.latex?x_i">, so segment <img src="https://latex.codecogs.com/png.latex?i"> corresponds to the interval <img src="https://latex.codecogs.com/png.latex?%5BF_%7Bi-1%7D,%20F_i)">.</p>
+<p>Our algorithm returns <img src="https://latex.codecogs.com/png.latex?x_i"> when <img src="https://latex.codecogs.com/png.latex?U"> falls in the interval <img src="https://latex.codecogs.com/png.latex?%5BF_%7Bi-1%7D,%20F_i)">:</p>
+<div class="algorithm">
+<p><strong>Algorithm 4</strong></p>
+<p><strong>Preprocessing:</strong></p>
+<p>Compute cumulative probabilities: <img src="https://latex.codecogs.com/png.latex?F_0%20%5Cgets%200"></p>
+<p>for <img src="https://latex.codecogs.com/png.latex?i%20=%201"> to <img src="https://latex.codecogs.com/png.latex?N"> do</p>
+<p><img src="https://latex.codecogs.com/png.latex?%5Cquad"> <img src="https://latex.codecogs.com/png.latex?F_i%20%5Cgets%20F_%7Bi-1%7D%20+%20%5Cpi(x_i)"></p>
+<p><strong>Sampling:</strong></p>
+<p>Generate <img src="https://latex.codecogs.com/png.latex?U%20%5Csim%20%5Ctext%7BUniform%7D%5B0,%201%5D"> using Algorithm 3</p>
+<p>for <img src="https://latex.codecogs.com/png.latex?i%20=%201"> to <img src="https://latex.codecogs.com/png.latex?N"> do</p>
+<p><img src="https://latex.codecogs.com/png.latex?%5Cquad"> if <img src="https://latex.codecogs.com/png.latex?F_%7Bi-1%7D%20%5Cleq%20U%20%3C%20F_i"> then</p>
+<p><img src="https://latex.codecogs.com/png.latex?%5Cquad%5Cquad"> return <img src="https://latex.codecogs.com/png.latex?x_i"></p>
+</div>
+<p>Let’s verify that this algorithm produces the correct distribution. For any <img src="https://latex.codecogs.com/png.latex?x_i%20%5Cin%20%5Cmathcal%7BX%7D">:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0A%5Cmathbb%7BP%7D%5B%5Ctext%7Boutput%7D%20=%20x_i%5D%20&amp;=%20%5Cmathbb%7BP%7D%5BF_%7Bi-1%7D%20%5Cleq%20U%20%3C%20F_i%5D%20%5C%5C%0A&amp;=%20F_i%20-%20F_%7Bi-1%7D%20%5Ctag%7B$U$%20is%20uniform%20on%20$%5B0,1%5D$%7D%20%5C%5C%0A&amp;=%20%5Cleft(%5Csum_%7Bj=1%7D%5E%7Bi%7D%20%5Cpi(x_j)%5Cright)%20-%20%5Cleft(%5Csum_%7Bj=1%7D%5E%7Bi-1%7D%20%5Cpi(x_j)%5Cright)%20%5C%5C%0A&amp;=%20%5Cpi(x_i)%0A%5Cend%7Balign*%7D"></p>
+<p>The second equality uses the fact that for a uniform random variable <img src="https://latex.codecogs.com/png.latex?U"> on <img src="https://latex.codecogs.com/png.latex?%5B0,1%5D">, we have <img src="https://latex.codecogs.com/png.latex?%5Cmathbb%7BP%7D%5Ba%20%5Cleq%20U%20%3C%20b%5D%20=%20b%20-%20a">. Therefore, our algorithm produces samples distributed according to <img src="https://latex.codecogs.com/png.latex?%5Cpi">. Problem solved!</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Computational Complexity
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The preprocessing step takes <img src="https://latex.codecogs.com/png.latex?O(N)"> time to compute cumulative probabilities. Each sample then requires <img src="https://latex.codecogs.com/png.latex?O(N)"> time in the worst case to find which segment <img src="https://latex.codecogs.com/png.latex?U"> falls into (via linear search). This can be improved to <img src="https://latex.codecogs.com/png.latex?O(%5Clog%20N)"> per sample using binary search, since the cumulative probabilities <img src="https://latex.codecogs.com/png.latex?F_i"> are sorted.</p>
+</div>
+</div>
+
+
+</section>
+</section>
+
+ ]]></description>
+  <category>math</category>
+  <category>cs</category>
+  <guid>https://csuraparaju.github.io/posts/sampling/</guid>
+  <pubDate>Wed, 08 Oct 2025 04:00:00 GMT</pubDate>
+</item>
 <item>
   <title>Automatic Differentiation using Dual Numbers</title>
   <dc:creator>Krish Suraparaju</dc:creator>
