@@ -1,5 +1,8 @@
 ---
 title: "Algorithms for Sampling from a probability distribution"
+format:
+  html:
+    css: styles.css
 author: "Krish Suraparaju"
 date: "2025-10-08"
 categories: [math, cs]
