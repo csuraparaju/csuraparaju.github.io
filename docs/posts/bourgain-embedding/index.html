@@ -156,7 +156,7 @@ window.Quarto = {
 };
 </script>
 
-<link rel="stylesheet" href="../../styles.css">
+<link rel="stylesheet" href="styles.css">
 </head>
 
 <body class="nav-fixed fullcontent quarto-light">
@@ -304,7 +304,7 @@ window.Quarto = {
 <section id="implementation" class="level2">
 <h2 class="anchored" data-anchor-id="implementation">Implementation</h2>
 <p>Let’s implement this in python using numpy so we can vectorize parts of the code.</p>
-<div id="3652f975" class="cell" data-execution_count="1">
+<div id="5e84faad" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> bourgain_embedding(dist_mat, c<span class="op">=</span><span class="dv">10</span>):</span>
@@ -334,7 +334,7 @@ window.Quarto = {
 <span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> f_x</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We can plot the distortion of this algorithm on a randomly generated metric space, as a function of <span class="math inline">\(n\)</span> to see the logarithmic curve.</p>
-<div id="1e3f76cd" class="cell" data-execution_count="2">
+<div id="047ac06d" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
@@ -395,7 +395,7 @@ window.Quarto = {
 </div>
 </div>
 <p>Note that the variable <span class="math inline">\(c\)</span> is a hyper-parameter to this algorithm, and we can observe distortion as a function of <span class="math inline">\(c\)</span> as well.</p>
-<div id="66952c2b" class="cell" data-execution_count="3">
+<div id="1017dff4" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>n_fixed <span class="op">=</span> <span class="dv">100</span></span>

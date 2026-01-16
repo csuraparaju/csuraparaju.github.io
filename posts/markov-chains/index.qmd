@@ -1,0 +1,744 @@
+---
+title: "PageRank and Markov Chains"
+author: "Krish Suraparaju"
+date: "2025-10-15"
+categories: [math, cs]
+format:
+  html:
+    css: styles.css
+---
+
+## Introduction
+
+Markov Chains are fundamental mathematical models for sequence of random events, where the probability of the next event depends only on the current event, not the entire past history. These models revolutionized computer science, economics, and even bioinformatics. In this post, I will cover much of the theory required to study these models. I will limit my discussion to mostly finite state space markov chains, but the proofs can be extended for the infinite state space as well.
+
+## Motivating Example
+
+Imagine you're Larry Page in 1996 researching a topic, say "jaguars." There is a new database of information on the rise - the world wide web - so you decided to start there. You search through hundreds of thousands of web pages and find thousands that mention "jaguar". However, you find pages about the animal, the car, the football team, a rock band, and random pages that just happen to use the word. You can't manually read through all these pages to find the best ones.
+
+Among all these pages that match your keywords, you want to automatically rank them in order of relative importance so you can start your search. Let's model this formally: Suppose you have $N$ webpages, interconnected via hyperlinks. A subset of these pages are relevant to your query. How do you rank this subset by importance?
+
+An obvious thing to do would be to randomly pick, say the first 5 pages, from the subset and read them. The issue with this approach is that you could get really unlucky and pick 5 pages which are totally unrelated to your topic, like obscure pages that barely mention jaguars. But maybe using randomness wasn't the problem here. Maybe the problem was that you were picking uniformly at random, treating all pages as equally likely to be useful.
+What if instead, you used randomness in a smarter way?
+
+Imagine you're browsing the web, starting from one of the pages that mentions "jaguar." You read the page, then randomly click on one of its outbound links, moving to a new page. You repeat this process, following the web's hyperlinks. But you don't browse forever in a single path. Occasionally, say with probability $\alpha$ you get bored, close your browser, and jump to a completely random page in the subset to start exploring again.
+If you simulate this process for a long time, you will find that the surfer visits certain pages much more frequently than others. For example, you will find that pages with many incoming links (or links from other "popular" pages) will be visited more often.
+
+The "importance" of a page can be defined as the long-run proportion of time this random surfer spends on that page. This simple heuristic is the core logic behind PageRank, the algorithm that powered Google’s initial success. We will see that the random surfer model is also a Markov model, and that the long-run proportion of time spent by the random surfer corresponds to the stationary distribution.
+
+To get more intuition for how this works, I've written a simulation below. Each node in the graph represents a webpage (Notated by "Pg n" where n is the page number). A directed edge $i \to j$ represents a hyperlink in webpage $i$ pointing to webpage $j$. Initially, the surfer starts out on a random page. As the simulation progresses, we track the number of times the surfer visited each page, and redraw its size as a function of the relative visits.
+In the end, the bigger a node is, the more it was visited by the surfer (and therefore, the more "important" it is).
+
+```{=html}
+<div class="gradio-iframe-container">
+  <iframe
+    src="https://csurapar-page-rank-vis.hf.space?__theme=light"
+    frameborder="0"
+  ></iframe>
+</div>
+```
+
+
+A question you might now ask is, will this random surfer always produce the same long term behavior? That is, is the heuristic we use to define the "importance" of a page going to change between each run of the random surfer? If it does, then this algorithm would not be any good, since we were looking for a definitive ranking of the importance of webpages.
+
+To answer this question, we need to study Markov chains and the stationary distribution more rigorously.
+
+## Markov Chains
+
+Let's start with the definition of a Markov Chain.
+
+:::{.callout-note}
+
+## Definition 1
+A Markov chain on a state space $\chi$ is a family of random variables $X_0, X_1, \cdots$ such that for all $n \in \mathbb{N}$, and $x_0, \cdots, x_n, x_{n+1} \in \chi$ we have
+$$
+\mathbb{P}[X_{n+1} = x_{n+1} \mid \{X_k = x_k \mid 0 \leq k \leq n\}] = \mathbb{P}[X_{n+1} = x_{n+1} \mid X_n = x_n]
+$$
+:::
+The above property is also known as the Markov Property. A time homogeneous Markov chain is a Markov chain where
+$$
+\mathbb{P}[X_{n+1} = y \mid X_n = x] = \mathbb{P}[X_{1} = y \mid X_0 = x]
+$$
+for all $x, y \in \chi$ and $n \in \mathbb{N}$. In the remaining of the discussion we will only consider time homogeneous Markov chains because they can be represented as a single transition matrix, not dependent on time
+$$
+P(x, y) := \mathbb{P}[X_1 = y \mid X_0 = x]
+$$
+where $x, y$ are the indices into the matrix $P$. This seems a bit silly, but reframing the problem this way allows us to use powerful tools/techniques from linear algebra. Using purely probabilistic methods when working with Markov chains is often very ugly, and the matrix formulation is preferred.
+
+:::{.callout}
+
+## Example
+Let's try to come up with a transition matrix for the random web surfer Markov Chain we discussed above. Suppose that our state space is the set of all $N$ webpages that are relevant to our query. So, $\chi = \{1, 2, \cdots, N \}$. For each page $i \in \chi$, let $d_i$ denote the number of outbound links from that page. We allow our surfer to follow a random outbound link from the current page with probability $(1 - \alpha)$.
+We also want the surfer to pick a uniformly random page from all $N$ pages and go there with probability $\alpha$.
+
+Therefore, the transition probability from page $i$ to page $j$ is:
+$$
+P(i, j) = \begin{cases} (1- \alpha) \cdot \frac{1}{d_i} + \frac{\alpha}{N} && \text{ if there exists a link from } i \to j \\ \frac{\alpha}{N} && \text{ otherwise} \end{cases}
+$$
+
+:::
+
+
+Let's prove some basic propositions about this new object we defined.
+
+:::{.callout-tip}
+
+## Proposition 1
+For any $x_0, \cdots, x_n \in \chi$,
+$$
+\mathbb{P}[X_n = y \mid X_0 = x] = P^n (x, y)
+$$
+where $P^n$ means the nth power of the matrix $P$.
+:::
+
+Proof: We proceed by induction on $n$. The base cases $n=1$ follows by definition. So assume that the result holds for $n$. We need to show it holds for $n+1$. We first condition on $X_n$:
+$$
+\begin{flalign}
+\mathbb{P}[X_{n + 1} = y \mid X_0 = x] &= \sum_{z \in \chi} \mathbb{P}[X_{n+1} = y \mid X_n = z, X_0 = x] \cdot \mathbb{P}[X_n = z \mid X_0 = x] &&\\
+&= \sum_{z \in \chi} \mathbb{P}[X_{n+1} = y \mid X_n = z] \cdot \mathbb{P}[X_n = z \mid X_0 = x] \tag{Markov Property} &&\\
+&= \sum_{z \in \chi} P(z, y) \cdot \mathbb{P}[X_n = z \mid X_0 = x] \tag{Definition of $P$} &&\\
+&= \sum_{z \in \chi} P(z, y) \cdot P^n (x, z) \tag{Induction hypothesis} &&\\
+&= P^{n+1} (x, y) \tag{Matrix mult.}
+\end{flalign}
+$$
+as desired.
+
+Now, we can characterize how a Markov chain $X_n$ with transition matrix $P$ and initial distribution $\mu_0$ over time.
+
+:::{.callout-tip}
+
+## Proposition 2
+If $X_0 \sim \mu_0$ (i.e., $\mathbb{P}[X_0 = x] = \mu_0 (x)$ for all $x \in \chi$) then $X_n \sim \mu_0 P^n$ (taken as a matrix product)
+:::
+Proof: We need to show that $\mathbb{P}[X_n = y] = (\mu_0 P^n)(y)$ for all $y \in \chi$.
+
+We condition on the initial state $X_0$:
+
+\begin{align*}
+\mathbb{P}[X_n = y] &= \sum_{x \in \chi} \mathbb{P}[X_n = y \mid X_0 = x] \cdot \mathbb{P}[X_0 = x] \tag{Law of total probability} \\
+&= \sum_{x \in \chi} P^n(x, y) \cdot \mathbb{P}[X_0 = x] \tag{Proposition 1} \\
+&= \sum_{x \in \chi} P^n(x, y) \cdot \mu_0(x) \tag{Definition of $\mu_0$} \\
+&= \sum_{x \in \chi} \mu_0(x) \cdot P^n(x, y)  \\
+&= (\mu_0 P^n)(y) \tag{Matrix mult.}
+\end{align*}
+
+as desired.
+
+
+
+## The Stationary Distribution
+
+Let's return to our PageRank example. Notice that the surfer never stops exploring the web. They keep browsing indefinitely, either following links or opening up new pages in a browser. This raises a natural question: What happens to the distribution of the surfer's location after a very long time?
+
+From Proposition 2, we can come up with the recurrence relation:
+$$
+\mu_{n + 1} = \mu_0 P^{n + 1} = (\mu_0 P^n) P = \mu_n P
+$$
+ As $n \to \infty$, does this converge to anything (i.e., does there exists a limiting distribution)? And if so, does the limiting distribution depend on where we started $\mu_0$?
+
+Often, a good way to answer questions like these is to assume something about the statement and see what happens. So, lets assume that there exists a limiting distribution $\pi$ such that $\mu_n \to \pi$ as $n \to \infty$. This leads us to proposition 3:
+
+:::{.callout-tip}
+
+## Proposition 3
+If $\pi$ is a limiting distribution of the Markov chian $P$, then $$\pi = \pi P$$
+:::
+*Proof*:
+We take limits on both sides of our recurrence relation:
+\begin{align*}
+\lim_{n \to \infty} \mu_{n + 1} &= \lim_{n \to \infty}(\mu_n P) \\
+\lim_{n \to \infty} \mu_{n + 1} &= (\lim_{n \to \infty} \mu_n) P   \tag{Matrix mul is continuous}\\
+\pi &= \pi P   \tag{Since $\mu_n \to \pi$}\\
+\end{align*}
+
+
+That's a pretty interesting result! Any limiting distribution $\pi$ of a Markov chain (if it exists) is such that $\pi = \pi P$. This special kind of distribution is known as **stationary distribution**. Let's see if we can use this property to help us answer our original question. Specifically, is the converse of proposition 3 true? Is it the case that any distribution $\pi$ such that $\pi = \pi P$ must be a limiting distribution? If it was, then we'd be done! We would have found a way to completely characterize
+what the limiting distribution of a Markov Chain looks like.
+
+But sadly, that is not the case.
+
+### A Counter Example
+
+Consider a Markov chain on $\chi = \{0, 1, 2, 3\}$ with transition matrix
+$$
+P = \begin{pmatrix}
+1 & 0 & 0 & 0 \\
+\frac{1}{3} & \frac{1}{3} & \frac{1}{3} & 0 \\
+0 & \frac{1}{3} & \frac{1}{3} & \frac{1}{3} \\
+0 & 0 & 0 & 1\\
+\end{pmatrix}
+$$
+
+Notice that the distribution $\pi_1 = \begin{pmatrix} \sqrt{2} & 0 & 0 & \sqrt{2} \end{pmatrix}$ (read as a $1 \times 4$ row matrix) of $P$ has the property discussed in proposition 3 because:
+
+$$
+\begin{align*}
+\pi_1 P &= \begin{pmatrix} \sqrt{2} & 0 & 0 & \sqrt{2} \end{pmatrix}  \begin{pmatrix}
+1 & 0 & 0 & 0 \\
+\frac{1}{3} & \frac{1}{3} & \frac{1}{3} & 0 \\
+0 & \frac{1}{3} & \frac{1}{3} & \frac{1}{3} \\
+0 & 0 & 0 & 1\\
+\end{pmatrix} \\
+&= \begin{pmatrix} \sqrt{2} & 0 & 0 & \sqrt{2} \end{pmatrix} \\
+&= \pi_1
+\end{align*}
+$$
+
+Additionally, the distribution $\pi_2 = \begin{pmatrix} e & 0 & 0 & e \end{pmatrix}$ of $P$ also has the property discussed in proposition 3 because:
+
+$$
+\begin{align*}
+\pi_2 P &= \begin{pmatrix} e & 0 & 0 & e\end{pmatrix}  \begin{pmatrix}
+1 & 0 & 0 & 0 \\
+\frac{1}{3} & \frac{1}{3} & \frac{1}{3} & 0 \\
+0 & \frac{1}{3} & \frac{1}{3} & \frac{1}{3} \\
+0 & 0 & 0 & 1\\
+\end{pmatrix} \\
+&= \begin{pmatrix} e & 0 & 0 & e \end{pmatrix} \\
+&= \pi_2
+\end{align*}
+$$
+
+This is a problem because if the converse of proposition 3 were true, then any distribution that is stationary would be the limiting distribution of $P$. But we've just shown that both $\pi_1$
+and $\pi_2$  are stationary distributions, and they are different! A limiting distribution must be unique (a Markov chain can't converge to two different distributions at the same time), so this shows that not every stationary distribution is a limiting distribution.
+
+:::{.callout}
+
+## Remark
+You may be wondering how I came up with the two different stationary distribution for $P$. Notice that we can treat $\pi$ as a row-vector. In linear algebra terms, the stationary property means that $\pi$ is a left-eigenvector of $P$ with eigenvalue $1$. So, one way to find a stationary distribution
+is to compute a left-eigen vector with eigen-value $1$ of $P$. Of course, not all left-eigenvectors of $P$ will be a valid probability distribution (some may have negative entries, or worse, complex entires). So you need to be careful when computing eigenvectors and treating them as probability distributions.
+:::
+
+
+
+## Irreducibility
+
+We've seen that a stationary distribution need not be unique for a Markov Chain, which is a problem because if a stationary distribution could ever hope be a limiting distribution, then it has to be the *unique* stationary distribution. Let's study the conditions under which a stationary distribution is *the* stationary distribution of a
+Markov Chain.
+
+Going from the example above, you might notice that the issue there was that there were states which were "absorbing", meaning once our chain entered that state, it remained there forever. For example, state $0$ is absorbing because
+$P(0, 1) = P(0, 2) = P(0, 3)  = 0$ and so the chain would never transition out of that state. Similarly, state $3$ is also an absorbing state. If we eliminate this behavior, then we might have a unique stationary distribution?
+
+This observation immediately leads us to the following definition of irreducibility
+
+:::{.callout-note}
+
+## Definition 3
+A Markov chain is irreducible if every state is eventually reachable from every other state. That is, for all $x, y \in \chi$, there exists some $n \geq 0$ such that $P^n(x, y) > 0$.
+:::
+
+:::{.callout}
+
+## Example: PageRank is Irreducible
+Recall our PageRank transition matrix:
+$$
+P(i, j) = \begin{cases} (1- \alpha) \cdot \frac{1}{d_i} + \frac{\alpha}{N} && \text{ if there exists a link from } i \to j \\ \frac{\alpha}{N} && \text{ otherwise} \end{cases}
+$$
+
+This chain is irreducible. From any page $i$, there's at least a probability $\frac{\alpha}{N}$ of jumping to any other page $j$ in one step (via the random jump mechanism). Therefore $P(i, j) \geq \frac{\alpha}{N} > 0$ for all $i, j$, which immediately implies every state is accessible from every other state.
+:::
+
+Now, let's try to link irreducibility with stationary distributions. Specifically, lets see if irreducibility gives us any information about what a stationary distribution $\pi$ may look like. Because we are assuming that every state is reachable from every other state, one could guess that $\pi(x) > 0$ for all $x \in \chi$, since otherwise, there would be a state $x$ for which $\mathbb{P}[X_n = x] = 0$ and make this state unreachable.
+
+This leads us to the following proposition:
+
+:::{.callout-tip}
+
+## Proposition 4
+If $\pi$ is a stationary distribution and $P$ is the transition matrix of an irreducible Markov Chain $P$, then $\pi (x) > 0$ for all $x \in \chi$.
+:::
+
+*Proof*: Assume for contradiction that there exists an $x \in \chi$ such that $\pi (x) = 0$. Because $\pi$ is stationary, this means we have
+
+$$
+\begin{align*}
+0 = \pi (x) &= (\pi P) (x) \\
+&= \sum_{y \in \chi} \pi (y) P(y, x) & \tag{Matrix mult.}\\
+&= \sum_{\substack{y \in \chi \\ y \neq x}} \pi (y) P(y, x) \tag{Since $\pi(x)$ = 0} \\
+\end{align*}
+$$
+Notice that each term on the right hand side is non negative (since $\pi(y) \geq 0$ and $P(y, x) \geq 0$). The only way a sum of non negative term can be zero is if each term is zero. This means we have
+$$
+\pi(y) P(y, x) = 0
+$$
+for all $y \in \chi$ and so either $\pi(y) = 0$ or $P(y, x) = 0$. Now, because we assumed $P$ was irreducible, there must exist a $y \neq x$ in $\chi$ such that $P(y, x) > 0$ (otherwise, $x$ would be unreachable from any other state, no matter how many steps the chain takes). Therefore, for this $y$,
+it must be the case that $\pi(y) = 0$.
+
+We can now apply the same argument to $y$ and get that there is a $z \in \chi$ such that $P(z, y) > 0$, forcing $\pi(z) = 0$. We can continue this argument inductively, and since every state is reachable from every other state (by irreducibility), we can show that $\pi(w) = 0$ for all $w \in \chi$.
+
+But this contradicts the fact that $\pi$ is a probability distribution, which requires
+
+$$
+\sum_{w \in \chi} \pi(w) = 1
+$$
+
+Therefore, $\pi(x) > 0$ for all $x \in \chi$, as desired.
+
+
+Using this proposition, we can now prove a big theorem which tells us when a Markov Chain has a unique stationary distribution.
+
+:::{.callout-important}
+
+## Theorem 1 (Uniqueness)
+
+If $P$ is the transition matrix of an irreducible Markov Chain, then there exists a unique stationary distribution $\pi$
+:::
+
+*Proof:*
+
+I will skip the existence part of this theorem because it gets extremely technical and not suited for this post. If you are curious, you should check out [this](https://math.uchicago.edu/~may/REU2017/REUPapers/Freedman.pdf) resource
+
+Lets prove uniqueness. Suppose $\pi_1$ and $\pi_2$ are two stationary distributions of $P$. Because our state space is finite, and $\pi_1(x), \pi_2(x) > 0$ by proposition 4, for all $x \in \chi$, we can choose
+
+$$
+x_0 :=\text{arg}\min\limits_{x \in \chi}\,\left( \frac{\pi_1(x)}{\pi_2(x)} \right)
+$$
+
+Let $y$ be an arbitrary state in $\chi$. By irreducibility, there exists an $n \in N$ such that $P^n (y, x_0) > 0$. This means that the Markov Chain can reach to $x_0$ from $y$ in $n$ steps via a finite step of transitions
+$$y = x_n \to x_{n-1} \to \dots \to x_1 \to x_0$$
+where $P(x_i, x_{i-1}) > 0$ for all $i = 1, 2, \ldots, n$.
+
+We will prove by induction on the path length that $$ \frac{\pi_1(y)}{\pi_2(y)} = \frac{\pi_1(x_0)}{\pi_2(x_0)} $$ The base case is trivial since it follows by definition. So, assume $$ \frac{\pi_1(x_{i})}{\pi_2(x_{i})} = \frac{\pi_1(x_0)}{\pi_2(x_0)} $$ for some $1 \leq i < n$.
+
+Now, we can write:
+
+$$
+\begin{flalign}
+\pi_1(x_{i}) = (\pi_1 P) (x_{i}) &= \sum_{x \in \chi} \pi_1(x) P(x, x_{i}) \tag{$\pi_1$ is stationary}\\
+&= \sum_{x \in \chi} \frac{\pi_1(x)}{\pi_2(x)} \pi_2(x) P(x, x_{i}) \tag{Multiply RHS by $\pi_2(x) / \pi_2(x)$}\\
+&\geq \sum_{x \in \chi} \frac{\pi_1(x_{i})}{\pi_2(x_{i})} \pi_2(x) P(x, x_{i}) \tag{$x_{i}$ achieves minimum, I.H.}\\
+&= \frac{\pi_1(x_{i})}{\pi_2(x_{i})} \sum_{x \in \chi} \pi_2(x) P(x, x_{i}) \tag{Ratio is constant}\\
+&= \frac{\pi_1(x_{i})}{\pi_2(x_{i})} \pi_2(x_{i}) \tag{$\pi_2$ is stationary}\\
+&= \pi_1(x_{i})
+\end{flalign}
+$$
+
+Notice that because  LHS = RHS, the inequality in between must be an equality. Therefore:
+$$
+\sum_{x \in \chi} \frac{\pi_1(x)}{\pi_2(x)} \pi_2(x) P(x, x_{i}) = \sum_{x \in \chi} \frac{\pi_1(x_{i})}{\pi_2(x_{i})} \pi_2(x) P(x, x_{i})
+$$
+
+Rearranging:
+$$
+\sum_{x \in \chi} \left[ \frac{\pi_1(x)}{\pi_2(x)} - \frac{\pi_1(x_{i})}{\pi_2(x_{i})} \right] \pi_2(x) P(x, x_{i}) = 0
+$$
+
+Now, note that $\pi_2(x) > 0$ by proposition 4, and because $x_{i}$ achieves the minimum, we have $\frac{\pi_1(x)}{\pi_2(x)} - \frac{\pi_1(x_{i})}{\pi_2(x_{i})} \geq 0$ and $P(x, x_{i}) \geq 0$ by definition. Therefore, the only way a sum of non-negative terms is zero is if each term is zero. Thus, for any state $x \in \chi$ with $P(x, x_{i}) > 0$:
+$$
+\frac{\pi_1(x)}{\pi_2(x)} - \frac{\pi_1(x_{i})}{\pi_2(x_{i})} = 0 \implies \frac{\pi_1(x)}{\pi_2(x)} = \frac{\pi_1(x_{i})}{\pi_2(x_{i})} = \frac{\pi_1(x_0)}{\pi_2(x_0)}
+$$
+
+In particular, since $P(x_{i + 1}, x_{i}) > 0$ by our path construction, we have:
+$$
+\frac{\pi_1(x_{i+1})}{\pi_2(x_{i+1})} = \frac{\pi_1(x_0)}{\pi_2(x_0)}
+$$
+
+and by the principle of induction, we can conclude that this holds for all $1 \leq i < n$. Therefore, we can conclude that
+$$
+\frac{\pi_1(y)}{\pi_2(y)} = \frac{\pi_1(x_{n})}{\pi_2(x_{n})} =\frac{\pi_1(x_0)}{\pi_2(x_0)}
+$$
+as desired.
+
+Now, since $y$ was an arbitrary state, we now know that $$ \frac{\pi_1(x)}{\pi_2(x)} = c $$ for all $x \in \chi$, where $c$ is some positive constant. This means $\pi_1(x) = c \cdot \pi_2(x)$ for all $x$. Now, since both $\pi_1, \pi_2$ are probability distributions, we have:
+$$
+1 = \sum_{x \in \chi} \pi_1(x) =  \sum_{x \in \chi} c  \pi_2(x) = c \sum_{x \in \chi} \pi_2(x) = c
+$$
+
+Therefore $c = 1$, which implies $\pi_1(x) = \pi_2(x)$ for all $x \in \chi$, as desired.
+
+
+### Another Counter Example
+
+That was a lot of hard work! But are we done? Surely now that we have a unique stationary distribution, we can claim that the limiting distribution converges to this stationary distribution right?
+
+Well, not so fast. Let's consider another example, where $\chi = \{0, 1\}$ and the transition matrix is
+$$
+P = \begin{pmatrix}
+0 & 1 \\
+1 & 0
+\end{pmatrix}
+$$
+which is the chain that transitions from $0 \to 1 \to 0 \to 1 \cdots$ deterministically. Notice that the distribution $\pi = \begin{pmatrix} \frac{1}{2} & \frac{1}{2}\end{pmatrix}$ is a stationary distribution since
+\begin{align*}
+\pi P &= \begin{pmatrix} \frac{1}{2} & \frac{1}{2}\end{pmatrix} \begin{pmatrix}
+0 & 1 \\
+1 & 0
+\end{pmatrix} \\
+&= \begin{pmatrix} \frac{1}{2} & \frac{1}{2}\end{pmatrix} = \pi
+\end{align*}
+
+Additionally, this chain is clearly irreducible, since every state is reachable from every other state. Therefore, $\pi$ is the unique stationary distribution from theorem 1. But it is not a limiting distribution. To see why, first note that
+\begin{align*}
+P^2 &= \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix} \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix} = \begin{pmatrix} 1 & 0 \\ 0 & 1 \end{pmatrix} = I
+\end{align*}
+
+Therefore, for any $n \in \mathbb{N}$:
+$$
+P^n = \begin{cases}
+P^{2k} = (P^2)^k = I & \text{if } n \text{ is even} \\
+P^{2k + 1} = P^{2k} P = P & \text{if } n \text{ is odd}
+\end{cases}
+$$
+
+Now consider an initial distribution (read as a 1x2 matrix) $\mu_0 = \begin{pmatrix}1 & 0\end{pmatrix}$. This means we can make the simplification:
+\begin{align*}
+\mu_0 P^n &= \begin{pmatrix}1 & 0\end{pmatrix}P^n \\
+&= \begin{cases}
+\begin{pmatrix}1 & 0\end{pmatrix} & \text{if } n \text{ is even} \\
+\begin{pmatrix}0 & 1\end{pmatrix} & \text{if } n \text{ is odd}
+\end{cases}
+\end{align*}
+
+Since $\mu_0 P^n$ alternates between $\begin{pmatrix}1 & 0\end{pmatrix}$ and $\begin{pmatrix}0 & 1\end{pmatrix}$, the sequence does not converge as $n \to \infty$. Therefore, no limiting distribution exists.
+
+## Aperidocity
+
+What went wrong here? The chain is irreducible and has a unique stationary distribution, but it still doesn't converge to that distribution. The problem is that the chain exhibits periodic behavior. It oscillates between states $0$ and $1$ in a predictable cycle, never settling down into a stable long-run pattern.
+
+This observation motivates our final piece of the puzzle: aperiodicity.
+
+:::{.callout-note}
+
+## Definition 4
+The period of a state $x$ is the greatest common divisor (gcd) of all possible return times to that state. That is,
+$$
+d(x) = \gcd\{n \geq 1 : P^n(x, x) > 0\}
+$$
+
+A state $x$ is aperiodic if $d(x) = 1$. A Markov chain is aperiodic if all states are aperiodic.
+:::
+
+Intuitively, we can think of the set $\{n \geq 1 : P^n(x, x) > 0\}$ as containing all the time steps at which the chain can return to state $x$. If this set is $\{2, 4, 6, 8, \ldots\}$ (only even numbers), then $\gcd = 2$ and the state has period 2. If the set is $\{1, 2, 3, 4, \ldots\}$ (all positive integers), then $\gcd = 1$ and the state is aperiodic.
+
+In our example above, state $0$ has period 2 because the chain can only return to state $0$ in an even number of steps: $P^2(0, 0) = 1$, $P^4(0, 0) = 1$, and so on. The same is true for state $1$. This causes the distribution $\mu_0 P^n$ to oscillate rather than converge as $n \to \infty$.
+
+:::{.callout}
+
+## Example: PageRank is Aperiodic
+Recall our PageRank transition matrix where every entry satisfies $P(i, j) \geq \frac{\alpha}{N} > 0$. This means that for any state $i$, we have $P^1(i, i) \geq \frac{\alpha}{N} > 0$. Therefore, $1$ is in the set of possible return times, which immediately gives us $\gcd = 1$ (think about what the greatest common divisor of $1$ and any number is). So every state is aperiodic, making the entire chain aperiodic.
+:::
+
+Maybe now we can prove convergence? Is Irreducibility and Aperiodicity enough? It turns out yes, but to answer that formally, we need a bit more machinery.
+
+### Convergence
+
+Before we can even hope to prove convergence, we first need a way to measure how "close" two probability distributions are to each other. One intuitive approach is to ask: what's the largest possible difference in the probabilities that $\mu, \nu$ assign to any event?
+
+Formally, for any event $A \subseteq \chi$, we could compute $|\mu(A) - \nu(A)|$. If we take the worst case scenario over all events, we get
+$$
+\max_{A \subseteq \chi} |\mu(A) - \nu(A)|
+$$
+This tells us, in the most extreme case, how much these distributions disagree about the probability of an event. Let's see if we can simplify this definition a little bit:
+
+$$
+\mu(A) - \nu(A) = \sum_{x \in A} \mu(x) - \sum_{x \in A} \nu(x) = \sum_{x \in A} [\mu(x) - \nu(x)]
+$$
+Notice that this difference is maximized if we choose $A$ to contain exactly the points for which $\mu(x) > \nu(x)$. Let's call this set $A^+ = \{x \in \chi \mid \mu(x) > \nu(x)\}$. Then, we can write
+$$
+\max_{A \subseteq \chi} |\mu(A) - \nu(A)| = \sum_{x \in A^+} [\mu(x) - \nu(x)]
+$$
+Now, since both $\mu, \nu$ are probability distributions, they must sum to one, so we have
+$$
+\sum_{x \in \chi}[\mu(x) - \nu(x)] = \sum_{x \in \chi}\mu(x) - \sum_{x \in \chi} \nu(x) = 0
+$$
+This means that when we partition the sum over all points, we can write
+\begin{align*}
+&0 = \sum_{x \in \chi}[\mu(x) - \nu(x)] = \sum_{x \in A^+} [\mu(x) - \nu(x)] + \sum_{x \not \in A^+} [\mu(x) - \nu(x)] \\
+\end{align*}
+
+which implies that
+
+$$
+\sum_{x \in A^+} [\mu(x) - \nu(x)] = - \sum_{x \not \in A^+} [\mu(x) - \nu(x)] = \sum_{x \not \in A^+} [\nu(x) - \mu(x)]
+$$
+
+Now, when we take the absolute difference over all points in $\chi$, we have
+
+\begin{align*}
+\sum_{x \in \chi} |\mu(x) - \nu(x)| &= \sum_{x \in A^+} |\mu(x) - \nu(x)| + \sum_{x \not \in A^+} |\nu(x) - \mu(x)| \\
+&= 2 \sum_{x \in A^+} |\mu(x) - \nu(x)|
+\end{align*}
+
+Rearranging, we can finally write:
+\begin{align*}
+2 \sum_{x \in A^+} |\mu(x) - \nu(x)| &= 2 \max_{A \subseteq \chi} |\mu(A) - \nu(A)| = \sum_{x \in \chi} |\mu(x) - \nu(x)|\\
+\max_{A \subseteq \chi} |\mu(A) - \nu(A)| &= \frac{1}{2} \sum_{x \in \chi} |\mu(x) - \nu(x)|
+\end{align*}
+
+This leads us to the convenient definition of distances between two distributions, known as the total variation difference:
+
+:::{.callout-note}
+
+## Definition 5 (Total Variation Distance)
+For any two probability distributions $\mu$ and $\nu$ over $\chi$, we define the total variation distance between $\mu$ and $\nu$ by
+$$
+\|\mu - \nu\|_{\text{TV}} := \frac{1}{2} \sum_{x \in \chi} |\mu(x) - \nu(x)|
+$$
+:::
+
+The total variation distance is a metric on the space of probability distributions. It ranges from $0$ (when $\mu = \nu$) to $1$ (when $\mu$ and $\nu$ are completely different). You should check that it is indeed a valid distance metric.
+
+We can now formalize what we mean by "convergence to the stationary distribution" using this notion of distance.
+
+:::{.callout-note}
+
+## Definition 6 (Convergence in Total Variation)
+We say that the distribution of $X_n$ converges to $\pi$ in total variation as $n \to \infty$ if for all starting distribution $\mu_0$,
+$$
+\|\mu_0 P^n - \pi\|_{\text{TV}} \to 0 \text{ as } n \to \infty
+$$
+:::
+
+This is equivalent to saying that for any state $x \in \chi$,
+$$
+\lim_{n \to \infty} \frac{1}{2} \sum_{x \in \chi} |\mathbb{P}[X_n = x] - \pi(x)| = 0
+$$
+
+Now we can restate the running question asked throughout this blog more precisely: we want to show that if $P$ is irreducible and aperiodic and $\mu_0$ is an arbitrary initial distribution for $P$, then $\mu_0 P^n \to \pi$ in total variation.
+
+### Machinery For Convergence
+
+To prove our formalized statement, we will need several technical results. Let's build them up step by step.
+
+:::{.callout-tip}
+
+## Proposition 5
+If a Markov chain is aperiodic, then there exists $N \in \mathbb{N}$ such that for all $x \in \chi$ and all $n \geq N$, we have $P^n(x, x) > 0$
+:::
+
+*Proof Sketch*:
+
+Fix a state $x$. By definition of aperiodicity, we have $\gcd\{n \geq 1 : P^n(x, x) > 0\} = 1$. Let $S = \{n \geq 1 : P^n(x, x) > 0\}$ be this set.
+
+A classical result from number theory tells us that because $S$ consists of positive integers and $\gcd(S) = 1$, then there exists some $N \in \mathbb{N}$ such that every integer $n \geq N$ can be written as a non-negative integer linear combination of elements from $S$ (called the [Chicken McNugget Theorem](https://artofproblemsolving.com/wiki/index.php/Chicken_McNugget_Theorem?srsltid=AfmBOoo5b6Xz_eOFhntrmSXPZCTWQYJRxB4eI3eZH6yG3c9vPjVjfuX_)). In other words, for all $n \geq N$, we can write
+$$
+n = \sum_{i=1}^{k} m_i s_i
+$$
+where $s_1, \ldots, s_k \in S$ and $m_1, \ldots, m_k$ are non-negative integers.
+
+Now, for each $n \geq N$, this means we can return to $x$ at time $n$ by taking the path that returns to $x$ at times $s_1$, or the path that returns to $x$ at time $2s_1, 3 s_1 \ldots, m_1 s_1$. Similarly, we could also take the path that returns at times $m_1 s_1 + s_2, m_1 s_1 + 2s_2, \ldots, m_1 s_1 + m_2 s_2$, and so on. At each of these intermediate times, the chain is at state $x$, and we know $P^{s_i}(x, x) > 0$ for each $i$ because $s_i \in S$.
+
+By the Markov property, the probability of following this entire path is the product of the transition probabilities:
+
+$$
+\begin{align*}
+P^n(x,x) \geq \underbrace{P^{s_1}(x, x) \cdot P^{s_1}(x, x) \cdots P^{s_1}(x, x)}_{m_1 \text{ times}} \cdot \underbrace{P^{s_2}(x, x) \cdots P^{s_2}(x, x)}_{m_2 \text{ times}} \cdots > 0
+\end{align*}
+$$
+
+Therefore, $P^n(x, x) > 0$ for all $n \geq N$, as desired.
+
+
+:::{.callout-tip}
+
+## Proposition 6
+If a Markov chain is irreducible and aperiodic, then there exists $N \in \mathbb{N}$ such that $P^N(x, y) > 0$ for all $x, y \in \chi$.
+:::
+
+*Proof Sketch*:
+
+By Proposition 5, we know that for each state $x \in \chi$, there exists some $N_x$ such that $P^n(x, x) > 0$ for all $n \geq N_x$. Because our state space is finite, we can take $N_1 = \max_{x \in \chi} N_x$, which ensures that $P^n(x, x) > 0$ for all $x \in \chi$ and all $n \geq N_1$.
+
+Now, by irreducibility, for any two states $x$ and $y$, there exists some $n_{xy} \in \mathbb{N}$ such that $P^{n_{xy}}(x, y) > 0$. Again, because the state space is finite, we can take $N_2 = \max_{x, y \in \chi} n_{xy}$.
+
+Let $N = N_1 + N_2$. For any states $x, y \in \chi$, we can go from $x$ to $y$ in exactly $N$ steps by first spending $N_2$ steps to get from $x$ to $y$, and then spending $N_1$ steps returning from $y$ to $y$. We know both of these are possible with positive probability, so:
+$$
+P^N(x, y) \geq P^{N_2}(x, y) \cdot P^{N_1}(y, y) > 0
+$$
+
+Since $x, y$ were arbitrary this holds for all $x, y \in \chi$, as desired.
+
+The next result is a key technical tool that shows how the transition matrix acts as a contraction in total variation distance.
+
+:::{.callout-tip}
+
+## Proposition 7
+Let $P$ be the transition matrix of a Markov chain. If $\mu$ and $\nu$ are any two probability distributions, then
+$$
+\|\mu P - \nu P\|_{\text{TV}} \leq \|\mu - \nu\|_{\text{TV}}
+$$
+:::
+
+*Proof Sketch*:
+
+We need to show that applying one step of the Markov chain cannot increase the total variation distance between two distributions. Let's compute:
+
+$$
+\begin{align*}
+\|\mu P - \nu P\|_{\text{TV}} &= \frac{1}{2} \sum_{y \in \chi} |(\mu P)(y) - (\nu P)(y)| \\
+&= \frac{1}{2} \sum_{y \in \chi} \left| \sum_{x \in \chi} \mu(x) P(x, y) - \sum_{x \in \chi} \nu(x) P(x, y) \right| \\
+&= \frac{1}{2} \sum_{y \in \chi} \left| \sum_{x \in \chi} (\mu(x) - \nu(x)) P(x, y) \right| \\
+&\leq \frac{1}{2} \sum_{y \in \chi} \sum_{x \in \chi} |\mu(x) - \nu(x)| P(x, y) \tag{By triangle inequality} \\
+&= \frac{1}{2} \sum_{x \in \chi} |\mu(x) - \nu(x)| \sum_{y \in \chi} P(x, y) \tag{Swap sums bc $|\chi| < \infty$}\\
+&= \frac{1}{2} \sum_{x \in \chi} |\mu(x) - \nu(x)| \cdot 1 \tag{rows of $P$ sum to 1}\\
+&= \|\mu - \nu\|_{\text{TV}}
+\end{align*}
+$$
+
+as desired.
+
+This is very important! It tells us that the Markov Chain's transition matrix can decrease distances but never increases them. However, to get convergence, we need something stronger. We need the chain to actually contract distances, not just preserve them. This is where irreducibility and aperiodicity come in.
+
+:::{.callout-tip}
+
+## Proposition 8 (Harris Lemma)
+Suppose there exists a probability distribution $\gamma$ and a number $\delta > 0$ such that $P(x, y) \geq \delta \gamma(y)$ for all $x, y \in \chi$. Then for any two probability distributions $\mu$ and $\nu$,
+$$
+\|\mu P - \nu P\|_{\text{TV}} \leq (1 - \delta) \|\mu - \nu\|_{\text{TV}}
+$$
+
+:::
+
+*Proof Sketch*:
+
+The main idea is to decompose the transition matrix $P$ into two parts: one that both distributions agree on, and a remaining part $P_2$ that has the differences. More precisely, I claim we can write:
+$$
+P(x, y) = \delta \gamma(y) + (1 - \delta) P_2(x, y)
+$$
+
+where $P_2$ is itself a stochastic matrix defined as
+
+$$
+P_2(x, y) := \frac{P(x, y) - \delta \gamma(y)}{1 - \delta}
+$$
+
+We need to show that this is a stochastic matrix, which means showing that the entries are non negative, and the rows sum up to one. Since we're given that $P(x, y) \geq \delta \gamma(y)$ for all $x, y \in \chi$, we have:
+$$
+P(x, y) - \delta \gamma(y) \geq 0
+$$
+
+And since $\delta < 1$ (otherwise the proposition is trivial), we have $1 - \delta > 0$. Therefore:
+
+$$
+P_2(x, y) = \frac{P(x, y) - \delta \gamma(y)}{1 - \delta} \geq 0
+$$
+
+Finally, the rows of $P_2$ sum to $1$ since for any fixed $x \in \chi$:
+\begin{align}
+\sum_{y \in \chi} P_2(x, y) &= \sum_{y \in \chi} \frac{P(x, y) - \delta \gamma(y)}{1 - \delta} \\
+&= \frac{1}{1 - \delta} \sum_{y \in \chi} [P(x, y) - \delta \gamma(y)] \\
+&= \frac{1}{1 - \delta} \left[\sum_{y \in \chi} P(x, y) - \delta \sum_{y \in \chi} \gamma(y)\right] \\
+&= \frac{1}{1 - \delta} [1 - \delta \cdot 1] \\
+&= 1
+\end{align}
+
+where we used that $P$ is stochastic (so $\sum_y P(x, y) = 1$) and $\gamma$ is a probability distribution (so $\sum_y \gamma(y) = 1$).
+
+
+Now, when we apply $P$ to any distribution $\mu$, we see
+
+\begin{align}
+(\mu P)(y) &= \sum_{x \in \chi} \mu(x) P(x, y) \\
+&= \sum_{x \in \chi} \mu(x) [\delta \gamma(y) + (1 - \delta) P_2(x, y)] \\
+&= \sum_{x \in \chi} \mu(x) \delta \gamma(y) + \sum_{x \in \chi} \mu(x) (1 - \delta) P_2(x, y) \\
+&= \delta \gamma(y) \sum_{x \in \chi} \mu(x) + (1 - \delta) \sum_{x \in \chi} \mu(x) P_2(x, y) \\
+&= \delta \gamma(y) \cdot 1 + (1 - \delta) (\mu P_2)(y) \\
+&= \delta \gamma(y) + (1 - \delta) (\mu P_2)(y)
+\end{align}
+
+Plugging everything in, we can now show the result:
+$$
+\begin{align*}
+\|\mu P - \nu P\|_{\text{TV}} &= \left\| (\delta \gamma + (1 - \delta) \mu P_2) - (\delta \gamma + (1 - \delta) \nu P_2 )\right\|_{\text{TV}} \\
+&= \left\| \delta \gamma + (1 - \delta) \mu P_2 - \delta \gamma - (1 - \delta) \nu P_2 \right\|_{\text{TV}} \\
+&= (1 - \delta) \|\mu P_2 - \nu P_2\|_{\text{TV}} \\
+&\leq (1 - \delta) \|\mu - \nu\|_{\text{TV}} \tag{By Proposition 7}
+\end{align*}
+$$
+
+This shows that the distance contracts by a factor of at least $(1 - \delta)$ in each step.
+
+Now we have all the tools we need to prove the main convergence theorem
+
+### Proof of Convergence
+
+:::{.callout-important}
+
+## Theorem 2 (Convergence)
+
+Let $P$ be the transition matrix of an irreducible and aperiodic Markov chain with stationary distribution $\pi$. Then for any initial distribution $\mu_0$ and any state $y \in \chi$:
+$$
+\lim_{n \to \infty} (\mu_0 P^n)(y) = \pi(y)
+$$
+
+In other words, $\lim_{n \to \infty} \mu_n = \pi$, regardless of where we started.
+:::
+
+
+*Proof Sketch of Theorem 2*:
+
+By Proposition 6, since our chain is irreducible and aperiodic, there exists some $N \in \mathbb{N}$ such that $P^N(x, y) > 0$ for all $x, y \in \chi$.
+
+Let $\delta = \min_{x, y \in \chi} P^N(x, y)$. This minimum exists and is positive because we're taking the minimum over a finite set of positive numbers. Now define $\gamma(y) = \frac{1}{|\chi|}$ to be the uniform distribution over all states.
+
+I claim that $P^N(x, y) \geq \delta \gamma(y)$ for all $x, y$. To see this, note that:
+\begin{align*}
+P^N(x, y) &\geq \delta \tag{By defn} \\
+&= \delta \cdot \frac{1}{|\chi|} \cdot |\chi| \\
+&\geq \delta \cdot \frac{1}{|\chi|} \tag{B/c $|\chi| > 0$ } \\
+&= \delta \gamma(y)
+\end{align*}
+
+Therefore, by Proposition 8, for any two distributions $\mu$ and $\nu$:
+$$
+\|\mu P^N - \nu P^N\|_{\text{TV}} \leq (1 - \delta) \|\mu - \nu\|_{\text{TV}}
+$$
+
+Let $\mu_0$ be any arbitrary initial distribution for $P$. We can use induction and the above observation to show that for all $k \geq 1$, we have:
+$$
+\|(\mu_0 P^{kN}) - \pi\|_{\text{TV}} \leq (1 - \delta)^k \|\mu_0 - \pi\|_{\text{TV}}
+$$
+
+The base case $k = 1$ follows from Proposition 8:
+$$
+\|(\mu_0 P^{N}) - \pi\|_{\text{TV}} = \|(\mu_0 P^{N}) - \pi P^N\|_{\text{TV}} \leq (1 - \delta) \|\mu_0 - \pi\|_{\text{TV}}
+$$
+
+Now assume the result holds for $k$. We need to show it holds for $k+1$:
+\begin{align}
+\|(\mu_0 P^{(k+1)N}) - \pi\|_{\text{TV}} &= \|(\mu_0 P^{k N} P^N) - (\pi P^N)\|_{\text{TV}} \\
+&\leq (1 - \delta) \|(\mu_0 P^{kN}) - \pi\|_{\text{TV}} \tag{Proposition 8} \\
+&\leq (1 - \delta) \cdot (1 - \delta)^k \|\mu_0 - \pi\|_{\text{TV}} \tag{Induction hypothesis} \\
+&= (1 - \delta)^{k+1} \|\mu_0 - \pi\|_{\text{TV}}
+\end{align}
+
+which completes the induction. Now, since $0 < (1 - \delta) < 1$, we have $(1 - \delta)^k \to 0$ as $k \to \infty$. This means:
+$$
+\lim_{k \to \infty} \|(\mu_0 P^{kN}) - \pi\|_{\text{TV}} = 0
+$$
+
+To handle times that aren't multiples of $N$, note that for any $n \geq 0$, we can write $n = kN + r$ where $0 \leq r < N$. Then:
+\begin{align}
+\|(\mu_0 P^n) - \pi\|_{\text{TV}} &= \|(\mu_0 P^{kN + r}) - \pi\|_{\text{TV}} \\
+&= \|(\mu_0 P^{kN}) P^r - \pi P^r\|_{\text{TV}} \\
+&\leq \|(\mu_0 P^{kN}) - \pi\|_{\text{TV}} \tag{Proposition 7} \\
+&\leq (1 - \delta)^k \|\mu_0 - \pi\|_{\text{TV}}
+\end{align}
+
+Since $k \to \infty$ as $n \to \infty$, we conclude that:
+$$
+\lim_{n \to \infty} \|(\mu_0 P^n) - \pi\|_{\text{TV}} = 0
+$$
+
+This proves that the distribution converges to $\pi$ in total variation, completing the main proof.
+
+:::{.callout}
+## Remark
+The convergence is exponentially fast with rate $(1 - \delta)$, which depends on the smallest entry of $P^N$. This tells us not just that convergence happens, but also gives us a quantitative bound on how quickly the chain converges.
+:::
+
+## Conclusion
+
+We began this journey with a simple question: will the PageRank random surfer always produce the same long term behavior? After developing the full theory of Markov chains, we can now definitively answer this question as yes.
+
+The PageRank chain is both irreducible (every page is reachable from every other page due to the random jump mechanism) and aperiodic (we can return to any page in one step with positive probability). By Theorem 2, this guarantees that:
+
+1. There exists a unique stationary distribution $\pi$
+2. Starting from any initial distribution $\mu_0$, the chain converges to $\pi$ in total variation
+3. The convergence is exponentially fast
+
+This means that no matter where the random surfer starts, after enough time, the proportion of visits to each page will converge to the same values given by $\pi$. These limiting proportions define a well-defined, consistent ranking of webpage importance.
+
+But the power of this theory extends far beyond web search. Irreducible and aperiodic Markov chains appear throughout science, engineering and financial markets. For example, in statistical physics, they can model particle systems reaching thermal equilibrium. In machine learning, they allow for MCMC sampling algorithms like Metropolis-Hastings. In queueing theory, they predict long-run behavior of service systems. Finally, in finance, they model the evolution of asset prices and credit ratings.
+
+Having this rigorous theoretical background on Markov Chains now allows you to tackle all these problems.

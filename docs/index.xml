@@ -10,7 +10,465 @@
 <atom:link href="https://csuraparaju.github.io/index.xml" rel="self" type="application/rss+xml"/>
 <description>Krish Suraparaju&#39;s personal website and blog.</description>
 <generator>quarto-1.8.26</generator>
-<lastBuildDate>Wed, 08 Oct 2025 04:00:00 GMT</lastBuildDate>
+<lastBuildDate>Wed, 15 Oct 2025 04:00:00 GMT</lastBuildDate>
+<item>
+  <title>PageRank and Markov Chains</title>
+  <dc:creator>Krish Suraparaju</dc:creator>
+  <link>https://csuraparaju.github.io/posts/markov-chains/</link>
+  <description><![CDATA[ 
+
+
+
+
+
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Markov Chains are fundamental mathematical models for sequence of random events, where the probability of the next event depends only on the current event, not the entire past history. These models revolutionized computer science, economics, and even bioinformatics. In this post, I will cover much of the theory required to study these models. I will limit my discussion to mostly finite state space markov chains, but the proofs can be extended for the infinite state space as well.</p>
+</section>
+<section id="motivating-example" class="level2">
+<h2 class="anchored" data-anchor-id="motivating-example">Motivating Example</h2>
+<p>Imagine you’re Larry Page in 1996 researching a topic, say “jaguars.” There is a new database of information on the rise - the world wide web - so you decided to start there. You search through hundreds of thousands of web pages and find thousands that mention “jaguar”. However, you find pages about the animal, the car, the football team, a rock band, and random pages that just happen to use the word. You can’t manually read through all these pages to find the best ones.</p>
+<p>Among all these pages that match your keywords, you want to automatically rank them in order of relative importance so you can start your search. Let’s model this formally: Suppose you have <img src="https://latex.codecogs.com/png.latex?N"> webpages, interconnected via hyperlinks. A subset of these pages are relevant to your query. How do you rank this subset by importance?</p>
+<p>An obvious thing to do would be to randomly pick, say the first 5 pages, from the subset and read them. The issue with this approach is that you could get really unlucky and pick 5 pages which are totally unrelated to your topic, like obscure pages that barely mention jaguars. But maybe using randomness wasn’t the problem here. Maybe the problem was that you were picking uniformly at random, treating all pages as equally likely to be useful. What if instead, you used randomness in a smarter way?</p>
+<p>Imagine you’re browsing the web, starting from one of the pages that mentions “jaguar.” You read the page, then randomly click on one of its outbound links, moving to a new page. You repeat this process, following the web’s hyperlinks. But you don’t browse forever in a single path. Occasionally, say with probability <img src="https://latex.codecogs.com/png.latex?%5Calpha"> you get bored, close your browser, and jump to a completely random page in the subset to start exploring again. If you simulate this process for a long time, you will find that the surfer visits certain pages much more frequently than others. For example, you will find that pages with many incoming links (or links from other “popular” pages) will be visited more often.</p>
+<p>The “importance” of a page can be defined as the long-run proportion of time this random surfer spends on that page. This simple heuristic is the core logic behind PageRank, the algorithm that powered Google’s initial success. We will see that the random surfer model is also a Markov model, and that the long-run proportion of time spent by the random surfer corresponds to the stationary distribution.</p>
+<p>To get more intuition for how this works, I’ve written a simulation below. Each node in the graph represents a webpage (Notated by “Pg n” where n is the page number). A directed edge <img src="https://latex.codecogs.com/png.latex?i%20%5Cto%20j"> represents a hyperlink in webpage <img src="https://latex.codecogs.com/png.latex?i"> pointing to webpage <img src="https://latex.codecogs.com/png.latex?j">. Initially, the surfer starts out on a random page. As the simulation progresses, we track the number of times the surfer visited each page, and redraw its size as a function of the relative visits. In the end, the bigger a node is, the more it was visited by the surfer (and therefore, the more “important” it is).</p>
+<div class="gradio-iframe-container">
+  <iframe src="https://csurapar-page-rank-vis.hf.space?__theme=light" frameborder="0"></iframe>
+</div>
+<p>A question you might now ask is, will this random surfer always produce the same long term behavior? That is, is the heuristic we use to define the “importance” of a page going to change between each run of the random surfer? If it does, then this algorithm would not be any good, since we were looking for a definitive ranking of the importance of webpages.</p>
+<p>To answer this question, we need to study Markov chains and the stationary distribution more rigorously.</p>
+</section>
+<section id="markov-chains" class="level2">
+<h2 class="anchored" data-anchor-id="markov-chains">Markov Chains</h2>
+<p>Let’s start with the definition of a Markov Chain.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition 1
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A Markov chain on a state space <img src="https://latex.codecogs.com/png.latex?%5Cchi"> is a family of random variables <img src="https://latex.codecogs.com/png.latex?X_0,%20X_1,%20%5Ccdots"> such that for all <img src="https://latex.codecogs.com/png.latex?n%20%5Cin%20%5Cmathbb%7BN%7D">, and <img src="https://latex.codecogs.com/png.latex?x_0,%20%5Ccdots,%20x_n,%20x_%7Bn+1%7D%20%5Cin%20%5Cchi"> we have <img src="https://latex.codecogs.com/png.latex?%0A%5Cmathbb%7BP%7D%5BX_%7Bn+1%7D%20=%20x_%7Bn+1%7D%20%5Cmid%20%5C%7BX_k%20=%20x_k%20%5Cmid%200%20%5Cleq%20k%20%5Cleq%20n%5C%7D%5D%20=%20%5Cmathbb%7BP%7D%5BX_%7Bn+1%7D%20=%20x_%7Bn+1%7D%20%5Cmid%20X_n%20=%20x_n%5D%0A"></p>
+</div>
+</div>
+<p>The above property is also known as the Markov Property. A time homogeneous Markov chain is a Markov chain where <img src="https://latex.codecogs.com/png.latex?%0A%5Cmathbb%7BP%7D%5BX_%7Bn+1%7D%20=%20y%20%5Cmid%20X_n%20=%20x%5D%20=%20%5Cmathbb%7BP%7D%5BX_%7B1%7D%20=%20y%20%5Cmid%20X_0%20=%20x%5D%0A"> for all <img src="https://latex.codecogs.com/png.latex?x,%20y%20%5Cin%20%5Cchi"> and <img src="https://latex.codecogs.com/png.latex?n%20%5Cin%20%5Cmathbb%7BN%7D">. In the remaining of the discussion we will only consider time homogeneous Markov chains because they can be represented as a single transition matrix, not dependent on time <img src="https://latex.codecogs.com/png.latex?%0AP(x,%20y)%20:=%20%5Cmathbb%7BP%7D%5BX_1%20=%20y%20%5Cmid%20X_0%20=%20x%5D%0A"> where <img src="https://latex.codecogs.com/png.latex?x,%20y"> are the indices into the matrix <img src="https://latex.codecogs.com/png.latex?P">. This seems a bit silly, but reframing the problem this way allows us to use powerful tools/techniques from linear algebra. Using purely probabilistic methods when working with Markov chains is often very ugly, and the matrix formulation is preferred.</p>
+<div class="callout callout-style-simple callout-none no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">None</span>Example
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Let’s try to come up with a transition matrix for the random web surfer Markov Chain we discussed above. Suppose that our state space is the set of all <img src="https://latex.codecogs.com/png.latex?N"> webpages that are relevant to our query. So, <img src="https://latex.codecogs.com/png.latex?%5Cchi%20=%20%5C%7B1,%202,%20%5Ccdots,%20N%20%5C%7D">. For each page <img src="https://latex.codecogs.com/png.latex?i%20%5Cin%20%5Cchi">, let <img src="https://latex.codecogs.com/png.latex?d_i"> denote the number of outbound links from that page. We allow our surfer to follow a random outbound link from the current page with probability <img src="https://latex.codecogs.com/png.latex?(1%20-%20%5Calpha)">. We also want the surfer to pick a uniformly random page from all <img src="https://latex.codecogs.com/png.latex?N"> pages and go there with probability <img src="https://latex.codecogs.com/png.latex?%5Calpha">.</p>
+<p>Therefore, the transition probability from page <img src="https://latex.codecogs.com/png.latex?i"> to page <img src="https://latex.codecogs.com/png.latex?j"> is: <img src="https://latex.codecogs.com/png.latex?%0AP(i,%20j)%20=%20%5Cbegin%7Bcases%7D%20(1-%20%5Calpha)%20%5Ccdot%20%5Cfrac%7B1%7D%7Bd_i%7D%20+%20%5Cfrac%7B%5Calpha%7D%7BN%7D%20&amp;&amp;%20%5Ctext%7B%20if%20there%20exists%20a%20link%20from%20%7D%20i%20%5Cto%20j%20%5C%5C%20%5Cfrac%7B%5Calpha%7D%7BN%7D%20&amp;&amp;%20%5Ctext%7B%20otherwise%7D%20%5Cend%7Bcases%7D%0A"></p>
+</div>
+</div>
+<p>Let’s prove some basic propositions about this new object we defined.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Proposition 1
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For any <img src="https://latex.codecogs.com/png.latex?x_0,%20%5Ccdots,%20x_n%20%5Cin%20%5Cchi">, <img src="https://latex.codecogs.com/png.latex?%0A%5Cmathbb%7BP%7D%5BX_n%20=%20y%20%5Cmid%20X_0%20=%20x%5D%20=%20P%5En%20(x,%20y)%0A"> where <img src="https://latex.codecogs.com/png.latex?P%5En"> means the nth power of the matrix <img src="https://latex.codecogs.com/png.latex?P">.</p>
+</div>
+</div>
+<p>Proof: We proceed by induction on <img src="https://latex.codecogs.com/png.latex?n">. The base cases <img src="https://latex.codecogs.com/png.latex?n=1"> follows by definition. So assume that the result holds for <img src="https://latex.codecogs.com/png.latex?n">. We need to show it holds for <img src="https://latex.codecogs.com/png.latex?n+1">. We first condition on <img src="https://latex.codecogs.com/png.latex?X_n">: <img src="https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Bflalign%7D%0A%5Cmathbb%7BP%7D%5BX_%7Bn%20+%201%7D%20=%20y%20%5Cmid%20X_0%20=%20x%5D%20&amp;=%20%5Csum_%7Bz%20%5Cin%20%5Cchi%7D%20%5Cmathbb%7BP%7D%5BX_%7Bn+1%7D%20=%20y%20%5Cmid%20X_n%20=%20z,%20X_0%20=%20x%5D%20%5Ccdot%20%5Cmathbb%7BP%7D%5BX_n%20=%20z%20%5Cmid%20X_0%20=%20x%5D%20&amp;&amp;%5C%5C%0A&amp;=%20%5Csum_%7Bz%20%5Cin%20%5Cchi%7D%20%5Cmathbb%7BP%7D%5BX_%7Bn+1%7D%20=%20y%20%5Cmid%20X_n%20=%20z%5D%20%5Ccdot%20%5Cmathbb%7BP%7D%5BX_n%20=%20z%20%5Cmid%20X_0%20=%20x%5D%20%5Ctag%7BMarkov%20Property%7D%20&amp;&amp;%5C%5C%0A&amp;=%20%5Csum_%7Bz%20%5Cin%20%5Cchi%7D%20P(z,%20y)%20%5Ccdot%20%5Cmathbb%7BP%7D%5BX_n%20=%20z%20%5Cmid%20X_0%20=%20x%5D%20%5Ctag%7BDefinition%20of%20$P$%7D%20&amp;&amp;%5C%5C%0A&amp;=%20%5Csum_%7Bz%20%5Cin%20%5Cchi%7D%20P(z,%20y)%20%5Ccdot%20P%5En%20(x,%20z)%20%5Ctag%7BInduction%20hypothesis%7D%20&amp;&amp;%5C%5C%0A&amp;=%20P%5E%7Bn+1%7D%20(x,%20y)%20%5Ctag%7BMatrix%20mult.%7D%0A%5Cend%7Bflalign%7D%0A"> as desired.</p>
+<p>Now, we can characterize how a Markov chain <img src="https://latex.codecogs.com/png.latex?X_n"> with transition matrix <img src="https://latex.codecogs.com/png.latex?P"> and initial distribution <img src="https://latex.codecogs.com/png.latex?%5Cmu_0"> over time.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Proposition 2
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <img src="https://latex.codecogs.com/png.latex?X_0%20%5Csim%20%5Cmu_0"> (i.e., <img src="https://latex.codecogs.com/png.latex?%5Cmathbb%7BP%7D%5BX_0%20=%20x%5D%20=%20%5Cmu_0%20(x)"> for all <img src="https://latex.codecogs.com/png.latex?x%20%5Cin%20%5Cchi">) then <img src="https://latex.codecogs.com/png.latex?X_n%20%5Csim%20%5Cmu_0%20P%5En"> (taken as a matrix product)</p>
+</div>
+</div>
+<p>Proof: We need to show that <img src="https://latex.codecogs.com/png.latex?%5Cmathbb%7BP%7D%5BX_n%20=%20y%5D%20=%20(%5Cmu_0%20P%5En)(y)"> for all <img src="https://latex.codecogs.com/png.latex?y%20%5Cin%20%5Cchi">.</p>
+<p>We condition on the initial state <img src="https://latex.codecogs.com/png.latex?X_0">:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0A%5Cmathbb%7BP%7D%5BX_n%20=%20y%5D%20&amp;=%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%5Cmathbb%7BP%7D%5BX_n%20=%20y%20%5Cmid%20X_0%20=%20x%5D%20%5Ccdot%20%5Cmathbb%7BP%7D%5BX_0%20=%20x%5D%20%5Ctag%7BLaw%20of%20total%20probability%7D%20%5C%5C%0A&amp;=%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20P%5En(x,%20y)%20%5Ccdot%20%5Cmathbb%7BP%7D%5BX_0%20=%20x%5D%20%5Ctag%7BProposition%201%7D%20%5C%5C%0A&amp;=%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20P%5En(x,%20y)%20%5Ccdot%20%5Cmu_0(x)%20%5Ctag%7BDefinition%20of%20$%5Cmu_0$%7D%20%5C%5C%0A&amp;=%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%5Cmu_0(x)%20%5Ccdot%20P%5En(x,%20y)%20%20%5C%5C%0A&amp;=%20(%5Cmu_0%20P%5En)(y)%20%5Ctag%7BMatrix%20mult.%7D%0A%5Cend%7Balign*%7D"></p>
+<p>as desired.</p>
+</section>
+<section id="the-stationary-distribution" class="level2">
+<h2 class="anchored" data-anchor-id="the-stationary-distribution">The Stationary Distribution</h2>
+<p>Let’s return to our PageRank example. Notice that the surfer never stops exploring the web. They keep browsing indefinitely, either following links or opening up new pages in a browser. This raises a natural question: What happens to the distribution of the surfer’s location after a very long time?</p>
+<p>From Proposition 2, we can come up with the recurrence relation: <img src="https://latex.codecogs.com/png.latex?%0A%5Cmu_%7Bn%20+%201%7D%20=%20%5Cmu_0%20P%5E%7Bn%20+%201%7D%20=%20(%5Cmu_0%20P%5En)%20P%20=%20%5Cmu_n%20P%0A"> As <img src="https://latex.codecogs.com/png.latex?n%20%5Cto%20%5Cinfty">, does this converge to anything (i.e., does there exists a limiting distribution)? And if so, does the limiting distribution depend on where we started <img src="https://latex.codecogs.com/png.latex?%5Cmu_0">?</p>
+<p>Often, a good way to answer questions like these is to assume something about the statement and see what happens. So, lets assume that there exists a limiting distribution <img src="https://latex.codecogs.com/png.latex?%5Cpi"> such that <img src="https://latex.codecogs.com/png.latex?%5Cmu_n%20%5Cto%20%5Cpi"> as <img src="https://latex.codecogs.com/png.latex?n%20%5Cto%20%5Cinfty">. This leads us to proposition 3:</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Proposition 3
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <img src="https://latex.codecogs.com/png.latex?%5Cpi"> is a limiting distribution of the Markov chian <img src="https://latex.codecogs.com/png.latex?P">, then <img src="https://latex.codecogs.com/png.latex?%5Cpi%20=%20%5Cpi%20P"></p>
+</div>
+</div>
+<p><em>Proof</em>: We take limits on both sides of our recurrence relation: <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0A%5Clim_%7Bn%20%5Cto%20%5Cinfty%7D%20%5Cmu_%7Bn%20+%201%7D%20&amp;=%20%5Clim_%7Bn%20%5Cto%20%5Cinfty%7D(%5Cmu_n%20P)%20%5C%5C%0A%5Clim_%7Bn%20%5Cto%20%5Cinfty%7D%20%5Cmu_%7Bn%20+%201%7D%20&amp;=%20(%5Clim_%7Bn%20%5Cto%20%5Cinfty%7D%20%5Cmu_n)%20P%20%20%20%5Ctag%7BMatrix%20mul%20is%20continuous%7D%5C%5C%0A%5Cpi%20&amp;=%20%5Cpi%20P%20%20%20%5Ctag%7BSince%20$%5Cmu_n%20%5Cto%20%5Cpi$%7D%5C%5C%0A%5Cend%7Balign*%7D"></p>
+<p>That’s a pretty interesting result! Any limiting distribution <img src="https://latex.codecogs.com/png.latex?%5Cpi"> of a Markov chain (if it exists) is such that <img src="https://latex.codecogs.com/png.latex?%5Cpi%20=%20%5Cpi%20P">. This special kind of distribution is known as <strong>stationary distribution</strong>. Let’s see if we can use this property to help us answer our original question. Specifically, is the converse of proposition 3 true? Is it the case that any distribution <img src="https://latex.codecogs.com/png.latex?%5Cpi"> such that <img src="https://latex.codecogs.com/png.latex?%5Cpi%20=%20%5Cpi%20P"> must be a limiting distribution? If it was, then we’d be done! We would have found a way to completely characterize what the limiting distribution of a Markov Chain looks like.</p>
+<p>But sadly, that is not the case.</p>
+<section id="a-counter-example" class="level3">
+<h3 class="anchored" data-anchor-id="a-counter-example">A Counter Example</h3>
+<p>Consider a Markov chain on <img src="https://latex.codecogs.com/png.latex?%5Cchi%20=%20%5C%7B0,%201,%202,%203%5C%7D"> with transition matrix <img src="https://latex.codecogs.com/png.latex?%0AP%20=%20%5Cbegin%7Bpmatrix%7D%0A1%20&amp;%200%20&amp;%200%20&amp;%200%20%5C%5C%0A%5Cfrac%7B1%7D%7B3%7D%20&amp;%20%5Cfrac%7B1%7D%7B3%7D%20&amp;%20%5Cfrac%7B1%7D%7B3%7D%20&amp;%200%20%5C%5C%0A0%20&amp;%20%5Cfrac%7B1%7D%7B3%7D%20&amp;%20%5Cfrac%7B1%7D%7B3%7D%20&amp;%20%5Cfrac%7B1%7D%7B3%7D%20%5C%5C%0A0%20&amp;%200%20&amp;%200%20&amp;%201%5C%5C%0A%5Cend%7Bpmatrix%7D%0A"></p>
+<p>Notice that the distribution <img src="https://latex.codecogs.com/png.latex?%5Cpi_1%20=%20%5Cbegin%7Bpmatrix%7D%20%5Csqrt%7B2%7D%20&amp;%200%20&amp;%200%20&amp;%20%5Csqrt%7B2%7D%20%5Cend%7Bpmatrix%7D"> (read as a <img src="https://latex.codecogs.com/png.latex?1%20%5Ctimes%204"> row matrix) of <img src="https://latex.codecogs.com/png.latex?P"> has the property discussed in proposition 3 because:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Balign*%7D%0A%5Cpi_1%20P%20&amp;=%20%5Cbegin%7Bpmatrix%7D%20%5Csqrt%7B2%7D%20&amp;%200%20&amp;%200%20&amp;%20%5Csqrt%7B2%7D%20%5Cend%7Bpmatrix%7D%20%20%5Cbegin%7Bpmatrix%7D%0A1%20&amp;%200%20&amp;%200%20&amp;%200%20%5C%5C%0A%5Cfrac%7B1%7D%7B3%7D%20&amp;%20%5Cfrac%7B1%7D%7B3%7D%20&amp;%20%5Cfrac%7B1%7D%7B3%7D%20&amp;%200%20%5C%5C%0A0%20&amp;%20%5Cfrac%7B1%7D%7B3%7D%20&amp;%20%5Cfrac%7B1%7D%7B3%7D%20&amp;%20%5Cfrac%7B1%7D%7B3%7D%20%5C%5C%0A0%20&amp;%200%20&amp;%200%20&amp;%201%5C%5C%0A%5Cend%7Bpmatrix%7D%20%5C%5C%0A&amp;=%20%5Cbegin%7Bpmatrix%7D%20%5Csqrt%7B2%7D%20&amp;%200%20&amp;%200%20&amp;%20%5Csqrt%7B2%7D%20%5Cend%7Bpmatrix%7D%20%5C%5C%0A&amp;=%20%5Cpi_1%0A%5Cend%7Balign*%7D%0A"></p>
+<p>Additionally, the distribution <img src="https://latex.codecogs.com/png.latex?%5Cpi_2%20=%20%5Cbegin%7Bpmatrix%7D%20e%20&amp;%200%20&amp;%200%20&amp;%20e%20%5Cend%7Bpmatrix%7D"> of <img src="https://latex.codecogs.com/png.latex?P"> also has the property discussed in proposition 3 because:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Balign*%7D%0A%5Cpi_2%20P%20&amp;=%20%5Cbegin%7Bpmatrix%7D%20e%20&amp;%200%20&amp;%200%20&amp;%20e%5Cend%7Bpmatrix%7D%20%20%5Cbegin%7Bpmatrix%7D%0A1%20&amp;%200%20&amp;%200%20&amp;%200%20%5C%5C%0A%5Cfrac%7B1%7D%7B3%7D%20&amp;%20%5Cfrac%7B1%7D%7B3%7D%20&amp;%20%5Cfrac%7B1%7D%7B3%7D%20&amp;%200%20%5C%5C%0A0%20&amp;%20%5Cfrac%7B1%7D%7B3%7D%20&amp;%20%5Cfrac%7B1%7D%7B3%7D%20&amp;%20%5Cfrac%7B1%7D%7B3%7D%20%5C%5C%0A0%20&amp;%200%20&amp;%200%20&amp;%201%5C%5C%0A%5Cend%7Bpmatrix%7D%20%5C%5C%0A&amp;=%20%5Cbegin%7Bpmatrix%7D%20e%20&amp;%200%20&amp;%200%20&amp;%20e%20%5Cend%7Bpmatrix%7D%20%5C%5C%0A&amp;=%20%5Cpi_2%0A%5Cend%7Balign*%7D%0A"></p>
+<p>This is a problem because if the converse of proposition 3 were true, then any distribution that is stationary would be the limiting distribution of <img src="https://latex.codecogs.com/png.latex?P">. But we’ve just shown that both <img src="https://latex.codecogs.com/png.latex?%5Cpi_1"> and <img src="https://latex.codecogs.com/png.latex?%5Cpi_2"> are stationary distributions, and they are different! A limiting distribution must be unique (a Markov chain can’t converge to two different distributions at the same time), so this shows that not every stationary distribution is a limiting distribution.</p>
+<div class="callout callout-style-simple callout-none no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">None</span>Remark
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>You may be wondering how I came up with the two different stationary distribution for <img src="https://latex.codecogs.com/png.latex?P">. Notice that we can treat <img src="https://latex.codecogs.com/png.latex?%5Cpi"> as a row-vector. In linear algebra terms, the stationary property means that <img src="https://latex.codecogs.com/png.latex?%5Cpi"> is a left-eigenvector of <img src="https://latex.codecogs.com/png.latex?P"> with eigenvalue <img src="https://latex.codecogs.com/png.latex?1">. So, one way to find a stationary distribution is to compute a left-eigen vector with eigen-value <img src="https://latex.codecogs.com/png.latex?1"> of <img src="https://latex.codecogs.com/png.latex?P">. Of course, not all left-eigenvectors of <img src="https://latex.codecogs.com/png.latex?P"> will be a valid probability distribution (some may have negative entries, or worse, complex entires). So you need to be careful when computing eigenvectors and treating them as probability distributions.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="irreducibility" class="level2">
+<h2 class="anchored" data-anchor-id="irreducibility">Irreducibility</h2>
+<p>We’ve seen that a stationary distribution need not be unique for a Markov Chain, which is a problem because if a stationary distribution could ever hope be a limiting distribution, then it has to be the <em>unique</em> stationary distribution. Let’s study the conditions under which a stationary distribution is <em>the</em> stationary distribution of a Markov Chain.</p>
+<p>Going from the example above, you might notice that the issue there was that there were states which were “absorbing”, meaning once our chain entered that state, it remained there forever. For example, state <img src="https://latex.codecogs.com/png.latex?0"> is absorbing because <img src="https://latex.codecogs.com/png.latex?P(0,%201)%20=%20P(0,%202)%20=%20P(0,%203)%20%20=%200"> and so the chain would never transition out of that state. Similarly, state <img src="https://latex.codecogs.com/png.latex?3"> is also an absorbing state. If we eliminate this behavior, then we might have a unique stationary distribution?</p>
+<p>This observation immediately leads us to the following definition of irreducibility</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition 3
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A Markov chain is irreducible if every state is eventually reachable from every other state. That is, for all <img src="https://latex.codecogs.com/png.latex?x,%20y%20%5Cin%20%5Cchi">, there exists some <img src="https://latex.codecogs.com/png.latex?n%20%5Cgeq%200"> such that <img src="https://latex.codecogs.com/png.latex?P%5En(x,%20y)%20%3E%200">.</p>
+</div>
+</div>
+<div class="callout callout-style-simple callout-none no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">None</span>Example: PageRank is Irreducible
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Recall our PageRank transition matrix: <img src="https://latex.codecogs.com/png.latex?%0AP(i,%20j)%20=%20%5Cbegin%7Bcases%7D%20(1-%20%5Calpha)%20%5Ccdot%20%5Cfrac%7B1%7D%7Bd_i%7D%20+%20%5Cfrac%7B%5Calpha%7D%7BN%7D%20&amp;&amp;%20%5Ctext%7B%20if%20there%20exists%20a%20link%20from%20%7D%20i%20%5Cto%20j%20%5C%5C%20%5Cfrac%7B%5Calpha%7D%7BN%7D%20&amp;&amp;%20%5Ctext%7B%20otherwise%7D%20%5Cend%7Bcases%7D%0A"></p>
+<p>This chain is irreducible. From any page <img src="https://latex.codecogs.com/png.latex?i">, there’s at least a probability <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7B%5Calpha%7D%7BN%7D"> of jumping to any other page <img src="https://latex.codecogs.com/png.latex?j"> in one step (via the random jump mechanism). Therefore <img src="https://latex.codecogs.com/png.latex?P(i,%20j)%20%5Cgeq%20%5Cfrac%7B%5Calpha%7D%7BN%7D%20%3E%200"> for all <img src="https://latex.codecogs.com/png.latex?i,%20j">, which immediately implies every state is accessible from every other state.</p>
+</div>
+</div>
+<p>Now, let’s try to link irreducibility with stationary distributions. Specifically, lets see if irreducibility gives us any information about what a stationary distribution <img src="https://latex.codecogs.com/png.latex?%5Cpi"> may look like. Because we are assuming that every state is reachable from every other state, one could guess that <img src="https://latex.codecogs.com/png.latex?%5Cpi(x)%20%3E%200"> for all <img src="https://latex.codecogs.com/png.latex?x%20%5Cin%20%5Cchi">, since otherwise, there would be a state <img src="https://latex.codecogs.com/png.latex?x"> for which <img src="https://latex.codecogs.com/png.latex?%5Cmathbb%7BP%7D%5BX_n%20=%20x%5D%20=%200"> and make this state unreachable.</p>
+<p>This leads us to the following proposition:</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Proposition 4
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <img src="https://latex.codecogs.com/png.latex?%5Cpi"> is a stationary distribution and <img src="https://latex.codecogs.com/png.latex?P"> is the transition matrix of an irreducible Markov Chain <img src="https://latex.codecogs.com/png.latex?P">, then <img src="https://latex.codecogs.com/png.latex?%5Cpi%20(x)%20%3E%200"> for all <img src="https://latex.codecogs.com/png.latex?x%20%5Cin%20%5Cchi">.</p>
+</div>
+</div>
+<p><em>Proof</em>: Assume for contradiction that there exists an <img src="https://latex.codecogs.com/png.latex?x%20%5Cin%20%5Cchi"> such that <img src="https://latex.codecogs.com/png.latex?%5Cpi%20(x)%20=%200">. Because <img src="https://latex.codecogs.com/png.latex?%5Cpi"> is stationary, this means we have</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Balign*%7D%0A0%20=%20%5Cpi%20(x)%20&amp;=%20(%5Cpi%20P)%20(x)%20%5C%5C%0A&amp;=%20%5Csum_%7By%20%5Cin%20%5Cchi%7D%20%5Cpi%20(y)%20P(y,%20x)%20&amp;%20%5Ctag%7BMatrix%20mult.%7D%5C%5C%0A&amp;=%20%5Csum_%7B%5Csubstack%7By%20%5Cin%20%5Cchi%20%5C%5C%20y%20%5Cneq%20x%7D%7D%20%5Cpi%20(y)%20P(y,%20x)%20%5Ctag%7BSince%20$%5Cpi(x)$%20=%200%7D%20%5C%5C%0A%5Cend%7Balign*%7D%0A"> Notice that each term on the right hand side is non negative (since <img src="https://latex.codecogs.com/png.latex?%5Cpi(y)%20%5Cgeq%200"> and <img src="https://latex.codecogs.com/png.latex?P(y,%20x)%20%5Cgeq%200">). The only way a sum of non negative term can be zero is if each term is zero. This means we have <img src="https://latex.codecogs.com/png.latex?%0A%5Cpi(y)%20P(y,%20x)%20=%200%0A"> for all <img src="https://latex.codecogs.com/png.latex?y%20%5Cin%20%5Cchi"> and so either <img src="https://latex.codecogs.com/png.latex?%5Cpi(y)%20=%200"> or <img src="https://latex.codecogs.com/png.latex?P(y,%20x)%20=%200">. Now, because we assumed <img src="https://latex.codecogs.com/png.latex?P"> was irreducible, there must exist a <img src="https://latex.codecogs.com/png.latex?y%20%5Cneq%20x"> in <img src="https://latex.codecogs.com/png.latex?%5Cchi"> such that <img src="https://latex.codecogs.com/png.latex?P(y,%20x)%20%3E%200"> (otherwise, <img src="https://latex.codecogs.com/png.latex?x"> would be unreachable from any other state, no matter how many steps the chain takes). Therefore, for this <img src="https://latex.codecogs.com/png.latex?y">, it must be the case that <img src="https://latex.codecogs.com/png.latex?%5Cpi(y)%20=%200">.</p>
+<p>We can now apply the same argument to <img src="https://latex.codecogs.com/png.latex?y"> and get that there is a <img src="https://latex.codecogs.com/png.latex?z%20%5Cin%20%5Cchi"> such that <img src="https://latex.codecogs.com/png.latex?P(z,%20y)%20%3E%200">, forcing <img src="https://latex.codecogs.com/png.latex?%5Cpi(z)%20=%200">. We can continue this argument inductively, and since every state is reachable from every other state (by irreducibility), we can show that <img src="https://latex.codecogs.com/png.latex?%5Cpi(w)%20=%200"> for all <img src="https://latex.codecogs.com/png.latex?w%20%5Cin%20%5Cchi">.</p>
+<p>But this contradicts the fact that <img src="https://latex.codecogs.com/png.latex?%5Cpi"> is a probability distribution, which requires</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Csum_%7Bw%20%5Cin%20%5Cchi%7D%20%5Cpi(w)%20=%201%0A"></p>
+<p>Therefore, <img src="https://latex.codecogs.com/png.latex?%5Cpi(x)%20%3E%200"> for all <img src="https://latex.codecogs.com/png.latex?x%20%5Cin%20%5Cchi">, as desired.</p>
+<p>Using this proposition, we can now prove a big theorem which tells us when a Markov Chain has a unique stationary distribution.</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Theorem 1 (Uniqueness)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <img src="https://latex.codecogs.com/png.latex?P"> is the transition matrix of an irreducible Markov Chain, then there exists a unique stationary distribution <img src="https://latex.codecogs.com/png.latex?%5Cpi"></p>
+</div>
+</div>
+<p><em>Proof:</em></p>
+<p>I will skip the existence part of this theorem because it gets extremely technical and not suited for this post. If you are curious, you should check out <a href="https://math.uchicago.edu/~may/REU2017/REUPapers/Freedman.pdf">this</a> resource</p>
+<p>Lets prove uniqueness. Suppose <img src="https://latex.codecogs.com/png.latex?%5Cpi_1"> and <img src="https://latex.codecogs.com/png.latex?%5Cpi_2"> are two stationary distributions of <img src="https://latex.codecogs.com/png.latex?P">. Because our state space is finite, and <img src="https://latex.codecogs.com/png.latex?%5Cpi_1(x),%20%5Cpi_2(x)%20%3E%200"> by proposition 4, for all <img src="https://latex.codecogs.com/png.latex?x%20%5Cin%20%5Cchi">, we can choose</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0Ax_0%20:=%5Ctext%7Barg%7D%5Cmin%5Climits_%7Bx%20%5Cin%20%5Cchi%7D%5C,%5Cleft(%20%5Cfrac%7B%5Cpi_1(x)%7D%7B%5Cpi_2(x)%7D%20%5Cright)%0A"></p>
+<p>Let <img src="https://latex.codecogs.com/png.latex?y"> be an arbitrary state in <img src="https://latex.codecogs.com/png.latex?%5Cchi">. By irreducibility, there exists an <img src="https://latex.codecogs.com/png.latex?n%20%5Cin%20N"> such that <img src="https://latex.codecogs.com/png.latex?P%5En%20(y,%20x_0)%20%3E%200">. This means that the Markov Chain can reach to <img src="https://latex.codecogs.com/png.latex?x_0"> from <img src="https://latex.codecogs.com/png.latex?y"> in <img src="https://latex.codecogs.com/png.latex?n"> steps via a finite step of transitions <img src="https://latex.codecogs.com/png.latex?y%20=%20x_n%20%5Cto%20x_%7Bn-1%7D%20%5Cto%20%5Cdots%20%5Cto%20x_1%20%5Cto%20x_0"> where <img src="https://latex.codecogs.com/png.latex?P(x_i,%20x_%7Bi-1%7D)%20%3E%200"> for all <img src="https://latex.codecogs.com/png.latex?i%20=%201,%202,%20%5Cldots,%20n">.</p>
+<p>We will prove by induction on the path length that <img src="https://latex.codecogs.com/png.latex?%20%5Cfrac%7B%5Cpi_1(y)%7D%7B%5Cpi_2(y)%7D%20=%20%5Cfrac%7B%5Cpi_1(x_0)%7D%7B%5Cpi_2(x_0)%7D%20"> The base case is trivial since it follows by definition. So, assume <img src="https://latex.codecogs.com/png.latex?%20%5Cfrac%7B%5Cpi_1(x_%7Bi%7D)%7D%7B%5Cpi_2(x_%7Bi%7D)%7D%20=%20%5Cfrac%7B%5Cpi_1(x_0)%7D%7B%5Cpi_2(x_0)%7D%20"> for some <img src="https://latex.codecogs.com/png.latex?1%20%5Cleq%20i%20%3C%20n">.</p>
+<p>Now, we can write:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Bflalign%7D%0A%5Cpi_1(x_%7Bi%7D)%20=%20(%5Cpi_1%20P)%20(x_%7Bi%7D)%20&amp;=%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%5Cpi_1(x)%20P(x,%20x_%7Bi%7D)%20%5Ctag%7B$%5Cpi_1$%20is%20stationary%7D%5C%5C%0A&amp;=%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%5Cfrac%7B%5Cpi_1(x)%7D%7B%5Cpi_2(x)%7D%20%5Cpi_2(x)%20P(x,%20x_%7Bi%7D)%20%5Ctag%7BMultiply%20RHS%20by%20$%5Cpi_2(x)%20/%20%5Cpi_2(x)$%7D%5C%5C%0A&amp;%5Cgeq%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%5Cfrac%7B%5Cpi_1(x_%7Bi%7D)%7D%7B%5Cpi_2(x_%7Bi%7D)%7D%20%5Cpi_2(x)%20P(x,%20x_%7Bi%7D)%20%5Ctag%7B$x_%7Bi%7D$%20achieves%20minimum,%20I.H.%7D%5C%5C%0A&amp;=%20%5Cfrac%7B%5Cpi_1(x_%7Bi%7D)%7D%7B%5Cpi_2(x_%7Bi%7D)%7D%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%5Cpi_2(x)%20P(x,%20x_%7Bi%7D)%20%5Ctag%7BRatio%20is%20constant%7D%5C%5C%0A&amp;=%20%5Cfrac%7B%5Cpi_1(x_%7Bi%7D)%7D%7B%5Cpi_2(x_%7Bi%7D)%7D%20%5Cpi_2(x_%7Bi%7D)%20%5Ctag%7B$%5Cpi_2$%20is%20stationary%7D%5C%5C%0A&amp;=%20%5Cpi_1(x_%7Bi%7D)%0A%5Cend%7Bflalign%7D%0A"></p>
+<p>Notice that because LHS = RHS, the inequality in between must be an equality. Therefore: <img src="https://latex.codecogs.com/png.latex?%0A%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%5Cfrac%7B%5Cpi_1(x)%7D%7B%5Cpi_2(x)%7D%20%5Cpi_2(x)%20P(x,%20x_%7Bi%7D)%20=%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%5Cfrac%7B%5Cpi_1(x_%7Bi%7D)%7D%7B%5Cpi_2(x_%7Bi%7D)%7D%20%5Cpi_2(x)%20P(x,%20x_%7Bi%7D)%0A"></p>
+<p>Rearranging: <img src="https://latex.codecogs.com/png.latex?%0A%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%5Cleft%5B%20%5Cfrac%7B%5Cpi_1(x)%7D%7B%5Cpi_2(x)%7D%20-%20%5Cfrac%7B%5Cpi_1(x_%7Bi%7D)%7D%7B%5Cpi_2(x_%7Bi%7D)%7D%20%5Cright%5D%20%5Cpi_2(x)%20P(x,%20x_%7Bi%7D)%20=%200%0A"></p>
+<p>Now, note that <img src="https://latex.codecogs.com/png.latex?%5Cpi_2(x)%20%3E%200"> by proposition 4, and because <img src="https://latex.codecogs.com/png.latex?x_%7Bi%7D"> achieves the minimum, we have <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7B%5Cpi_1(x)%7D%7B%5Cpi_2(x)%7D%20-%20%5Cfrac%7B%5Cpi_1(x_%7Bi%7D)%7D%7B%5Cpi_2(x_%7Bi%7D)%7D%20%5Cgeq%200"> and <img src="https://latex.codecogs.com/png.latex?P(x,%20x_%7Bi%7D)%20%5Cgeq%200"> by definition. Therefore, the only way a sum of non-negative terms is zero is if each term is zero. Thus, for any state <img src="https://latex.codecogs.com/png.latex?x%20%5Cin%20%5Cchi"> with <img src="https://latex.codecogs.com/png.latex?P(x,%20x_%7Bi%7D)%20%3E%200">: <img src="https://latex.codecogs.com/png.latex?%0A%5Cfrac%7B%5Cpi_1(x)%7D%7B%5Cpi_2(x)%7D%20-%20%5Cfrac%7B%5Cpi_1(x_%7Bi%7D)%7D%7B%5Cpi_2(x_%7Bi%7D)%7D%20=%200%20%5Cimplies%20%5Cfrac%7B%5Cpi_1(x)%7D%7B%5Cpi_2(x)%7D%20=%20%5Cfrac%7B%5Cpi_1(x_%7Bi%7D)%7D%7B%5Cpi_2(x_%7Bi%7D)%7D%20=%20%5Cfrac%7B%5Cpi_1(x_0)%7D%7B%5Cpi_2(x_0)%7D%0A"></p>
+<p>In particular, since <img src="https://latex.codecogs.com/png.latex?P(x_%7Bi%20+%201%7D,%20x_%7Bi%7D)%20%3E%200"> by our path construction, we have: <img src="https://latex.codecogs.com/png.latex?%0A%5Cfrac%7B%5Cpi_1(x_%7Bi+1%7D)%7D%7B%5Cpi_2(x_%7Bi+1%7D)%7D%20=%20%5Cfrac%7B%5Cpi_1(x_0)%7D%7B%5Cpi_2(x_0)%7D%0A"></p>
+<p>and by the principle of induction, we can conclude that this holds for all <img src="https://latex.codecogs.com/png.latex?1%20%5Cleq%20i%20%3C%20n">. Therefore, we can conclude that <img src="https://latex.codecogs.com/png.latex?%0A%5Cfrac%7B%5Cpi_1(y)%7D%7B%5Cpi_2(y)%7D%20=%20%5Cfrac%7B%5Cpi_1(x_%7Bn%7D)%7D%7B%5Cpi_2(x_%7Bn%7D)%7D%20=%5Cfrac%7B%5Cpi_1(x_0)%7D%7B%5Cpi_2(x_0)%7D%0A"> as desired.</p>
+<p>Now, since <img src="https://latex.codecogs.com/png.latex?y"> was an arbitrary state, we now know that <img src="https://latex.codecogs.com/png.latex?%20%5Cfrac%7B%5Cpi_1(x)%7D%7B%5Cpi_2(x)%7D%20=%20c%20"> for all <img src="https://latex.codecogs.com/png.latex?x%20%5Cin%20%5Cchi">, where <img src="https://latex.codecogs.com/png.latex?c"> is some positive constant. This means <img src="https://latex.codecogs.com/png.latex?%5Cpi_1(x)%20=%20c%20%5Ccdot%20%5Cpi_2(x)"> for all <img src="https://latex.codecogs.com/png.latex?x">. Now, since both <img src="https://latex.codecogs.com/png.latex?%5Cpi_1,%20%5Cpi_2"> are probability distributions, we have: <img src="https://latex.codecogs.com/png.latex?%0A1%20=%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%5Cpi_1(x)%20=%20%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20c%20%20%5Cpi_2(x)%20=%20c%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%5Cpi_2(x)%20=%20c%0A"></p>
+<p>Therefore <img src="https://latex.codecogs.com/png.latex?c%20=%201">, which implies <img src="https://latex.codecogs.com/png.latex?%5Cpi_1(x)%20=%20%5Cpi_2(x)"> for all <img src="https://latex.codecogs.com/png.latex?x%20%5Cin%20%5Cchi">, as desired.</p>
+<section id="another-counter-example" class="level3">
+<h3 class="anchored" data-anchor-id="another-counter-example">Another Counter Example</h3>
+<p>That was a lot of hard work! But are we done? Surely now that we have a unique stationary distribution, we can claim that the limiting distribution converges to this stationary distribution right?</p>
+<p>Well, not so fast. Let’s consider another example, where <img src="https://latex.codecogs.com/png.latex?%5Cchi%20=%20%5C%7B0,%201%5C%7D"> and the transition matrix is <img src="https://latex.codecogs.com/png.latex?%0AP%20=%20%5Cbegin%7Bpmatrix%7D%0A0%20&amp;%201%20%5C%5C%0A1%20&amp;%200%0A%5Cend%7Bpmatrix%7D%0A"> which is the chain that transitions from <img src="https://latex.codecogs.com/png.latex?0%20%5Cto%201%20%5Cto%200%20%5Cto%201%20%5Ccdots"> deterministically. Notice that the distribution <img src="https://latex.codecogs.com/png.latex?%5Cpi%20=%20%5Cbegin%7Bpmatrix%7D%20%5Cfrac%7B1%7D%7B2%7D%20&amp;%20%5Cfrac%7B1%7D%7B2%7D%5Cend%7Bpmatrix%7D"> is a stationary distribution since <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0A%5Cpi%20P%20&amp;=%20%5Cbegin%7Bpmatrix%7D%20%5Cfrac%7B1%7D%7B2%7D%20&amp;%20%5Cfrac%7B1%7D%7B2%7D%5Cend%7Bpmatrix%7D%20%5Cbegin%7Bpmatrix%7D%0A0%20&amp;%201%20%5C%5C%0A1%20&amp;%200%0A%5Cend%7Bpmatrix%7D%20%5C%5C%0A&amp;=%20%5Cbegin%7Bpmatrix%7D%20%5Cfrac%7B1%7D%7B2%7D%20&amp;%20%5Cfrac%7B1%7D%7B2%7D%5Cend%7Bpmatrix%7D%20=%20%5Cpi%0A%5Cend%7Balign*%7D"></p>
+<p>Additionally, this chain is clearly irreducible, since every state is reachable from every other state. Therefore, <img src="https://latex.codecogs.com/png.latex?%5Cpi"> is the unique stationary distribution from theorem 1. But it is not a limiting distribution. To see why, first note that <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0AP%5E2%20&amp;=%20%5Cbegin%7Bpmatrix%7D%200%20&amp;%201%20%5C%5C%201%20&amp;%200%20%5Cend%7Bpmatrix%7D%20%5Cbegin%7Bpmatrix%7D%200%20&amp;%201%20%5C%5C%201%20&amp;%200%20%5Cend%7Bpmatrix%7D%20=%20%5Cbegin%7Bpmatrix%7D%201%20&amp;%200%20%5C%5C%200%20&amp;%201%20%5Cend%7Bpmatrix%7D%20=%20I%0A%5Cend%7Balign*%7D"></p>
+<p>Therefore, for any <img src="https://latex.codecogs.com/png.latex?n%20%5Cin%20%5Cmathbb%7BN%7D">: <img src="https://latex.codecogs.com/png.latex?%0AP%5En%20=%20%5Cbegin%7Bcases%7D%0AP%5E%7B2k%7D%20=%20(P%5E2)%5Ek%20=%20I%20&amp;%20%5Ctext%7Bif%20%7D%20n%20%5Ctext%7B%20is%20even%7D%20%5C%5C%0AP%5E%7B2k%20+%201%7D%20=%20P%5E%7B2k%7D%20P%20=%20P%20&amp;%20%5Ctext%7Bif%20%7D%20n%20%5Ctext%7B%20is%20odd%7D%0A%5Cend%7Bcases%7D%0A"></p>
+<p>Now consider an initial distribution (read as a 1x2 matrix) <img src="https://latex.codecogs.com/png.latex?%5Cmu_0%20=%20%5Cbegin%7Bpmatrix%7D1%20&amp;%200%5Cend%7Bpmatrix%7D">. This means we can make the simplification: <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0A%5Cmu_0%20P%5En%20&amp;=%20%5Cbegin%7Bpmatrix%7D1%20&amp;%200%5Cend%7Bpmatrix%7DP%5En%20%5C%5C%0A&amp;=%20%5Cbegin%7Bcases%7D%0A%5Cbegin%7Bpmatrix%7D1%20&amp;%200%5Cend%7Bpmatrix%7D%20&amp;%20%5Ctext%7Bif%20%7D%20n%20%5Ctext%7B%20is%20even%7D%20%5C%5C%0A%5Cbegin%7Bpmatrix%7D0%20&amp;%201%5Cend%7Bpmatrix%7D%20&amp;%20%5Ctext%7Bif%20%7D%20n%20%5Ctext%7B%20is%20odd%7D%0A%5Cend%7Bcases%7D%0A%5Cend%7Balign*%7D"></p>
+<p>Since <img src="https://latex.codecogs.com/png.latex?%5Cmu_0%20P%5En"> alternates between <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Bpmatrix%7D1%20&amp;%200%5Cend%7Bpmatrix%7D"> and <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Bpmatrix%7D0%20&amp;%201%5Cend%7Bpmatrix%7D">, the sequence does not converge as <img src="https://latex.codecogs.com/png.latex?n%20%5Cto%20%5Cinfty">. Therefore, no limiting distribution exists.</p>
+</section>
+</section>
+<section id="aperidocity" class="level2">
+<h2 class="anchored" data-anchor-id="aperidocity">Aperidocity</h2>
+<p>What went wrong here? The chain is irreducible and has a unique stationary distribution, but it still doesn’t converge to that distribution. The problem is that the chain exhibits periodic behavior. It oscillates between states <img src="https://latex.codecogs.com/png.latex?0"> and <img src="https://latex.codecogs.com/png.latex?1"> in a predictable cycle, never settling down into a stable long-run pattern.</p>
+<p>This observation motivates our final piece of the puzzle: aperiodicity.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition 4
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The period of a state <img src="https://latex.codecogs.com/png.latex?x"> is the greatest common divisor (gcd) of all possible return times to that state. That is, <img src="https://latex.codecogs.com/png.latex?%0Ad(x)%20=%20%5Cgcd%5C%7Bn%20%5Cgeq%201%20:%20P%5En(x,%20x)%20%3E%200%5C%7D%0A"></p>
+<p>A state <img src="https://latex.codecogs.com/png.latex?x"> is aperiodic if <img src="https://latex.codecogs.com/png.latex?d(x)%20=%201">. A Markov chain is aperiodic if all states are aperiodic.</p>
+</div>
+</div>
+<p>Intuitively, we can think of the set <img src="https://latex.codecogs.com/png.latex?%5C%7Bn%20%5Cgeq%201%20:%20P%5En(x,%20x)%20%3E%200%5C%7D"> as containing all the time steps at which the chain can return to state <img src="https://latex.codecogs.com/png.latex?x">. If this set is <img src="https://latex.codecogs.com/png.latex?%5C%7B2,%204,%206,%208,%20%5Cldots%5C%7D"> (only even numbers), then <img src="https://latex.codecogs.com/png.latex?%5Cgcd%20=%202"> and the state has period 2. If the set is <img src="https://latex.codecogs.com/png.latex?%5C%7B1,%202,%203,%204,%20%5Cldots%5C%7D"> (all positive integers), then <img src="https://latex.codecogs.com/png.latex?%5Cgcd%20=%201"> and the state is aperiodic.</p>
+<p>In our example above, state <img src="https://latex.codecogs.com/png.latex?0"> has period 2 because the chain can only return to state <img src="https://latex.codecogs.com/png.latex?0"> in an even number of steps: <img src="https://latex.codecogs.com/png.latex?P%5E2(0,%200)%20=%201">, <img src="https://latex.codecogs.com/png.latex?P%5E4(0,%200)%20=%201">, and so on. The same is true for state <img src="https://latex.codecogs.com/png.latex?1">. This causes the distribution <img src="https://latex.codecogs.com/png.latex?%5Cmu_0%20P%5En"> to oscillate rather than converge as <img src="https://latex.codecogs.com/png.latex?n%20%5Cto%20%5Cinfty">.</p>
+<div class="callout callout-style-simple callout-none no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">None</span>Example: PageRank is Aperiodic
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Recall our PageRank transition matrix where every entry satisfies <img src="https://latex.codecogs.com/png.latex?P(i,%20j)%20%5Cgeq%20%5Cfrac%7B%5Calpha%7D%7BN%7D%20%3E%200">. This means that for any state <img src="https://latex.codecogs.com/png.latex?i">, we have <img src="https://latex.codecogs.com/png.latex?P%5E1(i,%20i)%20%5Cgeq%20%5Cfrac%7B%5Calpha%7D%7BN%7D%20%3E%200">. Therefore, <img src="https://latex.codecogs.com/png.latex?1"> is in the set of possible return times, which immediately gives us <img src="https://latex.codecogs.com/png.latex?%5Cgcd%20=%201"> (think about what the greatest common divisor of <img src="https://latex.codecogs.com/png.latex?1"> and any number is). So every state is aperiodic, making the entire chain aperiodic.</p>
+</div>
+</div>
+<p>Maybe now we can prove convergence? Is Irreducibility and Aperiodicity enough? It turns out yes, but to answer that formally, we need a bit more machinery.</p>
+<section id="convergence" class="level3">
+<h3 class="anchored" data-anchor-id="convergence">Convergence</h3>
+<p>Before we can even hope to prove convergence, we first need a way to measure how “close” two probability distributions are to each other. One intuitive approach is to ask: what’s the largest possible difference in the probabilities that <img src="https://latex.codecogs.com/png.latex?%5Cmu,%20%5Cnu"> assign to any event?</p>
+<p>Formally, for any event <img src="https://latex.codecogs.com/png.latex?A%20%5Csubseteq%20%5Cchi">, we could compute <img src="https://latex.codecogs.com/png.latex?%7C%5Cmu(A)%20-%20%5Cnu(A)%7C">. If we take the worst case scenario over all events, we get <img src="https://latex.codecogs.com/png.latex?%0A%5Cmax_%7BA%20%5Csubseteq%20%5Cchi%7D%20%7C%5Cmu(A)%20-%20%5Cnu(A)%7C%0A"> This tells us, in the most extreme case, how much these distributions disagree about the probability of an event. Let’s see if we can simplify this definition a little bit:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Cmu(A)%20-%20%5Cnu(A)%20=%20%5Csum_%7Bx%20%5Cin%20A%7D%20%5Cmu(x)%20-%20%5Csum_%7Bx%20%5Cin%20A%7D%20%5Cnu(x)%20=%20%5Csum_%7Bx%20%5Cin%20A%7D%20%5B%5Cmu(x)%20-%20%5Cnu(x)%5D%0A"> Notice that this difference is maximized if we choose <img src="https://latex.codecogs.com/png.latex?A"> to contain exactly the points for which <img src="https://latex.codecogs.com/png.latex?%5Cmu(x)%20%3E%20%5Cnu(x)">. Let’s call this set <img src="https://latex.codecogs.com/png.latex?A%5E+%20=%20%5C%7Bx%20%5Cin%20%5Cchi%20%5Cmid%20%5Cmu(x)%20%3E%20%5Cnu(x)%5C%7D">. Then, we can write <img src="https://latex.codecogs.com/png.latex?%0A%5Cmax_%7BA%20%5Csubseteq%20%5Cchi%7D%20%7C%5Cmu(A)%20-%20%5Cnu(A)%7C%20=%20%5Csum_%7Bx%20%5Cin%20A%5E+%7D%20%5B%5Cmu(x)%20-%20%5Cnu(x)%5D%0A"> Now, since both <img src="https://latex.codecogs.com/png.latex?%5Cmu,%20%5Cnu"> are probability distributions, they must sum to one, so we have <img src="https://latex.codecogs.com/png.latex?%0A%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%5B%5Cmu(x)%20-%20%5Cnu(x)%5D%20=%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%5Cmu(x)%20-%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%5Cnu(x)%20=%200%0A"> This means that when we partition the sum over all points, we can write <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0A&amp;0%20=%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%5B%5Cmu(x)%20-%20%5Cnu(x)%5D%20=%20%5Csum_%7Bx%20%5Cin%20A%5E+%7D%20%5B%5Cmu(x)%20-%20%5Cnu(x)%5D%20+%20%5Csum_%7Bx%20%5Cnot%20%5Cin%20A%5E+%7D%20%5B%5Cmu(x)%20-%20%5Cnu(x)%5D%20%5C%5C%0A%5Cend%7Balign*%7D"></p>
+<p>which implies that</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Csum_%7Bx%20%5Cin%20A%5E+%7D%20%5B%5Cmu(x)%20-%20%5Cnu(x)%5D%20=%20-%20%5Csum_%7Bx%20%5Cnot%20%5Cin%20A%5E+%7D%20%5B%5Cmu(x)%20-%20%5Cnu(x)%5D%20=%20%5Csum_%7Bx%20%5Cnot%20%5Cin%20A%5E+%7D%20%5B%5Cnu(x)%20-%20%5Cmu(x)%5D%0A"></p>
+<p>Now, when we take the absolute difference over all points in <img src="https://latex.codecogs.com/png.latex?%5Cchi">, we have</p>
+<p><img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0A%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%7C%5Cmu(x)%20-%20%5Cnu(x)%7C%20&amp;=%20%5Csum_%7Bx%20%5Cin%20A%5E+%7D%20%7C%5Cmu(x)%20-%20%5Cnu(x)%7C%20+%20%5Csum_%7Bx%20%5Cnot%20%5Cin%20A%5E+%7D%20%7C%5Cnu(x)%20-%20%5Cmu(x)%7C%20%5C%5C%0A&amp;=%202%20%5Csum_%7Bx%20%5Cin%20A%5E+%7D%20%7C%5Cmu(x)%20-%20%5Cnu(x)%7C%0A%5Cend%7Balign*%7D"></p>
+<p>Rearranging, we can finally write: <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0A2%20%5Csum_%7Bx%20%5Cin%20A%5E+%7D%20%7C%5Cmu(x)%20-%20%5Cnu(x)%7C%20&amp;=%202%20%5Cmax_%7BA%20%5Csubseteq%20%5Cchi%7D%20%7C%5Cmu(A)%20-%20%5Cnu(A)%7C%20=%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%7C%5Cmu(x)%20-%20%5Cnu(x)%7C%5C%5C%0A%5Cmax_%7BA%20%5Csubseteq%20%5Cchi%7D%20%7C%5Cmu(A)%20-%20%5Cnu(A)%7C%20&amp;=%20%5Cfrac%7B1%7D%7B2%7D%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%7C%5Cmu(x)%20-%20%5Cnu(x)%7C%0A%5Cend%7Balign*%7D"></p>
+<p>This leads us to the convenient definition of distances between two distributions, known as the total variation difference:</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition 5 (Total Variation Distance)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For any two probability distributions <img src="https://latex.codecogs.com/png.latex?%5Cmu"> and <img src="https://latex.codecogs.com/png.latex?%5Cnu"> over <img src="https://latex.codecogs.com/png.latex?%5Cchi">, we define the total variation distance between <img src="https://latex.codecogs.com/png.latex?%5Cmu"> and <img src="https://latex.codecogs.com/png.latex?%5Cnu"> by <img src="https://latex.codecogs.com/png.latex?%0A%5C%7C%5Cmu%20-%20%5Cnu%5C%7C_%7B%5Ctext%7BTV%7D%7D%20:=%20%5Cfrac%7B1%7D%7B2%7D%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%7C%5Cmu(x)%20-%20%5Cnu(x)%7C%0A"></p>
+</div>
+</div>
+<p>The total variation distance is a metric on the space of probability distributions. It ranges from <img src="https://latex.codecogs.com/png.latex?0"> (when <img src="https://latex.codecogs.com/png.latex?%5Cmu%20=%20%5Cnu">) to <img src="https://latex.codecogs.com/png.latex?1"> (when <img src="https://latex.codecogs.com/png.latex?%5Cmu"> and <img src="https://latex.codecogs.com/png.latex?%5Cnu"> are completely different). You should check that it is indeed a valid distance metric.</p>
+<p>We can now formalize what we mean by “convergence to the stationary distribution” using this notion of distance.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition 6 (Convergence in Total Variation)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>We say that the distribution of <img src="https://latex.codecogs.com/png.latex?X_n"> converges to <img src="https://latex.codecogs.com/png.latex?%5Cpi"> in total variation as <img src="https://latex.codecogs.com/png.latex?n%20%5Cto%20%5Cinfty"> if for all starting distribution <img src="https://latex.codecogs.com/png.latex?%5Cmu_0">, <img src="https://latex.codecogs.com/png.latex?%0A%5C%7C%5Cmu_0%20P%5En%20-%20%5Cpi%5C%7C_%7B%5Ctext%7BTV%7D%7D%20%5Cto%200%20%5Ctext%7B%20as%20%7D%20n%20%5Cto%20%5Cinfty%0A"></p>
+</div>
+</div>
+<p>This is equivalent to saying that for any state <img src="https://latex.codecogs.com/png.latex?x%20%5Cin%20%5Cchi">, <img src="https://latex.codecogs.com/png.latex?%0A%5Clim_%7Bn%20%5Cto%20%5Cinfty%7D%20%5Cfrac%7B1%7D%7B2%7D%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%7C%5Cmathbb%7BP%7D%5BX_n%20=%20x%5D%20-%20%5Cpi(x)%7C%20=%200%0A"></p>
+<p>Now we can restate the running question asked throughout this blog more precisely: we want to show that if <img src="https://latex.codecogs.com/png.latex?P"> is irreducible and aperiodic and <img src="https://latex.codecogs.com/png.latex?%5Cmu_0"> is an arbitrary initial distribution for <img src="https://latex.codecogs.com/png.latex?P">, then <img src="https://latex.codecogs.com/png.latex?%5Cmu_0%20P%5En%20%5Cto%20%5Cpi"> in total variation.</p>
+</section>
+<section id="machinery-for-convergence" class="level3">
+<h3 class="anchored" data-anchor-id="machinery-for-convergence">Machinery For Convergence</h3>
+<p>To prove our formalized statement, we will need several technical results. Let’s build them up step by step.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Proposition 5
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If a Markov chain is aperiodic, then there exists <img src="https://latex.codecogs.com/png.latex?N%20%5Cin%20%5Cmathbb%7BN%7D"> such that for all <img src="https://latex.codecogs.com/png.latex?x%20%5Cin%20%5Cchi"> and all <img src="https://latex.codecogs.com/png.latex?n%20%5Cgeq%20N">, we have <img src="https://latex.codecogs.com/png.latex?P%5En(x,%20x)%20%3E%200"></p>
+</div>
+</div>
+<p><em>Proof Sketch</em>:</p>
+<p>Fix a state <img src="https://latex.codecogs.com/png.latex?x">. By definition of aperiodicity, we have <img src="https://latex.codecogs.com/png.latex?%5Cgcd%5C%7Bn%20%5Cgeq%201%20:%20P%5En(x,%20x)%20%3E%200%5C%7D%20=%201">. Let <img src="https://latex.codecogs.com/png.latex?S%20=%20%5C%7Bn%20%5Cgeq%201%20:%20P%5En(x,%20x)%20%3E%200%5C%7D"> be this set.</p>
+<p>A classical result from number theory tells us that because <img src="https://latex.codecogs.com/png.latex?S"> consists of positive integers and <img src="https://latex.codecogs.com/png.latex?%5Cgcd(S)%20=%201">, then there exists some <img src="https://latex.codecogs.com/png.latex?N%20%5Cin%20%5Cmathbb%7BN%7D"> such that every integer <img src="https://latex.codecogs.com/png.latex?n%20%5Cgeq%20N"> can be written as a non-negative integer linear combination of elements from <img src="https://latex.codecogs.com/png.latex?S"> (called the <a href="https://artofproblemsolving.com/wiki/index.php/Chicken_McNugget_Theorem?srsltid=AfmBOoo5b6Xz_eOFhntrmSXPZCTWQYJRxB4eI3eZH6yG3c9vPjVjfuX_">Chicken McNugget Theorem</a>). In other words, for all <img src="https://latex.codecogs.com/png.latex?n%20%5Cgeq%20N">, we can write <img src="https://latex.codecogs.com/png.latex?%0An%20=%20%5Csum_%7Bi=1%7D%5E%7Bk%7D%20m_i%20s_i%0A"> where <img src="https://latex.codecogs.com/png.latex?s_1,%20%5Cldots,%20s_k%20%5Cin%20S"> and <img src="https://latex.codecogs.com/png.latex?m_1,%20%5Cldots,%20m_k"> are non-negative integers.</p>
+<p>Now, for each <img src="https://latex.codecogs.com/png.latex?n%20%5Cgeq%20N">, this means we can return to <img src="https://latex.codecogs.com/png.latex?x"> at time <img src="https://latex.codecogs.com/png.latex?n"> by taking the path that returns to <img src="https://latex.codecogs.com/png.latex?x"> at times <img src="https://latex.codecogs.com/png.latex?s_1">, or the path that returns to <img src="https://latex.codecogs.com/png.latex?x"> at time <img src="https://latex.codecogs.com/png.latex?2s_1,%203%20s_1%20%5Cldots,%20m_1%20s_1">. Similarly, we could also take the path that returns at times <img src="https://latex.codecogs.com/png.latex?m_1%20s_1%20+%20s_2,%20m_1%20s_1%20+%202s_2,%20%5Cldots,%20m_1%20s_1%20+%20m_2%20s_2">, and so on. At each of these intermediate times, the chain is at state <img src="https://latex.codecogs.com/png.latex?x">, and we know <img src="https://latex.codecogs.com/png.latex?P%5E%7Bs_i%7D(x,%20x)%20%3E%200"> for each <img src="https://latex.codecogs.com/png.latex?i"> because <img src="https://latex.codecogs.com/png.latex?s_i%20%5Cin%20S">.</p>
+<p>By the Markov property, the probability of following this entire path is the product of the transition probabilities:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Balign*%7D%0AP%5En(x,x)%20%5Cgeq%20%5Cunderbrace%7BP%5E%7Bs_1%7D(x,%20x)%20%5Ccdot%20P%5E%7Bs_1%7D(x,%20x)%20%5Ccdots%20P%5E%7Bs_1%7D(x,%20x)%7D_%7Bm_1%20%5Ctext%7B%20times%7D%7D%20%5Ccdot%20%5Cunderbrace%7BP%5E%7Bs_2%7D(x,%20x)%20%5Ccdots%20P%5E%7Bs_2%7D(x,%20x)%7D_%7Bm_2%20%5Ctext%7B%20times%7D%7D%20%5Ccdots%20%3E%200%0A%5Cend%7Balign*%7D%0A"></p>
+<p>Therefore, <img src="https://latex.codecogs.com/png.latex?P%5En(x,%20x)%20%3E%200"> for all <img src="https://latex.codecogs.com/png.latex?n%20%5Cgeq%20N">, as desired.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Proposition 6
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If a Markov chain is irreducible and aperiodic, then there exists <img src="https://latex.codecogs.com/png.latex?N%20%5Cin%20%5Cmathbb%7BN%7D"> such that <img src="https://latex.codecogs.com/png.latex?P%5EN(x,%20y)%20%3E%200"> for all <img src="https://latex.codecogs.com/png.latex?x,%20y%20%5Cin%20%5Cchi">.</p>
+</div>
+</div>
+<p><em>Proof Sketch</em>:</p>
+<p>By Proposition 5, we know that for each state <img src="https://latex.codecogs.com/png.latex?x%20%5Cin%20%5Cchi">, there exists some <img src="https://latex.codecogs.com/png.latex?N_x"> such that <img src="https://latex.codecogs.com/png.latex?P%5En(x,%20x)%20%3E%200"> for all <img src="https://latex.codecogs.com/png.latex?n%20%5Cgeq%20N_x">. Because our state space is finite, we can take <img src="https://latex.codecogs.com/png.latex?N_1%20=%20%5Cmax_%7Bx%20%5Cin%20%5Cchi%7D%20N_x">, which ensures that <img src="https://latex.codecogs.com/png.latex?P%5En(x,%20x)%20%3E%200"> for all <img src="https://latex.codecogs.com/png.latex?x%20%5Cin%20%5Cchi"> and all <img src="https://latex.codecogs.com/png.latex?n%20%5Cgeq%20N_1">.</p>
+<p>Now, by irreducibility, for any two states <img src="https://latex.codecogs.com/png.latex?x"> and <img src="https://latex.codecogs.com/png.latex?y">, there exists some <img src="https://latex.codecogs.com/png.latex?n_%7Bxy%7D%20%5Cin%20%5Cmathbb%7BN%7D"> such that <img src="https://latex.codecogs.com/png.latex?P%5E%7Bn_%7Bxy%7D%7D(x,%20y)%20%3E%200">. Again, because the state space is finite, we can take <img src="https://latex.codecogs.com/png.latex?N_2%20=%20%5Cmax_%7Bx,%20y%20%5Cin%20%5Cchi%7D%20n_%7Bxy%7D">.</p>
+<p>Let <img src="https://latex.codecogs.com/png.latex?N%20=%20N_1%20+%20N_2">. For any states <img src="https://latex.codecogs.com/png.latex?x,%20y%20%5Cin%20%5Cchi">, we can go from <img src="https://latex.codecogs.com/png.latex?x"> to <img src="https://latex.codecogs.com/png.latex?y"> in exactly <img src="https://latex.codecogs.com/png.latex?N"> steps by first spending <img src="https://latex.codecogs.com/png.latex?N_2"> steps to get from <img src="https://latex.codecogs.com/png.latex?x"> to <img src="https://latex.codecogs.com/png.latex?y">, and then spending <img src="https://latex.codecogs.com/png.latex?N_1"> steps returning from <img src="https://latex.codecogs.com/png.latex?y"> to <img src="https://latex.codecogs.com/png.latex?y">. We know both of these are possible with positive probability, so: <img src="https://latex.codecogs.com/png.latex?%0AP%5EN(x,%20y)%20%5Cgeq%20P%5E%7BN_2%7D(x,%20y)%20%5Ccdot%20P%5E%7BN_1%7D(y,%20y)%20%3E%200%0A"></p>
+<p>Since <img src="https://latex.codecogs.com/png.latex?x,%20y"> were arbitrary this holds for all <img src="https://latex.codecogs.com/png.latex?x,%20y%20%5Cin%20%5Cchi">, as desired.</p>
+<p>The next result is a key technical tool that shows how the transition matrix acts as a contraction in total variation distance.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Proposition 7
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Let <img src="https://latex.codecogs.com/png.latex?P"> be the transition matrix of a Markov chain. If <img src="https://latex.codecogs.com/png.latex?%5Cmu"> and <img src="https://latex.codecogs.com/png.latex?%5Cnu"> are any two probability distributions, then <img src="https://latex.codecogs.com/png.latex?%0A%5C%7C%5Cmu%20P%20-%20%5Cnu%20P%5C%7C_%7B%5Ctext%7BTV%7D%7D%20%5Cleq%20%5C%7C%5Cmu%20-%20%5Cnu%5C%7C_%7B%5Ctext%7BTV%7D%7D%0A"></p>
+</div>
+</div>
+<p><em>Proof Sketch</em>:</p>
+<p>We need to show that applying one step of the Markov chain cannot increase the total variation distance between two distributions. Let’s compute:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Balign*%7D%0A%5C%7C%5Cmu%20P%20-%20%5Cnu%20P%5C%7C_%7B%5Ctext%7BTV%7D%7D%20&amp;=%20%5Cfrac%7B1%7D%7B2%7D%20%5Csum_%7By%20%5Cin%20%5Cchi%7D%20%7C(%5Cmu%20P)(y)%20-%20(%5Cnu%20P)(y)%7C%20%5C%5C%0A&amp;=%20%5Cfrac%7B1%7D%7B2%7D%20%5Csum_%7By%20%5Cin%20%5Cchi%7D%20%5Cleft%7C%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%5Cmu(x)%20P(x,%20y)%20-%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%5Cnu(x)%20P(x,%20y)%20%5Cright%7C%20%5C%5C%0A&amp;=%20%5Cfrac%7B1%7D%7B2%7D%20%5Csum_%7By%20%5Cin%20%5Cchi%7D%20%5Cleft%7C%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20(%5Cmu(x)%20-%20%5Cnu(x))%20P(x,%20y)%20%5Cright%7C%20%5C%5C%0A&amp;%5Cleq%20%5Cfrac%7B1%7D%7B2%7D%20%5Csum_%7By%20%5Cin%20%5Cchi%7D%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%7C%5Cmu(x)%20-%20%5Cnu(x)%7C%20P(x,%20y)%20%5Ctag%7BBy%20triangle%20inequality%7D%20%5C%5C%0A&amp;=%20%5Cfrac%7B1%7D%7B2%7D%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%7C%5Cmu(x)%20-%20%5Cnu(x)%7C%20%5Csum_%7By%20%5Cin%20%5Cchi%7D%20P(x,%20y)%20%5Ctag%7BSwap%20sums%20bc%20$%7C%5Cchi%7C%20%3C%20%5Cinfty$%7D%5C%5C%0A&amp;=%20%5Cfrac%7B1%7D%7B2%7D%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%7C%5Cmu(x)%20-%20%5Cnu(x)%7C%20%5Ccdot%201%20%5Ctag%7Brows%20of%20$P$%20sum%20to%201%7D%5C%5C%0A&amp;=%20%5C%7C%5Cmu%20-%20%5Cnu%5C%7C_%7B%5Ctext%7BTV%7D%7D%0A%5Cend%7Balign*%7D%0A"></p>
+<p>as desired.</p>
+<p>This is very important! It tells us that the Markov Chain’s transition matrix can decrease distances but never increases them. However, to get convergence, we need something stronger. We need the chain to actually contract distances, not just preserve them. This is where irreducibility and aperiodicity come in.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Proposition 8 (Harris Lemma)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Suppose there exists a probability distribution <img src="https://latex.codecogs.com/png.latex?%5Cgamma"> and a number <img src="https://latex.codecogs.com/png.latex?%5Cdelta%20%3E%200"> such that <img src="https://latex.codecogs.com/png.latex?P(x,%20y)%20%5Cgeq%20%5Cdelta%20%5Cgamma(y)"> for all <img src="https://latex.codecogs.com/png.latex?x,%20y%20%5Cin%20%5Cchi">. Then for any two probability distributions <img src="https://latex.codecogs.com/png.latex?%5Cmu"> and <img src="https://latex.codecogs.com/png.latex?%5Cnu">, <img src="https://latex.codecogs.com/png.latex?%0A%5C%7C%5Cmu%20P%20-%20%5Cnu%20P%5C%7C_%7B%5Ctext%7BTV%7D%7D%20%5Cleq%20(1%20-%20%5Cdelta)%20%5C%7C%5Cmu%20-%20%5Cnu%5C%7C_%7B%5Ctext%7BTV%7D%7D%0A"></p>
+</div>
+</div>
+<p><em>Proof Sketch</em>:</p>
+<p>The main idea is to decompose the transition matrix <img src="https://latex.codecogs.com/png.latex?P"> into two parts: one that both distributions agree on, and a remaining part <img src="https://latex.codecogs.com/png.latex?P_2"> that has the differences. More precisely, I claim we can write: <img src="https://latex.codecogs.com/png.latex?%0AP(x,%20y)%20=%20%5Cdelta%20%5Cgamma(y)%20+%20(1%20-%20%5Cdelta)%20P_2(x,%20y)%0A"></p>
+<p>where <img src="https://latex.codecogs.com/png.latex?P_2"> is itself a stochastic matrix defined as</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0AP_2(x,%20y)%20:=%20%5Cfrac%7BP(x,%20y)%20-%20%5Cdelta%20%5Cgamma(y)%7D%7B1%20-%20%5Cdelta%7D%0A"></p>
+<p>We need to show that this is a stochastic matrix, which means showing that the entries are non negative, and the rows sum up to one. Since we’re given that <img src="https://latex.codecogs.com/png.latex?P(x,%20y)%20%5Cgeq%20%5Cdelta%20%5Cgamma(y)"> for all <img src="https://latex.codecogs.com/png.latex?x,%20y%20%5Cin%20%5Cchi">, we have: <img src="https://latex.codecogs.com/png.latex?%0AP(x,%20y)%20-%20%5Cdelta%20%5Cgamma(y)%20%5Cgeq%200%0A"></p>
+<p>And since <img src="https://latex.codecogs.com/png.latex?%5Cdelta%20%3C%201"> (otherwise the proposition is trivial), we have <img src="https://latex.codecogs.com/png.latex?1%20-%20%5Cdelta%20%3E%200">. Therefore:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0AP_2(x,%20y)%20=%20%5Cfrac%7BP(x,%20y)%20-%20%5Cdelta%20%5Cgamma(y)%7D%7B1%20-%20%5Cdelta%7D%20%5Cgeq%200%0A"></p>
+<p>Finally, the rows of <img src="https://latex.codecogs.com/png.latex?P_2"> sum to <img src="https://latex.codecogs.com/png.latex?1"> since for any fixed <img src="https://latex.codecogs.com/png.latex?x%20%5Cin%20%5Cchi">: <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign%7D%0A%5Csum_%7By%20%5Cin%20%5Cchi%7D%20P_2(x,%20y)%20&amp;=%20%5Csum_%7By%20%5Cin%20%5Cchi%7D%20%5Cfrac%7BP(x,%20y)%20-%20%5Cdelta%20%5Cgamma(y)%7D%7B1%20-%20%5Cdelta%7D%20%5C%5C%0A&amp;=%20%5Cfrac%7B1%7D%7B1%20-%20%5Cdelta%7D%20%5Csum_%7By%20%5Cin%20%5Cchi%7D%20%5BP(x,%20y)%20-%20%5Cdelta%20%5Cgamma(y)%5D%20%5C%5C%0A&amp;=%20%5Cfrac%7B1%7D%7B1%20-%20%5Cdelta%7D%20%5Cleft%5B%5Csum_%7By%20%5Cin%20%5Cchi%7D%20P(x,%20y)%20-%20%5Cdelta%20%5Csum_%7By%20%5Cin%20%5Cchi%7D%20%5Cgamma(y)%5Cright%5D%20%5C%5C%0A&amp;=%20%5Cfrac%7B1%7D%7B1%20-%20%5Cdelta%7D%20%5B1%20-%20%5Cdelta%20%5Ccdot%201%5D%20%5C%5C%0A&amp;=%201%0A%5Cend%7Balign%7D"></p>
+<p>where we used that <img src="https://latex.codecogs.com/png.latex?P"> is stochastic (so <img src="https://latex.codecogs.com/png.latex?%5Csum_y%20P(x,%20y)%20=%201">) and <img src="https://latex.codecogs.com/png.latex?%5Cgamma"> is a probability distribution (so <img src="https://latex.codecogs.com/png.latex?%5Csum_y%20%5Cgamma(y)%20=%201">).</p>
+<p>Now, when we apply <img src="https://latex.codecogs.com/png.latex?P"> to any distribution <img src="https://latex.codecogs.com/png.latex?%5Cmu">, we see</p>
+<p><img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign%7D%0A(%5Cmu%20P)(y)%20&amp;=%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%5Cmu(x)%20P(x,%20y)%20%5C%5C%0A&amp;=%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%5Cmu(x)%20%5B%5Cdelta%20%5Cgamma(y)%20+%20(1%20-%20%5Cdelta)%20P_2(x,%20y)%5D%20%5C%5C%0A&amp;=%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%5Cmu(x)%20%5Cdelta%20%5Cgamma(y)%20+%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%5Cmu(x)%20(1%20-%20%5Cdelta)%20P_2(x,%20y)%20%5C%5C%0A&amp;=%20%5Cdelta%20%5Cgamma(y)%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%5Cmu(x)%20+%20(1%20-%20%5Cdelta)%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%5Cmu(x)%20P_2(x,%20y)%20%5C%5C%0A&amp;=%20%5Cdelta%20%5Cgamma(y)%20%5Ccdot%201%20+%20(1%20-%20%5Cdelta)%20(%5Cmu%20P_2)(y)%20%5C%5C%0A&amp;=%20%5Cdelta%20%5Cgamma(y)%20+%20(1%20-%20%5Cdelta)%20(%5Cmu%20P_2)(y)%0A%5Cend%7Balign%7D"></p>
+<p>Plugging everything in, we can now show the result: <img src="https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Balign*%7D%0A%5C%7C%5Cmu%20P%20-%20%5Cnu%20P%5C%7C_%7B%5Ctext%7BTV%7D%7D%20&amp;=%20%5Cleft%5C%7C%20(%5Cdelta%20%5Cgamma%20+%20(1%20-%20%5Cdelta)%20%5Cmu%20P_2)%20-%20(%5Cdelta%20%5Cgamma%20+%20(1%20-%20%5Cdelta)%20%5Cnu%20P_2%20)%5Cright%5C%7C_%7B%5Ctext%7BTV%7D%7D%20%5C%5C%0A&amp;=%20%5Cleft%5C%7C%20%5Cdelta%20%5Cgamma%20+%20(1%20-%20%5Cdelta)%20%5Cmu%20P_2%20-%20%5Cdelta%20%5Cgamma%20-%20(1%20-%20%5Cdelta)%20%5Cnu%20P_2%20%5Cright%5C%7C_%7B%5Ctext%7BTV%7D%7D%20%5C%5C%0A&amp;=%20(1%20-%20%5Cdelta)%20%5C%7C%5Cmu%20P_2%20-%20%5Cnu%20P_2%5C%7C_%7B%5Ctext%7BTV%7D%7D%20%5C%5C%0A&amp;%5Cleq%20(1%20-%20%5Cdelta)%20%5C%7C%5Cmu%20-%20%5Cnu%5C%7C_%7B%5Ctext%7BTV%7D%7D%20%5Ctag%7BBy%20Proposition%207%7D%0A%5Cend%7Balign*%7D%0A"></p>
+<p>This shows that the distance contracts by a factor of at least <img src="https://latex.codecogs.com/png.latex?(1%20-%20%5Cdelta)"> in each step.</p>
+<p>Now we have all the tools we need to prove the main convergence theorem</p>
+</section>
+<section id="proof-of-convergence" class="level3">
+<h3 class="anchored" data-anchor-id="proof-of-convergence">Proof of Convergence</h3>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Theorem 2 (Convergence)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Let <img src="https://latex.codecogs.com/png.latex?P"> be the transition matrix of an irreducible and aperiodic Markov chain with stationary distribution <img src="https://latex.codecogs.com/png.latex?%5Cpi">. Then for any initial distribution <img src="https://latex.codecogs.com/png.latex?%5Cmu_0"> and any state <img src="https://latex.codecogs.com/png.latex?y%20%5Cin%20%5Cchi">: <img src="https://latex.codecogs.com/png.latex?%0A%5Clim_%7Bn%20%5Cto%20%5Cinfty%7D%20(%5Cmu_0%20P%5En)(y)%20=%20%5Cpi(y)%0A"></p>
+<p>In other words, <img src="https://latex.codecogs.com/png.latex?%5Clim_%7Bn%20%5Cto%20%5Cinfty%7D%20%5Cmu_n%20=%20%5Cpi">, regardless of where we started.</p>
+</div>
+</div>
+<p><em>Proof Sketch of Theorem 2</em>:</p>
+<p>By Proposition 6, since our chain is irreducible and aperiodic, there exists some <img src="https://latex.codecogs.com/png.latex?N%20%5Cin%20%5Cmathbb%7BN%7D"> such that <img src="https://latex.codecogs.com/png.latex?P%5EN(x,%20y)%20%3E%200"> for all <img src="https://latex.codecogs.com/png.latex?x,%20y%20%5Cin%20%5Cchi">.</p>
+<p>Let <img src="https://latex.codecogs.com/png.latex?%5Cdelta%20=%20%5Cmin_%7Bx,%20y%20%5Cin%20%5Cchi%7D%20P%5EN(x,%20y)">. This minimum exists and is positive because we’re taking the minimum over a finite set of positive numbers. Now define <img src="https://latex.codecogs.com/png.latex?%5Cgamma(y)%20=%20%5Cfrac%7B1%7D%7B%7C%5Cchi%7C%7D"> to be the uniform distribution over all states.</p>
+<p>I claim that <img src="https://latex.codecogs.com/png.latex?P%5EN(x,%20y)%20%5Cgeq%20%5Cdelta%20%5Cgamma(y)"> for all <img src="https://latex.codecogs.com/png.latex?x,%20y">. To see this, note that: <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0AP%5EN(x,%20y)%20&amp;%5Cgeq%20%5Cdelta%20%5Ctag%7BBy%20defn%7D%20%5C%5C%0A&amp;=%20%5Cdelta%20%5Ccdot%20%5Cfrac%7B1%7D%7B%7C%5Cchi%7C%7D%20%5Ccdot%20%7C%5Cchi%7C%20%5C%5C%0A&amp;%5Cgeq%20%5Cdelta%20%5Ccdot%20%5Cfrac%7B1%7D%7B%7C%5Cchi%7C%7D%20%5Ctag%7BB/c%20$%7C%5Cchi%7C%20%3E%200$%20%7D%20%5C%5C%0A&amp;=%20%5Cdelta%20%5Cgamma(y)%0A%5Cend%7Balign*%7D"></p>
+<p>Therefore, by Proposition 8, for any two distributions <img src="https://latex.codecogs.com/png.latex?%5Cmu"> and <img src="https://latex.codecogs.com/png.latex?%5Cnu">: <img src="https://latex.codecogs.com/png.latex?%0A%5C%7C%5Cmu%20P%5EN%20-%20%5Cnu%20P%5EN%5C%7C_%7B%5Ctext%7BTV%7D%7D%20%5Cleq%20(1%20-%20%5Cdelta)%20%5C%7C%5Cmu%20-%20%5Cnu%5C%7C_%7B%5Ctext%7BTV%7D%7D%0A"></p>
+<p>Let <img src="https://latex.codecogs.com/png.latex?%5Cmu_0"> be any arbitrary initial distribution for <img src="https://latex.codecogs.com/png.latex?P">. We can use induction and the above observation to show that for all <img src="https://latex.codecogs.com/png.latex?k%20%5Cgeq%201">, we have: <img src="https://latex.codecogs.com/png.latex?%0A%5C%7C(%5Cmu_0%20P%5E%7BkN%7D)%20-%20%5Cpi%5C%7C_%7B%5Ctext%7BTV%7D%7D%20%5Cleq%20(1%20-%20%5Cdelta)%5Ek%20%5C%7C%5Cmu_0%20-%20%5Cpi%5C%7C_%7B%5Ctext%7BTV%7D%7D%0A"></p>
+<p>The base case <img src="https://latex.codecogs.com/png.latex?k%20=%201"> follows from Proposition 8: <img src="https://latex.codecogs.com/png.latex?%0A%5C%7C(%5Cmu_0%20P%5E%7BN%7D)%20-%20%5Cpi%5C%7C_%7B%5Ctext%7BTV%7D%7D%20=%20%5C%7C(%5Cmu_0%20P%5E%7BN%7D)%20-%20%5Cpi%20P%5EN%5C%7C_%7B%5Ctext%7BTV%7D%7D%20%5Cleq%20(1%20-%20%5Cdelta)%20%5C%7C%5Cmu_0%20-%20%5Cpi%5C%7C_%7B%5Ctext%7BTV%7D%7D%0A"></p>
+<p>Now assume the result holds for <img src="https://latex.codecogs.com/png.latex?k">. We need to show it holds for <img src="https://latex.codecogs.com/png.latex?k+1">: <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign%7D%0A%5C%7C(%5Cmu_0%20P%5E%7B(k+1)N%7D)%20-%20%5Cpi%5C%7C_%7B%5Ctext%7BTV%7D%7D%20&amp;=%20%5C%7C(%5Cmu_0%20P%5E%7Bk%20N%7D%20P%5EN)%20-%20(%5Cpi%20P%5EN)%5C%7C_%7B%5Ctext%7BTV%7D%7D%20%5C%5C%0A&amp;%5Cleq%20(1%20-%20%5Cdelta)%20%5C%7C(%5Cmu_0%20P%5E%7BkN%7D)%20-%20%5Cpi%5C%7C_%7B%5Ctext%7BTV%7D%7D%20%5Ctag%7BProposition%208%7D%20%5C%5C%0A&amp;%5Cleq%20(1%20-%20%5Cdelta)%20%5Ccdot%20(1%20-%20%5Cdelta)%5Ek%20%5C%7C%5Cmu_0%20-%20%5Cpi%5C%7C_%7B%5Ctext%7BTV%7D%7D%20%5Ctag%7BInduction%20hypothesis%7D%20%5C%5C%0A&amp;=%20(1%20-%20%5Cdelta)%5E%7Bk+1%7D%20%5C%7C%5Cmu_0%20-%20%5Cpi%5C%7C_%7B%5Ctext%7BTV%7D%7D%0A%5Cend%7Balign%7D"></p>
+<p>which completes the induction. Now, since <img src="https://latex.codecogs.com/png.latex?0%20%3C%20(1%20-%20%5Cdelta)%20%3C%201">, we have <img src="https://latex.codecogs.com/png.latex?(1%20-%20%5Cdelta)%5Ek%20%5Cto%200"> as <img src="https://latex.codecogs.com/png.latex?k%20%5Cto%20%5Cinfty">. This means: <img src="https://latex.codecogs.com/png.latex?%0A%5Clim_%7Bk%20%5Cto%20%5Cinfty%7D%20%5C%7C(%5Cmu_0%20P%5E%7BkN%7D)%20-%20%5Cpi%5C%7C_%7B%5Ctext%7BTV%7D%7D%20=%200%0A"></p>
+<p>To handle times that aren’t multiples of <img src="https://latex.codecogs.com/png.latex?N">, note that for any <img src="https://latex.codecogs.com/png.latex?n%20%5Cgeq%200">, we can write <img src="https://latex.codecogs.com/png.latex?n%20=%20kN%20+%20r"> where <img src="https://latex.codecogs.com/png.latex?0%20%5Cleq%20r%20%3C%20N">. Then: <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign%7D%0A%5C%7C(%5Cmu_0%20P%5En)%20-%20%5Cpi%5C%7C_%7B%5Ctext%7BTV%7D%7D%20&amp;=%20%5C%7C(%5Cmu_0%20P%5E%7BkN%20+%20r%7D)%20-%20%5Cpi%5C%7C_%7B%5Ctext%7BTV%7D%7D%20%5C%5C%0A&amp;=%20%5C%7C(%5Cmu_0%20P%5E%7BkN%7D)%20P%5Er%20-%20%5Cpi%20P%5Er%5C%7C_%7B%5Ctext%7BTV%7D%7D%20%5C%5C%0A&amp;%5Cleq%20%5C%7C(%5Cmu_0%20P%5E%7BkN%7D)%20-%20%5Cpi%5C%7C_%7B%5Ctext%7BTV%7D%7D%20%5Ctag%7BProposition%207%7D%20%5C%5C%0A&amp;%5Cleq%20(1%20-%20%5Cdelta)%5Ek%20%5C%7C%5Cmu_0%20-%20%5Cpi%5C%7C_%7B%5Ctext%7BTV%7D%7D%0A%5Cend%7Balign%7D"></p>
+<p>Since <img src="https://latex.codecogs.com/png.latex?k%20%5Cto%20%5Cinfty"> as <img src="https://latex.codecogs.com/png.latex?n%20%5Cto%20%5Cinfty">, we conclude that: <img src="https://latex.codecogs.com/png.latex?%0A%5Clim_%7Bn%20%5Cto%20%5Cinfty%7D%20%5C%7C(%5Cmu_0%20P%5En)%20-%20%5Cpi%5C%7C_%7B%5Ctext%7BTV%7D%7D%20=%200%0A"></p>
+<p>This proves that the distribution converges to <img src="https://latex.codecogs.com/png.latex?%5Cpi"> in total variation, completing the main proof.</p>
+<div class="callout callout-style-simple callout-none no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">None</span>Remark
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The convergence is exponentially fast with rate <img src="https://latex.codecogs.com/png.latex?(1%20-%20%5Cdelta)">, which depends on the smallest entry of <img src="https://latex.codecogs.com/png.latex?P%5EN">. This tells us not just that convergence happens, but also gives us a quantitative bound on how quickly the chain converges.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>We began this journey with a simple question: will the PageRank random surfer always produce the same long term behavior? After developing the full theory of Markov chains, we can now definitively answer this question as yes.</p>
+<p>The PageRank chain is both irreducible (every page is reachable from every other page due to the random jump mechanism) and aperiodic (we can return to any page in one step with positive probability). By Theorem 2, this guarantees that:</p>
+<ol type="1">
+<li>There exists a unique stationary distribution <img src="https://latex.codecogs.com/png.latex?%5Cpi"></li>
+<li>Starting from any initial distribution <img src="https://latex.codecogs.com/png.latex?%5Cmu_0">, the chain converges to <img src="https://latex.codecogs.com/png.latex?%5Cpi"> in total variation</li>
+<li>The convergence is exponentially fast</li>
+</ol>
+<p>This means that no matter where the random surfer starts, after enough time, the proportion of visits to each page will converge to the same values given by <img src="https://latex.codecogs.com/png.latex?%5Cpi">. These limiting proportions define a well-defined, consistent ranking of webpage importance.</p>
+<p>But the power of this theory extends far beyond web search. Irreducible and aperiodic Markov chains appear throughout science, engineering and financial markets. For example, in statistical physics, they can model particle systems reaching thermal equilibrium. In machine learning, they allow for MCMC sampling algorithms like Metropolis-Hastings. In queueing theory, they predict long-run behavior of service systems. Finally, in finance, they model the evolution of asset prices and credit ratings.</p>
+<p>Having this rigorous theoretical background on Markov Chains now allows you to tackle all these problems.</p>
+
+
+</section>
+
+ ]]></description>
+  <category>math</category>
+  <category>cs</category>
+  <guid>https://csuraparaju.github.io/posts/markov-chains/</guid>
+  <pubDate>Wed, 15 Oct 2025 04:00:00 GMT</pubDate>
+</item>
 <item>
   <title>Algorithms for Sampling from a probability distribution</title>
   <dc:creator>Krish Suraparaju</dc:creator>
@@ -461,7 +919,7 @@ Penn, Michael. 2022. <span>“The Strange Cousin of the Complex Numbers – the 
 <section id="implementation" class="level2">
 <h2 class="anchored" data-anchor-id="implementation">Implementation</h2>
 <p>Let’s implement this in python using numpy so we can vectorize parts of the code.</p>
-<div id="3652f975" class="cell" data-execution_count="1">
+<div id="5e84faad" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="im" style="color: #00769E;
 background-color: null;
 font-style: inherit;">import</span> numpy <span class="im" style="color: #00769E;
@@ -602,7 +1060,7 @@ font-weight: bold;
 font-style: inherit;">return</span> f_x</span></code></pre></div></div>
 </div>
 <p>We can plot the distortion of this algorithm on a randomly generated metric space, as a function of <img src="https://latex.codecogs.com/png.latex?n"> to see the logarithmic curve.</p>
-<div id="1e3f76cd" class="cell" data-execution_count="2">
+<div id="047ac06d" class="cell" data-execution_count="2">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><span class="im" style="color: #00769E;
@@ -886,7 +1344,7 @@ font-style: inherit;">True</span>)</span>
 </div>
 </div>
 <p>Note that the variable <img src="https://latex.codecogs.com/png.latex?c"> is a hyper-parameter to this algorithm, and we can observe distortion as a function of <img src="https://latex.codecogs.com/png.latex?c"> as well.</p>
-<div id="66952c2b" class="cell" data-execution_count="3">
+<div id="1017dff4" class="cell" data-execution_count="3">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1">n_fixed <span class="op" style="color: #5E5E5E;

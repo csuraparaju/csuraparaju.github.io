@@ -1,0 +1,1258 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Krish Suraparaju">
+<meta name="dcterms.date" content="2025-10-15">
+
+<title>PageRank and Markov Chains – Krish’s blog</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-5b4ad623e5705c0698d39aec6f10cf02.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="nav-fixed fullcontent quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Krish’s blog</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">Krish Suraparaju</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/csuraparaju"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/krish-suraparaju/"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">PageRank and Markov Chains</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">math</div>
+                <div class="quarto-category">cs</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Krish Suraparaju </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">October 15, 2025</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Markov Chains are fundamental mathematical models for sequence of random events, where the probability of the next event depends only on the current event, not the entire past history. These models revolutionized computer science, economics, and even bioinformatics. In this post, I will cover much of the theory required to study these models. I will limit my discussion to mostly finite state space markov chains, but the proofs can be extended for the infinite state space as well.</p>
+</section>
+<section id="motivating-example" class="level2">
+<h2 class="anchored" data-anchor-id="motivating-example">Motivating Example</h2>
+<p>Imagine you’re Larry Page in 1996 researching a topic, say “jaguars.” There is a new database of information on the rise - the world wide web - so you decided to start there. You search through hundreds of thousands of web pages and find thousands that mention “jaguar”. However, you find pages about the animal, the car, the football team, a rock band, and random pages that just happen to use the word. You can’t manually read through all these pages to find the best ones.</p>
+<p>Among all these pages that match your keywords, you want to automatically rank them in order of relative importance so you can start your search. Let’s model this formally: Suppose you have <span class="math inline">\(N\)</span> webpages, interconnected via hyperlinks. A subset of these pages are relevant to your query. How do you rank this subset by importance?</p>
+<p>An obvious thing to do would be to randomly pick, say the first 5 pages, from the subset and read them. The issue with this approach is that you could get really unlucky and pick 5 pages which are totally unrelated to your topic, like obscure pages that barely mention jaguars. But maybe using randomness wasn’t the problem here. Maybe the problem was that you were picking uniformly at random, treating all pages as equally likely to be useful. What if instead, you used randomness in a smarter way?</p>
+<p>Imagine you’re browsing the web, starting from one of the pages that mentions “jaguar.” You read the page, then randomly click on one of its outbound links, moving to a new page. You repeat this process, following the web’s hyperlinks. But you don’t browse forever in a single path. Occasionally, say with probability <span class="math inline">\(\alpha\)</span> you get bored, close your browser, and jump to a completely random page in the subset to start exploring again. If you simulate this process for a long time, you will find that the surfer visits certain pages much more frequently than others. For example, you will find that pages with many incoming links (or links from other “popular” pages) will be visited more often.</p>
+<p>The “importance” of a page can be defined as the long-run proportion of time this random surfer spends on that page. This simple heuristic is the core logic behind PageRank, the algorithm that powered Google’s initial success. We will see that the random surfer model is also a Markov model, and that the long-run proportion of time spent by the random surfer corresponds to the stationary distribution.</p>
+<p>To get more intuition for how this works, I’ve written a simulation below. Each node in the graph represents a webpage (Notated by “Pg n” where n is the page number). A directed edge <span class="math inline">\(i \to j\)</span> represents a hyperlink in webpage <span class="math inline">\(i\)</span> pointing to webpage <span class="math inline">\(j\)</span>. Initially, the surfer starts out on a random page. As the simulation progresses, we track the number of times the surfer visited each page, and redraw its size as a function of the relative visits. In the end, the bigger a node is, the more it was visited by the surfer (and therefore, the more “important” it is).</p>
+<div class="gradio-iframe-container">
+  <iframe src="https://csurapar-page-rank-vis.hf.space?__theme=light" frameborder="0"></iframe>
+</div>
+<p>A question you might now ask is, will this random surfer always produce the same long term behavior? That is, is the heuristic we use to define the “importance” of a page going to change between each run of the random surfer? If it does, then this algorithm would not be any good, since we were looking for a definitive ranking of the importance of webpages.</p>
+<p>To answer this question, we need to study Markov chains and the stationary distribution more rigorously.</p>
+</section>
+<section id="markov-chains" class="level2">
+<h2 class="anchored" data-anchor-id="markov-chains">Markov Chains</h2>
+<p>Let’s start with the definition of a Markov Chain.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition 1
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A Markov chain on a state space <span class="math inline">\(\chi\)</span> is a family of random variables <span class="math inline">\(X_0, X_1, \cdots\)</span> such that for all <span class="math inline">\(n \in \mathbb{N}\)</span>, and <span class="math inline">\(x_0, \cdots, x_n, x_{n+1} \in \chi\)</span> we have <span class="math display">\[
+\mathbb{P}[X_{n+1} = x_{n+1} \mid \{X_k = x_k \mid 0 \leq k \leq n\}] = \mathbb{P}[X_{n+1} = x_{n+1} \mid X_n = x_n]
+\]</span></p>
+</div>
+</div>
+<p>The above property is also known as the Markov Property. A time homogeneous Markov chain is a Markov chain where <span class="math display">\[
+\mathbb{P}[X_{n+1} = y \mid X_n = x] = \mathbb{P}[X_{1} = y \mid X_0 = x]
+\]</span> for all <span class="math inline">\(x, y \in \chi\)</span> and <span class="math inline">\(n \in \mathbb{N}\)</span>. In the remaining of the discussion we will only consider time homogeneous Markov chains because they can be represented as a single transition matrix, not dependent on time <span class="math display">\[
+P(x, y) := \mathbb{P}[X_1 = y \mid X_0 = x]
+\]</span> where <span class="math inline">\(x, y\)</span> are the indices into the matrix <span class="math inline">\(P\)</span>. This seems a bit silly, but reframing the problem this way allows us to use powerful tools/techniques from linear algebra. Using purely probabilistic methods when working with Markov chains is often very ugly, and the matrix formulation is preferred.</p>
+<div class="callout callout-style-simple callout-none no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">None</span>Example
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Let’s try to come up with a transition matrix for the random web surfer Markov Chain we discussed above. Suppose that our state space is the set of all <span class="math inline">\(N\)</span> webpages that are relevant to our query. So, <span class="math inline">\(\chi = \{1, 2, \cdots, N \}\)</span>. For each page <span class="math inline">\(i \in \chi\)</span>, let <span class="math inline">\(d_i\)</span> denote the number of outbound links from that page. We allow our surfer to follow a random outbound link from the current page with probability <span class="math inline">\((1 - \alpha)\)</span>. We also want the surfer to pick a uniformly random page from all <span class="math inline">\(N\)</span> pages and go there with probability <span class="math inline">\(\alpha\)</span>.</p>
+<p>Therefore, the transition probability from page <span class="math inline">\(i\)</span> to page <span class="math inline">\(j\)</span> is: <span class="math display">\[
+P(i, j) = \begin{cases} (1- \alpha) \cdot \frac{1}{d_i} + \frac{\alpha}{N} &amp;&amp; \text{ if there exists a link from } i \to j \\ \frac{\alpha}{N} &amp;&amp; \text{ otherwise} \end{cases}
+\]</span></p>
+</div>
+</div>
+<p>Let’s prove some basic propositions about this new object we defined.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Proposition 1
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For any <span class="math inline">\(x_0, \cdots, x_n \in \chi\)</span>, <span class="math display">\[
+\mathbb{P}[X_n = y \mid X_0 = x] = P^n (x, y)
+\]</span> where <span class="math inline">\(P^n\)</span> means the nth power of the matrix <span class="math inline">\(P\)</span>.</p>
+</div>
+</div>
+<p>Proof: We proceed by induction on <span class="math inline">\(n\)</span>. The base cases <span class="math inline">\(n=1\)</span> follows by definition. So assume that the result holds for <span class="math inline">\(n\)</span>. We need to show it holds for <span class="math inline">\(n+1\)</span>. We first condition on <span class="math inline">\(X_n\)</span>: <span class="math display">\[
+\begin{flalign}
+\mathbb{P}[X_{n + 1} = y \mid X_0 = x] &amp;= \sum_{z \in \chi} \mathbb{P}[X_{n+1} = y \mid X_n = z, X_0 = x] \cdot \mathbb{P}[X_n = z \mid X_0 = x] &amp;&amp;\\
+&amp;= \sum_{z \in \chi} \mathbb{P}[X_{n+1} = y \mid X_n = z] \cdot \mathbb{P}[X_n = z \mid X_0 = x] \tag{Markov Property} &amp;&amp;\\
+&amp;= \sum_{z \in \chi} P(z, y) \cdot \mathbb{P}[X_n = z \mid X_0 = x] \tag{Definition of $P$} &amp;&amp;\\
+&amp;= \sum_{z \in \chi} P(z, y) \cdot P^n (x, z) \tag{Induction hypothesis} &amp;&amp;\\
+&amp;= P^{n+1} (x, y) \tag{Matrix mult.}
+\end{flalign}
+\]</span> as desired.</p>
+<p>Now, we can characterize how a Markov chain <span class="math inline">\(X_n\)</span> with transition matrix <span class="math inline">\(P\)</span> and initial distribution <span class="math inline">\(\mu_0\)</span> over time.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Proposition 2
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <span class="math inline">\(X_0 \sim \mu_0\)</span> (i.e., <span class="math inline">\(\mathbb{P}[X_0 = x] = \mu_0 (x)\)</span> for all <span class="math inline">\(x \in \chi\)</span>) then <span class="math inline">\(X_n \sim \mu_0 P^n\)</span> (taken as a matrix product)</p>
+</div>
+</div>
+<p>Proof: We need to show that <span class="math inline">\(\mathbb{P}[X_n = y] = (\mu_0 P^n)(y)\)</span> for all <span class="math inline">\(y \in \chi\)</span>.</p>
+<p>We condition on the initial state <span class="math inline">\(X_0\)</span>:</p>
+<p><span class="math display">\[\begin{align*}
+\mathbb{P}[X_n = y] &amp;= \sum_{x \in \chi} \mathbb{P}[X_n = y \mid X_0 = x] \cdot \mathbb{P}[X_0 = x] \tag{Law of total probability} \\
+&amp;= \sum_{x \in \chi} P^n(x, y) \cdot \mathbb{P}[X_0 = x] \tag{Proposition 1} \\
+&amp;= \sum_{x \in \chi} P^n(x, y) \cdot \mu_0(x) \tag{Definition of $\mu_0$} \\
+&amp;= \sum_{x \in \chi} \mu_0(x) \cdot P^n(x, y)  \\
+&amp;= (\mu_0 P^n)(y) \tag{Matrix mult.}
+\end{align*}\]</span></p>
+<p>as desired.</p>
+</section>
+<section id="the-stationary-distribution" class="level2">
+<h2 class="anchored" data-anchor-id="the-stationary-distribution">The Stationary Distribution</h2>
+<p>Let’s return to our PageRank example. Notice that the surfer never stops exploring the web. They keep browsing indefinitely, either following links or opening up new pages in a browser. This raises a natural question: What happens to the distribution of the surfer’s location after a very long time?</p>
+<p>From Proposition 2, we can come up with the recurrence relation: <span class="math display">\[
+\mu_{n + 1} = \mu_0 P^{n + 1} = (\mu_0 P^n) P = \mu_n P
+\]</span> As <span class="math inline">\(n \to \infty\)</span>, does this converge to anything (i.e., does there exists a limiting distribution)? And if so, does the limiting distribution depend on where we started <span class="math inline">\(\mu_0\)</span>?</p>
+<p>Often, a good way to answer questions like these is to assume something about the statement and see what happens. So, lets assume that there exists a limiting distribution <span class="math inline">\(\pi\)</span> such that <span class="math inline">\(\mu_n \to \pi\)</span> as <span class="math inline">\(n \to \infty\)</span>. This leads us to proposition 3:</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Proposition 3
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <span class="math inline">\(\pi\)</span> is a limiting distribution of the Markov chian <span class="math inline">\(P\)</span>, then <span class="math display">\[\pi = \pi P\]</span></p>
+</div>
+</div>
+<p><em>Proof</em>: We take limits on both sides of our recurrence relation: <span class="math display">\[\begin{align*}
+\lim_{n \to \infty} \mu_{n + 1} &amp;= \lim_{n \to \infty}(\mu_n P) \\
+\lim_{n \to \infty} \mu_{n + 1} &amp;= (\lim_{n \to \infty} \mu_n) P   \tag{Matrix mul is continuous}\\
+\pi &amp;= \pi P   \tag{Since $\mu_n \to \pi$}\\
+\end{align*}\]</span></p>
+<p>That’s a pretty interesting result! Any limiting distribution <span class="math inline">\(\pi\)</span> of a Markov chain (if it exists) is such that <span class="math inline">\(\pi = \pi P\)</span>. This special kind of distribution is known as <strong>stationary distribution</strong>. Let’s see if we can use this property to help us answer our original question. Specifically, is the converse of proposition 3 true? Is it the case that any distribution <span class="math inline">\(\pi\)</span> such that <span class="math inline">\(\pi = \pi P\)</span> must be a limiting distribution? If it was, then we’d be done! We would have found a way to completely characterize what the limiting distribution of a Markov Chain looks like.</p>
+<p>But sadly, that is not the case.</p>
+<section id="a-counter-example" class="level3">
+<h3 class="anchored" data-anchor-id="a-counter-example">A Counter Example</h3>
+<p>Consider a Markov chain on <span class="math inline">\(\chi = \{0, 1, 2, 3\}\)</span> with transition matrix <span class="math display">\[
+P = \begin{pmatrix}
+1 &amp; 0 &amp; 0 &amp; 0 \\
+\frac{1}{3} &amp; \frac{1}{3} &amp; \frac{1}{3} &amp; 0 \\
+0 &amp; \frac{1}{3} &amp; \frac{1}{3} &amp; \frac{1}{3} \\
+0 &amp; 0 &amp; 0 &amp; 1\\
+\end{pmatrix}
+\]</span></p>
+<p>Notice that the distribution <span class="math inline">\(\pi_1 = \begin{pmatrix} \sqrt{2} &amp; 0 &amp; 0 &amp; \sqrt{2} \end{pmatrix}\)</span> (read as a <span class="math inline">\(1 \times 4\)</span> row matrix) of <span class="math inline">\(P\)</span> has the property discussed in proposition 3 because:</p>
+<p><span class="math display">\[
+\begin{align*}
+\pi_1 P &amp;= \begin{pmatrix} \sqrt{2} &amp; 0 &amp; 0 &amp; \sqrt{2} \end{pmatrix}  \begin{pmatrix}
+1 &amp; 0 &amp; 0 &amp; 0 \\
+\frac{1}{3} &amp; \frac{1}{3} &amp; \frac{1}{3} &amp; 0 \\
+0 &amp; \frac{1}{3} &amp; \frac{1}{3} &amp; \frac{1}{3} \\
+0 &amp; 0 &amp; 0 &amp; 1\\
+\end{pmatrix} \\
+&amp;= \begin{pmatrix} \sqrt{2} &amp; 0 &amp; 0 &amp; \sqrt{2} \end{pmatrix} \\
+&amp;= \pi_1
+\end{align*}
+\]</span></p>
+<p>Additionally, the distribution <span class="math inline">\(\pi_2 = \begin{pmatrix} e &amp; 0 &amp; 0 &amp; e \end{pmatrix}\)</span> of <span class="math inline">\(P\)</span> also has the property discussed in proposition 3 because:</p>
+<p><span class="math display">\[
+\begin{align*}
+\pi_2 P &amp;= \begin{pmatrix} e &amp; 0 &amp; 0 &amp; e\end{pmatrix}  \begin{pmatrix}
+1 &amp; 0 &amp; 0 &amp; 0 \\
+\frac{1}{3} &amp; \frac{1}{3} &amp; \frac{1}{3} &amp; 0 \\
+0 &amp; \frac{1}{3} &amp; \frac{1}{3} &amp; \frac{1}{3} \\
+0 &amp; 0 &amp; 0 &amp; 1\\
+\end{pmatrix} \\
+&amp;= \begin{pmatrix} e &amp; 0 &amp; 0 &amp; e \end{pmatrix} \\
+&amp;= \pi_2
+\end{align*}
+\]</span></p>
+<p>This is a problem because if the converse of proposition 3 were true, then any distribution that is stationary would be the limiting distribution of <span class="math inline">\(P\)</span>. But we’ve just shown that both <span class="math inline">\(\pi_1\)</span> and <span class="math inline">\(\pi_2\)</span> are stationary distributions, and they are different! A limiting distribution must be unique (a Markov chain can’t converge to two different distributions at the same time), so this shows that not every stationary distribution is a limiting distribution.</p>
+<div class="callout callout-style-simple callout-none no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">None</span>Remark
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>You may be wondering how I came up with the two different stationary distribution for <span class="math inline">\(P\)</span>. Notice that we can treat <span class="math inline">\(\pi\)</span> as a row-vector. In linear algebra terms, the stationary property means that <span class="math inline">\(\pi\)</span> is a left-eigenvector of <span class="math inline">\(P\)</span> with eigenvalue <span class="math inline">\(1\)</span>. So, one way to find a stationary distribution is to compute a left-eigen vector with eigen-value <span class="math inline">\(1\)</span> of <span class="math inline">\(P\)</span>. Of course, not all left-eigenvectors of <span class="math inline">\(P\)</span> will be a valid probability distribution (some may have negative entries, or worse, complex entires). So you need to be careful when computing eigenvectors and treating them as probability distributions.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="irreducibility" class="level2">
+<h2 class="anchored" data-anchor-id="irreducibility">Irreducibility</h2>
+<p>We’ve seen that a stationary distribution need not be unique for a Markov Chain, which is a problem because if a stationary distribution could ever hope be a limiting distribution, then it has to be the <em>unique</em> stationary distribution. Let’s study the conditions under which a stationary distribution is <em>the</em> stationary distribution of a Markov Chain.</p>
+<p>Going from the example above, you might notice that the issue there was that there were states which were “absorbing”, meaning once our chain entered that state, it remained there forever. For example, state <span class="math inline">\(0\)</span> is absorbing because <span class="math inline">\(P(0, 1) = P(0, 2) = P(0, 3)  = 0\)</span> and so the chain would never transition out of that state. Similarly, state <span class="math inline">\(3\)</span> is also an absorbing state. If we eliminate this behavior, then we might have a unique stationary distribution?</p>
+<p>This observation immediately leads us to the following definition of irreducibility</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition 3
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A Markov chain is irreducible if every state is eventually reachable from every other state. That is, for all <span class="math inline">\(x, y \in \chi\)</span>, there exists some <span class="math inline">\(n \geq 0\)</span> such that <span class="math inline">\(P^n(x, y) &gt; 0\)</span>.</p>
+</div>
+</div>
+<div class="callout callout-style-simple callout-none no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">None</span>Example: PageRank is Irreducible
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Recall our PageRank transition matrix: <span class="math display">\[
+P(i, j) = \begin{cases} (1- \alpha) \cdot \frac{1}{d_i} + \frac{\alpha}{N} &amp;&amp; \text{ if there exists a link from } i \to j \\ \frac{\alpha}{N} &amp;&amp; \text{ otherwise} \end{cases}
+\]</span></p>
+<p>This chain is irreducible. From any page <span class="math inline">\(i\)</span>, there’s at least a probability <span class="math inline">\(\frac{\alpha}{N}\)</span> of jumping to any other page <span class="math inline">\(j\)</span> in one step (via the random jump mechanism). Therefore <span class="math inline">\(P(i, j) \geq \frac{\alpha}{N} &gt; 0\)</span> for all <span class="math inline">\(i, j\)</span>, which immediately implies every state is accessible from every other state.</p>
+</div>
+</div>
+<p>Now, let’s try to link irreducibility with stationary distributions. Specifically, lets see if irreducibility gives us any information about what a stationary distribution <span class="math inline">\(\pi\)</span> may look like. Because we are assuming that every state is reachable from every other state, one could guess that <span class="math inline">\(\pi(x) &gt; 0\)</span> for all <span class="math inline">\(x \in \chi\)</span>, since otherwise, there would be a state <span class="math inline">\(x\)</span> for which <span class="math inline">\(\mathbb{P}[X_n = x] = 0\)</span> and make this state unreachable.</p>
+<p>This leads us to the following proposition:</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Proposition 4
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <span class="math inline">\(\pi\)</span> is a stationary distribution and <span class="math inline">\(P\)</span> is the transition matrix of an irreducible Markov Chain <span class="math inline">\(P\)</span>, then <span class="math inline">\(\pi (x) &gt; 0\)</span> for all <span class="math inline">\(x \in \chi\)</span>.</p>
+</div>
+</div>
+<p><em>Proof</em>: Assume for contradiction that there exists an <span class="math inline">\(x \in \chi\)</span> such that <span class="math inline">\(\pi (x) = 0\)</span>. Because <span class="math inline">\(\pi\)</span> is stationary, this means we have</p>
+<p><span class="math display">\[
+\begin{align*}
+0 = \pi (x) &amp;= (\pi P) (x) \\
+&amp;= \sum_{y \in \chi} \pi (y) P(y, x) &amp; \tag{Matrix mult.}\\
+&amp;= \sum_{\substack{y \in \chi \\ y \neq x}} \pi (y) P(y, x) \tag{Since $\pi(x)$ = 0} \\
+\end{align*}
+\]</span> Notice that each term on the right hand side is non negative (since <span class="math inline">\(\pi(y) \geq 0\)</span> and <span class="math inline">\(P(y, x) \geq 0\)</span>). The only way a sum of non negative term can be zero is if each term is zero. This means we have <span class="math display">\[
+\pi(y) P(y, x) = 0
+\]</span> for all <span class="math inline">\(y \in \chi\)</span> and so either <span class="math inline">\(\pi(y) = 0\)</span> or <span class="math inline">\(P(y, x) = 0\)</span>. Now, because we assumed <span class="math inline">\(P\)</span> was irreducible, there must exist a <span class="math inline">\(y \neq x\)</span> in <span class="math inline">\(\chi\)</span> such that <span class="math inline">\(P(y, x) &gt; 0\)</span> (otherwise, <span class="math inline">\(x\)</span> would be unreachable from any other state, no matter how many steps the chain takes). Therefore, for this <span class="math inline">\(y\)</span>, it must be the case that <span class="math inline">\(\pi(y) = 0\)</span>.</p>
+<p>We can now apply the same argument to <span class="math inline">\(y\)</span> and get that there is a <span class="math inline">\(z \in \chi\)</span> such that <span class="math inline">\(P(z, y) &gt; 0\)</span>, forcing <span class="math inline">\(\pi(z) = 0\)</span>. We can continue this argument inductively, and since every state is reachable from every other state (by irreducibility), we can show that <span class="math inline">\(\pi(w) = 0\)</span> for all <span class="math inline">\(w \in \chi\)</span>.</p>
+<p>But this contradicts the fact that <span class="math inline">\(\pi\)</span> is a probability distribution, which requires</p>
+<p><span class="math display">\[
+\sum_{w \in \chi} \pi(w) = 1
+\]</span></p>
+<p>Therefore, <span class="math inline">\(\pi(x) &gt; 0\)</span> for all <span class="math inline">\(x \in \chi\)</span>, as desired.</p>
+<p>Using this proposition, we can now prove a big theorem which tells us when a Markov Chain has a unique stationary distribution.</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Theorem 1 (Uniqueness)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <span class="math inline">\(P\)</span> is the transition matrix of an irreducible Markov Chain, then there exists a unique stationary distribution <span class="math inline">\(\pi\)</span></p>
+</div>
+</div>
+<p><em>Proof:</em></p>
+<p>I will skip the existence part of this theorem because it gets extremely technical and not suited for this post. If you are curious, you should check out <a href="https://math.uchicago.edu/~may/REU2017/REUPapers/Freedman.pdf">this</a> resource</p>
+<p>Lets prove uniqueness. Suppose <span class="math inline">\(\pi_1\)</span> and <span class="math inline">\(\pi_2\)</span> are two stationary distributions of <span class="math inline">\(P\)</span>. Because our state space is finite, and <span class="math inline">\(\pi_1(x), \pi_2(x) &gt; 0\)</span> by proposition 4, for all <span class="math inline">\(x \in \chi\)</span>, we can choose</p>
+<p><span class="math display">\[
+x_0 :=\text{arg}\min\limits_{x \in \chi}\,\left( \frac{\pi_1(x)}{\pi_2(x)} \right)
+\]</span></p>
+<p>Let <span class="math inline">\(y\)</span> be an arbitrary state in <span class="math inline">\(\chi\)</span>. By irreducibility, there exists an <span class="math inline">\(n \in N\)</span> such that <span class="math inline">\(P^n (y, x_0) &gt; 0\)</span>. This means that the Markov Chain can reach to <span class="math inline">\(x_0\)</span> from <span class="math inline">\(y\)</span> in <span class="math inline">\(n\)</span> steps via a finite step of transitions <span class="math display">\[y = x_n \to x_{n-1} \to \dots \to x_1 \to x_0\]</span> where <span class="math inline">\(P(x_i, x_{i-1}) &gt; 0\)</span> for all <span class="math inline">\(i = 1, 2, \ldots, n\)</span>.</p>
+<p>We will prove by induction on the path length that <span class="math display">\[ \frac{\pi_1(y)}{\pi_2(y)} = \frac{\pi_1(x_0)}{\pi_2(x_0)} \]</span> The base case is trivial since it follows by definition. So, assume <span class="math display">\[ \frac{\pi_1(x_{i})}{\pi_2(x_{i})} = \frac{\pi_1(x_0)}{\pi_2(x_0)} \]</span> for some <span class="math inline">\(1 \leq i &lt; n\)</span>.</p>
+<p>Now, we can write:</p>
+<p><span class="math display">\[
+\begin{flalign}
+\pi_1(x_{i}) = (\pi_1 P) (x_{i}) &amp;= \sum_{x \in \chi} \pi_1(x) P(x, x_{i}) \tag{$\pi_1$ is stationary}\\
+&amp;= \sum_{x \in \chi} \frac{\pi_1(x)}{\pi_2(x)} \pi_2(x) P(x, x_{i}) \tag{Multiply RHS by $\pi_2(x) / \pi_2(x)$}\\
+&amp;\geq \sum_{x \in \chi} \frac{\pi_1(x_{i})}{\pi_2(x_{i})} \pi_2(x) P(x, x_{i}) \tag{$x_{i}$ achieves minimum, I.H.}\\
+&amp;= \frac{\pi_1(x_{i})}{\pi_2(x_{i})} \sum_{x \in \chi} \pi_2(x) P(x, x_{i}) \tag{Ratio is constant}\\
+&amp;= \frac{\pi_1(x_{i})}{\pi_2(x_{i})} \pi_2(x_{i}) \tag{$\pi_2$ is stationary}\\
+&amp;= \pi_1(x_{i})
+\end{flalign}
+\]</span></p>
+<p>Notice that because LHS = RHS, the inequality in between must be an equality. Therefore: <span class="math display">\[
+\sum_{x \in \chi} \frac{\pi_1(x)}{\pi_2(x)} \pi_2(x) P(x, x_{i}) = \sum_{x \in \chi} \frac{\pi_1(x_{i})}{\pi_2(x_{i})} \pi_2(x) P(x, x_{i})
+\]</span></p>
+<p>Rearranging: <span class="math display">\[
+\sum_{x \in \chi} \left[ \frac{\pi_1(x)}{\pi_2(x)} - \frac{\pi_1(x_{i})}{\pi_2(x_{i})} \right] \pi_2(x) P(x, x_{i}) = 0
+\]</span></p>
+<p>Now, note that <span class="math inline">\(\pi_2(x) &gt; 0\)</span> by proposition 4, and because <span class="math inline">\(x_{i}\)</span> achieves the minimum, we have <span class="math inline">\(\frac{\pi_1(x)}{\pi_2(x)} - \frac{\pi_1(x_{i})}{\pi_2(x_{i})} \geq 0\)</span> and <span class="math inline">\(P(x, x_{i}) \geq 0\)</span> by definition. Therefore, the only way a sum of non-negative terms is zero is if each term is zero. Thus, for any state <span class="math inline">\(x \in \chi\)</span> with <span class="math inline">\(P(x, x_{i}) &gt; 0\)</span>: <span class="math display">\[
+\frac{\pi_1(x)}{\pi_2(x)} - \frac{\pi_1(x_{i})}{\pi_2(x_{i})} = 0 \implies \frac{\pi_1(x)}{\pi_2(x)} = \frac{\pi_1(x_{i})}{\pi_2(x_{i})} = \frac{\pi_1(x_0)}{\pi_2(x_0)}
+\]</span></p>
+<p>In particular, since <span class="math inline">\(P(x_{i + 1}, x_{i}) &gt; 0\)</span> by our path construction, we have: <span class="math display">\[
+\frac{\pi_1(x_{i+1})}{\pi_2(x_{i+1})} = \frac{\pi_1(x_0)}{\pi_2(x_0)}
+\]</span></p>
+<p>and by the principle of induction, we can conclude that this holds for all <span class="math inline">\(1 \leq i &lt; n\)</span>. Therefore, we can conclude that <span class="math display">\[
+\frac{\pi_1(y)}{\pi_2(y)} = \frac{\pi_1(x_{n})}{\pi_2(x_{n})} =\frac{\pi_1(x_0)}{\pi_2(x_0)}
+\]</span> as desired.</p>
+<p>Now, since <span class="math inline">\(y\)</span> was an arbitrary state, we now know that <span class="math display">\[ \frac{\pi_1(x)}{\pi_2(x)} = c \]</span> for all <span class="math inline">\(x \in \chi\)</span>, where <span class="math inline">\(c\)</span> is some positive constant. This means <span class="math inline">\(\pi_1(x) = c \cdot \pi_2(x)\)</span> for all <span class="math inline">\(x\)</span>. Now, since both <span class="math inline">\(\pi_1, \pi_2\)</span> are probability distributions, we have: <span class="math display">\[
+1 = \sum_{x \in \chi} \pi_1(x) =  \sum_{x \in \chi} c  \pi_2(x) = c \sum_{x \in \chi} \pi_2(x) = c
+\]</span></p>
+<p>Therefore <span class="math inline">\(c = 1\)</span>, which implies <span class="math inline">\(\pi_1(x) = \pi_2(x)\)</span> for all <span class="math inline">\(x \in \chi\)</span>, as desired.</p>
+<section id="another-counter-example" class="level3">
+<h3 class="anchored" data-anchor-id="another-counter-example">Another Counter Example</h3>
+<p>That was a lot of hard work! But are we done? Surely now that we have a unique stationary distribution, we can claim that the limiting distribution converges to this stationary distribution right?</p>
+<p>Well, not so fast. Let’s consider another example, where <span class="math inline">\(\chi = \{0, 1\}\)</span> and the transition matrix is <span class="math display">\[
+P = \begin{pmatrix}
+0 &amp; 1 \\
+1 &amp; 0
+\end{pmatrix}
+\]</span> which is the chain that transitions from <span class="math inline">\(0 \to 1 \to 0 \to 1 \cdots\)</span> deterministically. Notice that the distribution <span class="math inline">\(\pi = \begin{pmatrix} \frac{1}{2} &amp; \frac{1}{2}\end{pmatrix}\)</span> is a stationary distribution since <span class="math display">\[\begin{align*}
+\pi P &amp;= \begin{pmatrix} \frac{1}{2} &amp; \frac{1}{2}\end{pmatrix} \begin{pmatrix}
+0 &amp; 1 \\
+1 &amp; 0
+\end{pmatrix} \\
+&amp;= \begin{pmatrix} \frac{1}{2} &amp; \frac{1}{2}\end{pmatrix} = \pi
+\end{align*}\]</span></p>
+<p>Additionally, this chain is clearly irreducible, since every state is reachable from every other state. Therefore, <span class="math inline">\(\pi\)</span> is the unique stationary distribution from theorem 1. But it is not a limiting distribution. To see why, first note that <span class="math display">\[\begin{align*}
+P^2 &amp;= \begin{pmatrix} 0 &amp; 1 \\ 1 &amp; 0 \end{pmatrix} \begin{pmatrix} 0 &amp; 1 \\ 1 &amp; 0 \end{pmatrix} = \begin{pmatrix} 1 &amp; 0 \\ 0 &amp; 1 \end{pmatrix} = I
+\end{align*}\]</span></p>
+<p>Therefore, for any <span class="math inline">\(n \in \mathbb{N}\)</span>: <span class="math display">\[
+P^n = \begin{cases}
+P^{2k} = (P^2)^k = I &amp; \text{if } n \text{ is even} \\
+P^{2k + 1} = P^{2k} P = P &amp; \text{if } n \text{ is odd}
+\end{cases}
+\]</span></p>
+<p>Now consider an initial distribution (read as a 1x2 matrix) <span class="math inline">\(\mu_0 = \begin{pmatrix}1 &amp; 0\end{pmatrix}\)</span>. This means we can make the simplification: <span class="math display">\[\begin{align*}
+\mu_0 P^n &amp;= \begin{pmatrix}1 &amp; 0\end{pmatrix}P^n \\
+&amp;= \begin{cases}
+\begin{pmatrix}1 &amp; 0\end{pmatrix} &amp; \text{if } n \text{ is even} \\
+\begin{pmatrix}0 &amp; 1\end{pmatrix} &amp; \text{if } n \text{ is odd}
+\end{cases}
+\end{align*}\]</span></p>
+<p>Since <span class="math inline">\(\mu_0 P^n\)</span> alternates between <span class="math inline">\(\begin{pmatrix}1 &amp; 0\end{pmatrix}\)</span> and <span class="math inline">\(\begin{pmatrix}0 &amp; 1\end{pmatrix}\)</span>, the sequence does not converge as <span class="math inline">\(n \to \infty\)</span>. Therefore, no limiting distribution exists.</p>
+</section>
+</section>
+<section id="aperidocity" class="level2">
+<h2 class="anchored" data-anchor-id="aperidocity">Aperidocity</h2>
+<p>What went wrong here? The chain is irreducible and has a unique stationary distribution, but it still doesn’t converge to that distribution. The problem is that the chain exhibits periodic behavior. It oscillates between states <span class="math inline">\(0\)</span> and <span class="math inline">\(1\)</span> in a predictable cycle, never settling down into a stable long-run pattern.</p>
+<p>This observation motivates our final piece of the puzzle: aperiodicity.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition 4
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The period of a state <span class="math inline">\(x\)</span> is the greatest common divisor (gcd) of all possible return times to that state. That is, <span class="math display">\[
+d(x) = \gcd\{n \geq 1 : P^n(x, x) &gt; 0\}
+\]</span></p>
+<p>A state <span class="math inline">\(x\)</span> is aperiodic if <span class="math inline">\(d(x) = 1\)</span>. A Markov chain is aperiodic if all states are aperiodic.</p>
+</div>
+</div>
+<p>Intuitively, we can think of the set <span class="math inline">\(\{n \geq 1 : P^n(x, x) &gt; 0\}\)</span> as containing all the time steps at which the chain can return to state <span class="math inline">\(x\)</span>. If this set is <span class="math inline">\(\{2, 4, 6, 8, \ldots\}\)</span> (only even numbers), then <span class="math inline">\(\gcd = 2\)</span> and the state has period 2. If the set is <span class="math inline">\(\{1, 2, 3, 4, \ldots\}\)</span> (all positive integers), then <span class="math inline">\(\gcd = 1\)</span> and the state is aperiodic.</p>
+<p>In our example above, state <span class="math inline">\(0\)</span> has period 2 because the chain can only return to state <span class="math inline">\(0\)</span> in an even number of steps: <span class="math inline">\(P^2(0, 0) = 1\)</span>, <span class="math inline">\(P^4(0, 0) = 1\)</span>, and so on. The same is true for state <span class="math inline">\(1\)</span>. This causes the distribution <span class="math inline">\(\mu_0 P^n\)</span> to oscillate rather than converge as <span class="math inline">\(n \to \infty\)</span>.</p>
+<div class="callout callout-style-simple callout-none no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">None</span>Example: PageRank is Aperiodic
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Recall our PageRank transition matrix where every entry satisfies <span class="math inline">\(P(i, j) \geq \frac{\alpha}{N} &gt; 0\)</span>. This means that for any state <span class="math inline">\(i\)</span>, we have <span class="math inline">\(P^1(i, i) \geq \frac{\alpha}{N} &gt; 0\)</span>. Therefore, <span class="math inline">\(1\)</span> is in the set of possible return times, which immediately gives us <span class="math inline">\(\gcd = 1\)</span> (think about what the greatest common divisor of <span class="math inline">\(1\)</span> and any number is). So every state is aperiodic, making the entire chain aperiodic.</p>
+</div>
+</div>
+<p>Maybe now we can prove convergence? Is Irreducibility and Aperiodicity enough? It turns out yes, but to answer that formally, we need a bit more machinery.</p>
+<section id="convergence" class="level3">
+<h3 class="anchored" data-anchor-id="convergence">Convergence</h3>
+<p>Before we can even hope to prove convergence, we first need a way to measure how “close” two probability distributions are to each other. One intuitive approach is to ask: what’s the largest possible difference in the probabilities that <span class="math inline">\(\mu, \nu\)</span> assign to any event?</p>
+<p>Formally, for any event <span class="math inline">\(A \subseteq \chi\)</span>, we could compute <span class="math inline">\(|\mu(A) - \nu(A)|\)</span>. If we take the worst case scenario over all events, we get <span class="math display">\[
+\max_{A \subseteq \chi} |\mu(A) - \nu(A)|
+\]</span> This tells us, in the most extreme case, how much these distributions disagree about the probability of an event. Let’s see if we can simplify this definition a little bit:</p>
+<p><span class="math display">\[
+\mu(A) - \nu(A) = \sum_{x \in A} \mu(x) - \sum_{x \in A} \nu(x) = \sum_{x \in A} [\mu(x) - \nu(x)]
+\]</span> Notice that this difference is maximized if we choose <span class="math inline">\(A\)</span> to contain exactly the points for which <span class="math inline">\(\mu(x) &gt; \nu(x)\)</span>. Let’s call this set <span class="math inline">\(A^+ = \{x \in \chi \mid \mu(x) &gt; \nu(x)\}\)</span>. Then, we can write <span class="math display">\[
+\max_{A \subseteq \chi} |\mu(A) - \nu(A)| = \sum_{x \in A^+} [\mu(x) - \nu(x)]
+\]</span> Now, since both <span class="math inline">\(\mu, \nu\)</span> are probability distributions, they must sum to one, so we have <span class="math display">\[
+\sum_{x \in \chi}[\mu(x) - \nu(x)] = \sum_{x \in \chi}\mu(x) - \sum_{x \in \chi} \nu(x) = 0
+\]</span> This means that when we partition the sum over all points, we can write <span class="math display">\[\begin{align*}
+&amp;0 = \sum_{x \in \chi}[\mu(x) - \nu(x)] = \sum_{x \in A^+} [\mu(x) - \nu(x)] + \sum_{x \not \in A^+} [\mu(x) - \nu(x)] \\
+\end{align*}\]</span></p>
+<p>which implies that</p>
+<p><span class="math display">\[
+\sum_{x \in A^+} [\mu(x) - \nu(x)] = - \sum_{x \not \in A^+} [\mu(x) - \nu(x)] = \sum_{x \not \in A^+} [\nu(x) - \mu(x)]
+\]</span></p>
+<p>Now, when we take the absolute difference over all points in <span class="math inline">\(\chi\)</span>, we have</p>
+<p><span class="math display">\[\begin{align*}
+\sum_{x \in \chi} |\mu(x) - \nu(x)| &amp;= \sum_{x \in A^+} |\mu(x) - \nu(x)| + \sum_{x \not \in A^+} |\nu(x) - \mu(x)| \\
+&amp;= 2 \sum_{x \in A^+} |\mu(x) - \nu(x)|
+\end{align*}\]</span></p>
+<p>Rearranging, we can finally write: <span class="math display">\[\begin{align*}
+2 \sum_{x \in A^+} |\mu(x) - \nu(x)| &amp;= 2 \max_{A \subseteq \chi} |\mu(A) - \nu(A)| = \sum_{x \in \chi} |\mu(x) - \nu(x)|\\
+\max_{A \subseteq \chi} |\mu(A) - \nu(A)| &amp;= \frac{1}{2} \sum_{x \in \chi} |\mu(x) - \nu(x)|
+\end{align*}\]</span></p>
+<p>This leads us to the convenient definition of distances between two distributions, known as the total variation difference:</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition 5 (Total Variation Distance)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>For any two probability distributions <span class="math inline">\(\mu\)</span> and <span class="math inline">\(\nu\)</span> over <span class="math inline">\(\chi\)</span>, we define the total variation distance between <span class="math inline">\(\mu\)</span> and <span class="math inline">\(\nu\)</span> by <span class="math display">\[
+\|\mu - \nu\|_{\text{TV}} := \frac{1}{2} \sum_{x \in \chi} |\mu(x) - \nu(x)|
+\]</span></p>
+</div>
+</div>
+<p>The total variation distance is a metric on the space of probability distributions. It ranges from <span class="math inline">\(0\)</span> (when <span class="math inline">\(\mu = \nu\)</span>) to <span class="math inline">\(1\)</span> (when <span class="math inline">\(\mu\)</span> and <span class="math inline">\(\nu\)</span> are completely different). You should check that it is indeed a valid distance metric.</p>
+<p>We can now formalize what we mean by “convergence to the stationary distribution” using this notion of distance.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Definition 6 (Convergence in Total Variation)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>We say that the distribution of <span class="math inline">\(X_n\)</span> converges to <span class="math inline">\(\pi\)</span> in total variation as <span class="math inline">\(n \to \infty\)</span> if for all starting distribution <span class="math inline">\(\mu_0\)</span>, <span class="math display">\[
+\|\mu_0 P^n - \pi\|_{\text{TV}} \to 0 \text{ as } n \to \infty
+\]</span></p>
+</div>
+</div>
+<p>This is equivalent to saying that for any state <span class="math inline">\(x \in \chi\)</span>, <span class="math display">\[
+\lim_{n \to \infty} \frac{1}{2} \sum_{x \in \chi} |\mathbb{P}[X_n = x] - \pi(x)| = 0
+\]</span></p>
+<p>Now we can restate the running question asked throughout this blog more precisely: we want to show that if <span class="math inline">\(P\)</span> is irreducible and aperiodic and <span class="math inline">\(\mu_0\)</span> is an arbitrary initial distribution for <span class="math inline">\(P\)</span>, then <span class="math inline">\(\mu_0 P^n \to \pi\)</span> in total variation.</p>
+</section>
+<section id="machinery-for-convergence" class="level3">
+<h3 class="anchored" data-anchor-id="machinery-for-convergence">Machinery For Convergence</h3>
+<p>To prove our formalized statement, we will need several technical results. Let’s build them up step by step.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Proposition 5
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If a Markov chain is aperiodic, then there exists <span class="math inline">\(N \in \mathbb{N}\)</span> such that for all <span class="math inline">\(x \in \chi\)</span> and all <span class="math inline">\(n \geq N\)</span>, we have <span class="math inline">\(P^n(x, x) &gt; 0\)</span></p>
+</div>
+</div>
+<p><em>Proof Sketch</em>:</p>
+<p>Fix a state <span class="math inline">\(x\)</span>. By definition of aperiodicity, we have <span class="math inline">\(\gcd\{n \geq 1 : P^n(x, x) &gt; 0\} = 1\)</span>. Let <span class="math inline">\(S = \{n \geq 1 : P^n(x, x) &gt; 0\}\)</span> be this set.</p>
+<p>A classical result from number theory tells us that because <span class="math inline">\(S\)</span> consists of positive integers and <span class="math inline">\(\gcd(S) = 1\)</span>, then there exists some <span class="math inline">\(N \in \mathbb{N}\)</span> such that every integer <span class="math inline">\(n \geq N\)</span> can be written as a non-negative integer linear combination of elements from <span class="math inline">\(S\)</span> (called the <a href="https://artofproblemsolving.com/wiki/index.php/Chicken_McNugget_Theorem?srsltid=AfmBOoo5b6Xz_eOFhntrmSXPZCTWQYJRxB4eI3eZH6yG3c9vPjVjfuX_">Chicken McNugget Theorem</a>). In other words, for all <span class="math inline">\(n \geq N\)</span>, we can write <span class="math display">\[
+n = \sum_{i=1}^{k} m_i s_i
+\]</span> where <span class="math inline">\(s_1, \ldots, s_k \in S\)</span> and <span class="math inline">\(m_1, \ldots, m_k\)</span> are non-negative integers.</p>
+<p>Now, for each <span class="math inline">\(n \geq N\)</span>, this means we can return to <span class="math inline">\(x\)</span> at time <span class="math inline">\(n\)</span> by taking the path that returns to <span class="math inline">\(x\)</span> at times <span class="math inline">\(s_1\)</span>, or the path that returns to <span class="math inline">\(x\)</span> at time <span class="math inline">\(2s_1, 3 s_1 \ldots, m_1 s_1\)</span>. Similarly, we could also take the path that returns at times <span class="math inline">\(m_1 s_1 + s_2, m_1 s_1 + 2s_2, \ldots, m_1 s_1 + m_2 s_2\)</span>, and so on. At each of these intermediate times, the chain is at state <span class="math inline">\(x\)</span>, and we know <span class="math inline">\(P^{s_i}(x, x) &gt; 0\)</span> for each <span class="math inline">\(i\)</span> because <span class="math inline">\(s_i \in S\)</span>.</p>
+<p>By the Markov property, the probability of following this entire path is the product of the transition probabilities:</p>
+<p><span class="math display">\[
+\begin{align*}
+P^n(x,x) \geq \underbrace{P^{s_1}(x, x) \cdot P^{s_1}(x, x) \cdots P^{s_1}(x, x)}_{m_1 \text{ times}} \cdot \underbrace{P^{s_2}(x, x) \cdots P^{s_2}(x, x)}_{m_2 \text{ times}} \cdots &gt; 0
+\end{align*}
+\]</span></p>
+<p>Therefore, <span class="math inline">\(P^n(x, x) &gt; 0\)</span> for all <span class="math inline">\(n \geq N\)</span>, as desired.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Proposition 6
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If a Markov chain is irreducible and aperiodic, then there exists <span class="math inline">\(N \in \mathbb{N}\)</span> such that <span class="math inline">\(P^N(x, y) &gt; 0\)</span> for all <span class="math inline">\(x, y \in \chi\)</span>.</p>
+</div>
+</div>
+<p><em>Proof Sketch</em>:</p>
+<p>By Proposition 5, we know that for each state <span class="math inline">\(x \in \chi\)</span>, there exists some <span class="math inline">\(N_x\)</span> such that <span class="math inline">\(P^n(x, x) &gt; 0\)</span> for all <span class="math inline">\(n \geq N_x\)</span>. Because our state space is finite, we can take <span class="math inline">\(N_1 = \max_{x \in \chi} N_x\)</span>, which ensures that <span class="math inline">\(P^n(x, x) &gt; 0\)</span> for all <span class="math inline">\(x \in \chi\)</span> and all <span class="math inline">\(n \geq N_1\)</span>.</p>
+<p>Now, by irreducibility, for any two states <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span>, there exists some <span class="math inline">\(n_{xy} \in \mathbb{N}\)</span> such that <span class="math inline">\(P^{n_{xy}}(x, y) &gt; 0\)</span>. Again, because the state space is finite, we can take <span class="math inline">\(N_2 = \max_{x, y \in \chi} n_{xy}\)</span>.</p>
+<p>Let <span class="math inline">\(N = N_1 + N_2\)</span>. For any states <span class="math inline">\(x, y \in \chi\)</span>, we can go from <span class="math inline">\(x\)</span> to <span class="math inline">\(y\)</span> in exactly <span class="math inline">\(N\)</span> steps by first spending <span class="math inline">\(N_2\)</span> steps to get from <span class="math inline">\(x\)</span> to <span class="math inline">\(y\)</span>, and then spending <span class="math inline">\(N_1\)</span> steps returning from <span class="math inline">\(y\)</span> to <span class="math inline">\(y\)</span>. We know both of these are possible with positive probability, so: <span class="math display">\[
+P^N(x, y) \geq P^{N_2}(x, y) \cdot P^{N_1}(y, y) &gt; 0
+\]</span></p>
+<p>Since <span class="math inline">\(x, y\)</span> were arbitrary this holds for all <span class="math inline">\(x, y \in \chi\)</span>, as desired.</p>
+<p>The next result is a key technical tool that shows how the transition matrix acts as a contraction in total variation distance.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Proposition 7
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Let <span class="math inline">\(P\)</span> be the transition matrix of a Markov chain. If <span class="math inline">\(\mu\)</span> and <span class="math inline">\(\nu\)</span> are any two probability distributions, then <span class="math display">\[
+\|\mu P - \nu P\|_{\text{TV}} \leq \|\mu - \nu\|_{\text{TV}}
+\]</span></p>
+</div>
+</div>
+<p><em>Proof Sketch</em>:</p>
+<p>We need to show that applying one step of the Markov chain cannot increase the total variation distance between two distributions. Let’s compute:</p>
+<p><span class="math display">\[
+\begin{align*}
+\|\mu P - \nu P\|_{\text{TV}} &amp;= \frac{1}{2} \sum_{y \in \chi} |(\mu P)(y) - (\nu P)(y)| \\
+&amp;= \frac{1}{2} \sum_{y \in \chi} \left| \sum_{x \in \chi} \mu(x) P(x, y) - \sum_{x \in \chi} \nu(x) P(x, y) \right| \\
+&amp;= \frac{1}{2} \sum_{y \in \chi} \left| \sum_{x \in \chi} (\mu(x) - \nu(x)) P(x, y) \right| \\
+&amp;\leq \frac{1}{2} \sum_{y \in \chi} \sum_{x \in \chi} |\mu(x) - \nu(x)| P(x, y) \tag{By triangle inequality} \\
+&amp;= \frac{1}{2} \sum_{x \in \chi} |\mu(x) - \nu(x)| \sum_{y \in \chi} P(x, y) \tag{Swap sums bc $|\chi| &lt; \infty$}\\
+&amp;= \frac{1}{2} \sum_{x \in \chi} |\mu(x) - \nu(x)| \cdot 1 \tag{rows of $P$ sum to 1}\\
+&amp;= \|\mu - \nu\|_{\text{TV}}
+\end{align*}
+\]</span></p>
+<p>as desired.</p>
+<p>This is very important! It tells us that the Markov Chain’s transition matrix can decrease distances but never increases them. However, to get convergence, we need something stronger. We need the chain to actually contract distances, not just preserve them. This is where irreducibility and aperiodicity come in.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Proposition 8 (Harris Lemma)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Suppose there exists a probability distribution <span class="math inline">\(\gamma\)</span> and a number <span class="math inline">\(\delta &gt; 0\)</span> such that <span class="math inline">\(P(x, y) \geq \delta \gamma(y)\)</span> for all <span class="math inline">\(x, y \in \chi\)</span>. Then for any two probability distributions <span class="math inline">\(\mu\)</span> and <span class="math inline">\(\nu\)</span>, <span class="math display">\[
+\|\mu P - \nu P\|_{\text{TV}} \leq (1 - \delta) \|\mu - \nu\|_{\text{TV}}
+\]</span></p>
+</div>
+</div>
+<p><em>Proof Sketch</em>:</p>
+<p>The main idea is to decompose the transition matrix <span class="math inline">\(P\)</span> into two parts: one that both distributions agree on, and a remaining part <span class="math inline">\(P_2\)</span> that has the differences. More precisely, I claim we can write: <span class="math display">\[
+P(x, y) = \delta \gamma(y) + (1 - \delta) P_2(x, y)
+\]</span></p>
+<p>where <span class="math inline">\(P_2\)</span> is itself a stochastic matrix defined as</p>
+<p><span class="math display">\[
+P_2(x, y) := \frac{P(x, y) - \delta \gamma(y)}{1 - \delta}
+\]</span></p>
+<p>We need to show that this is a stochastic matrix, which means showing that the entries are non negative, and the rows sum up to one. Since we’re given that <span class="math inline">\(P(x, y) \geq \delta \gamma(y)\)</span> for all <span class="math inline">\(x, y \in \chi\)</span>, we have: <span class="math display">\[
+P(x, y) - \delta \gamma(y) \geq 0
+\]</span></p>
+<p>And since <span class="math inline">\(\delta &lt; 1\)</span> (otherwise the proposition is trivial), we have <span class="math inline">\(1 - \delta &gt; 0\)</span>. Therefore:</p>
+<p><span class="math display">\[
+P_2(x, y) = \frac{P(x, y) - \delta \gamma(y)}{1 - \delta} \geq 0
+\]</span></p>
+<p>Finally, the rows of <span class="math inline">\(P_2\)</span> sum to <span class="math inline">\(1\)</span> since for any fixed <span class="math inline">\(x \in \chi\)</span>: <span class="math display">\[\begin{align}
+\sum_{y \in \chi} P_2(x, y) &amp;= \sum_{y \in \chi} \frac{P(x, y) - \delta \gamma(y)}{1 - \delta} \\
+&amp;= \frac{1}{1 - \delta} \sum_{y \in \chi} [P(x, y) - \delta \gamma(y)] \\
+&amp;= \frac{1}{1 - \delta} \left[\sum_{y \in \chi} P(x, y) - \delta \sum_{y \in \chi} \gamma(y)\right] \\
+&amp;= \frac{1}{1 - \delta} [1 - \delta \cdot 1] \\
+&amp;= 1
+\end{align}\]</span></p>
+<p>where we used that <span class="math inline">\(P\)</span> is stochastic (so <span class="math inline">\(\sum_y P(x, y) = 1\)</span>) and <span class="math inline">\(\gamma\)</span> is a probability distribution (so <span class="math inline">\(\sum_y \gamma(y) = 1\)</span>).</p>
+<p>Now, when we apply <span class="math inline">\(P\)</span> to any distribution <span class="math inline">\(\mu\)</span>, we see</p>
+<p><span class="math display">\[\begin{align}
+(\mu P)(y) &amp;= \sum_{x \in \chi} \mu(x) P(x, y) \\
+&amp;= \sum_{x \in \chi} \mu(x) [\delta \gamma(y) + (1 - \delta) P_2(x, y)] \\
+&amp;= \sum_{x \in \chi} \mu(x) \delta \gamma(y) + \sum_{x \in \chi} \mu(x) (1 - \delta) P_2(x, y) \\
+&amp;= \delta \gamma(y) \sum_{x \in \chi} \mu(x) + (1 - \delta) \sum_{x \in \chi} \mu(x) P_2(x, y) \\
+&amp;= \delta \gamma(y) \cdot 1 + (1 - \delta) (\mu P_2)(y) \\
+&amp;= \delta \gamma(y) + (1 - \delta) (\mu P_2)(y)
+\end{align}\]</span></p>
+<p>Plugging everything in, we can now show the result: <span class="math display">\[
+\begin{align*}
+\|\mu P - \nu P\|_{\text{TV}} &amp;= \left\| (\delta \gamma + (1 - \delta) \mu P_2) - (\delta \gamma + (1 - \delta) \nu P_2 )\right\|_{\text{TV}} \\
+&amp;= \left\| \delta \gamma + (1 - \delta) \mu P_2 - \delta \gamma - (1 - \delta) \nu P_2 \right\|_{\text{TV}} \\
+&amp;= (1 - \delta) \|\mu P_2 - \nu P_2\|_{\text{TV}} \\
+&amp;\leq (1 - \delta) \|\mu - \nu\|_{\text{TV}} \tag{By Proposition 7}
+\end{align*}
+\]</span></p>
+<p>This shows that the distance contracts by a factor of at least <span class="math inline">\((1 - \delta)\)</span> in each step.</p>
+<p>Now we have all the tools we need to prove the main convergence theorem</p>
+</section>
+<section id="proof-of-convergence" class="level3">
+<h3 class="anchored" data-anchor-id="proof-of-convergence">Proof of Convergence</h3>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Theorem 2 (Convergence)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Let <span class="math inline">\(P\)</span> be the transition matrix of an irreducible and aperiodic Markov chain with stationary distribution <span class="math inline">\(\pi\)</span>. Then for any initial distribution <span class="math inline">\(\mu_0\)</span> and any state <span class="math inline">\(y \in \chi\)</span>: <span class="math display">\[
+\lim_{n \to \infty} (\mu_0 P^n)(y) = \pi(y)
+\]</span></p>
+<p>In other words, <span class="math inline">\(\lim_{n \to \infty} \mu_n = \pi\)</span>, regardless of where we started.</p>
+</div>
+</div>
+<p><em>Proof Sketch of Theorem 2</em>:</p>
+<p>By Proposition 6, since our chain is irreducible and aperiodic, there exists some <span class="math inline">\(N \in \mathbb{N}\)</span> such that <span class="math inline">\(P^N(x, y) &gt; 0\)</span> for all <span class="math inline">\(x, y \in \chi\)</span>.</p>
+<p>Let <span class="math inline">\(\delta = \min_{x, y \in \chi} P^N(x, y)\)</span>. This minimum exists and is positive because we’re taking the minimum over a finite set of positive numbers. Now define <span class="math inline">\(\gamma(y) = \frac{1}{|\chi|}\)</span> to be the uniform distribution over all states.</p>
+<p>I claim that <span class="math inline">\(P^N(x, y) \geq \delta \gamma(y)\)</span> for all <span class="math inline">\(x, y\)</span>. To see this, note that: <span class="math display">\[\begin{align*}
+P^N(x, y) &amp;\geq \delta \tag{By defn} \\
+&amp;= \delta \cdot \frac{1}{|\chi|} \cdot |\chi| \\
+&amp;\geq \delta \cdot \frac{1}{|\chi|} \tag{B/c $|\chi| &gt; 0$ } \\
+&amp;= \delta \gamma(y)
+\end{align*}\]</span></p>
+<p>Therefore, by Proposition 8, for any two distributions <span class="math inline">\(\mu\)</span> and <span class="math inline">\(\nu\)</span>: <span class="math display">\[
+\|\mu P^N - \nu P^N\|_{\text{TV}} \leq (1 - \delta) \|\mu - \nu\|_{\text{TV}}
+\]</span></p>
+<p>Let <span class="math inline">\(\mu_0\)</span> be any arbitrary initial distribution for <span class="math inline">\(P\)</span>. We can use induction and the above observation to show that for all <span class="math inline">\(k \geq 1\)</span>, we have: <span class="math display">\[
+\|(\mu_0 P^{kN}) - \pi\|_{\text{TV}} \leq (1 - \delta)^k \|\mu_0 - \pi\|_{\text{TV}}
+\]</span></p>
+<p>The base case <span class="math inline">\(k = 1\)</span> follows from Proposition 8: <span class="math display">\[
+\|(\mu_0 P^{N}) - \pi\|_{\text{TV}} = \|(\mu_0 P^{N}) - \pi P^N\|_{\text{TV}} \leq (1 - \delta) \|\mu_0 - \pi\|_{\text{TV}}
+\]</span></p>
+<p>Now assume the result holds for <span class="math inline">\(k\)</span>. We need to show it holds for <span class="math inline">\(k+1\)</span>: <span class="math display">\[\begin{align}
+\|(\mu_0 P^{(k+1)N}) - \pi\|_{\text{TV}} &amp;= \|(\mu_0 P^{k N} P^N) - (\pi P^N)\|_{\text{TV}} \\
+&amp;\leq (1 - \delta) \|(\mu_0 P^{kN}) - \pi\|_{\text{TV}} \tag{Proposition 8} \\
+&amp;\leq (1 - \delta) \cdot (1 - \delta)^k \|\mu_0 - \pi\|_{\text{TV}} \tag{Induction hypothesis} \\
+&amp;= (1 - \delta)^{k+1} \|\mu_0 - \pi\|_{\text{TV}}
+\end{align}\]</span></p>
+<p>which completes the induction. Now, since <span class="math inline">\(0 &lt; (1 - \delta) &lt; 1\)</span>, we have <span class="math inline">\((1 - \delta)^k \to 0\)</span> as <span class="math inline">\(k \to \infty\)</span>. This means: <span class="math display">\[
+\lim_{k \to \infty} \|(\mu_0 P^{kN}) - \pi\|_{\text{TV}} = 0
+\]</span></p>
+<p>To handle times that aren’t multiples of <span class="math inline">\(N\)</span>, note that for any <span class="math inline">\(n \geq 0\)</span>, we can write <span class="math inline">\(n = kN + r\)</span> where <span class="math inline">\(0 \leq r &lt; N\)</span>. Then: <span class="math display">\[\begin{align}
+\|(\mu_0 P^n) - \pi\|_{\text{TV}} &amp;= \|(\mu_0 P^{kN + r}) - \pi\|_{\text{TV}} \\
+&amp;= \|(\mu_0 P^{kN}) P^r - \pi P^r\|_{\text{TV}} \\
+&amp;\leq \|(\mu_0 P^{kN}) - \pi\|_{\text{TV}} \tag{Proposition 7} \\
+&amp;\leq (1 - \delta)^k \|\mu_0 - \pi\|_{\text{TV}}
+\end{align}\]</span></p>
+<p>Since <span class="math inline">\(k \to \infty\)</span> as <span class="math inline">\(n \to \infty\)</span>, we conclude that: <span class="math display">\[
+\lim_{n \to \infty} \|(\mu_0 P^n) - \pi\|_{\text{TV}} = 0
+\]</span></p>
+<p>This proves that the distribution converges to <span class="math inline">\(\pi\)</span> in total variation, completing the main proof.</p>
+<div class="callout callout-style-simple callout-none no-icon callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">None</span>Remark
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The convergence is exponentially fast with rate <span class="math inline">\((1 - \delta)\)</span>, which depends on the smallest entry of <span class="math inline">\(P^N\)</span>. This tells us not just that convergence happens, but also gives us a quantitative bound on how quickly the chain converges.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>We began this journey with a simple question: will the PageRank random surfer always produce the same long term behavior? After developing the full theory of Markov chains, we can now definitively answer this question as yes.</p>
+<p>The PageRank chain is both irreducible (every page is reachable from every other page due to the random jump mechanism) and aperiodic (we can return to any page in one step with positive probability). By Theorem 2, this guarantees that:</p>
+<ol type="1">
+<li>There exists a unique stationary distribution <span class="math inline">\(\pi\)</span></li>
+<li>Starting from any initial distribution <span class="math inline">\(\mu_0\)</span>, the chain converges to <span class="math inline">\(\pi\)</span> in total variation</li>
+<li>The convergence is exponentially fast</li>
+</ol>
+<p>This means that no matter where the random surfer starts, after enough time, the proportion of visits to each page will converge to the same values given by <span class="math inline">\(\pi\)</span>. These limiting proportions define a well-defined, consistent ranking of webpage importance.</p>
+<p>But the power of this theory extends far beyond web search. Irreducible and aperiodic Markov chains appear throughout science, engineering and financial markets. For example, in statistical physics, they can model particle systems reaching thermal equilibrium. In machine learning, they allow for MCMC sampling algorithms like Metropolis-Hastings. In queueing theory, they predict long-run behavior of service systems. Finally, in finance, they model the evolution of asset prices and credit ratings.</p>
+<p>Having this rigorous theoretical background on Markov Chains now allows you to tackle all these problems.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/csuraparaju\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
