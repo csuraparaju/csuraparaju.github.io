@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/metropolis-hastings/index.html",
       "/posts/markov-chains/index.html",
       "/posts/sampling/index.html",
       "/posts/dual-numbers/index.html",

@@ -12,6 +12,233 @@
 <generator>quarto-1.8.26</generator>
 <lastBuildDate>Wed, 15 Oct 2025 04:00:00 GMT</lastBuildDate>
 <item>
+  <title>The Metropolis-Hastings Algorithm for Sampling</title>
+  <dc:creator>Krish Suraparaju</dc:creator>
+  <link>https://csuraparaju.github.io/posts/metropolis-hastings/</link>
+  <description><![CDATA[ 
+
+
+
+
+
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>In a previous blog <a href="https://csuraparaju.github.io/posts/sampling/">post</a>, I discussed various algorithms for sampling from a probability distribution <img src="https://latex.codecogs.com/png.latex?%5Cpi">. These algorithms all made a simple assumption: we can compute <img src="https://latex.codecogs.com/png.latex?%5Cpi(x)"> efficiently for all <img src="https://latex.codecogs.com/png.latex?x"> in our sample space <img src="https://latex.codecogs.com/png.latex?%5Cchi">. However, this assumption might be too strong for certain cases. What if computing <img src="https://latex.codecogs.com/png.latex?%5Cpi(x)"> is computationally intractable? We can’t use the methods developed in that post. What do we do instead?</p>
+</section>
+<section id="protein-folding" class="level2">
+<h2 class="anchored" data-anchor-id="protein-folding">Protein Folding</h2>
+<p>As an example of a situation where <img src="https://latex.codecogs.com/png.latex?%5Cpi"> is uncomputable, let’s study protein folding. You might recall that a protein is a chain of amino acids (also called residues) that folds into a certain structure. One of the simplest models for this process is the Hydrophobic-Polar (HP) lattice model, where we have a chain of <img src="https://latex.codecogs.com/png.latex?N"> residues, each classified as either hydrophobic (H) which is water-repelling, or polar (P) which is water-loving. Chemistry tells us that hydrophobic residues tend to cluster together, and so the final folded structure of an acid sequence is heavily influenced by <img src="https://latex.codecogs.com/png.latex?H"> and <img src="https://latex.codecogs.com/png.latex?P"> residues. We can see this effect in the diagram below:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="hydrophobic_collapse.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="https://csuraparaju.github.io/posts/metropolis-hastings/hydrophobic_collapse.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></a></p>
+</figure>
+</div>
+<p>On the left is an unfolded amino acid sequence, with hydrophobic residues in black and polar particles in white. Observe that after folding, the hydrophobic residues clustered together on the “inside” of the protein, while the polar residues are closer to the surface of the protein.</p>
+<p>Mathematically, the folded structure of this amino acid can be modeled as a graph on a 2D integer lattice where each residue is mapped to a point in space. However, we can’t just consider any arbitrary graph. To keep this model realistic, we need to have the restriction that adjacent amino acids in the sequence are adjacent in the lattice (since the amino acid sequence cannot be permuted when folding), and no two residues occupy the same point in space. We can define this more formally as follows:</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>HP Model
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>An amino acid sequence is a string <img src="https://latex.codecogs.com/png.latex?s%20%5Cin%20%5C%7BH,%20P%5C%7D%5EN"> of length <img src="https://latex.codecogs.com/png.latex?N">. A folded configuration of this sequence is a function <img src="https://latex.codecogs.com/png.latex?%5Comega%20:%20%5B1,%20%5Ccdots,%20N%5D%20%5Cto%20%5Cmathbb%7BZ%7D%5E2"> where <img src="https://latex.codecogs.com/png.latex?%5Comega(i)"> gives the position of the <img src="https://latex.codecogs.com/png.latex?i">-th amino acid in <img src="https://latex.codecogs.com/png.latex?s"> on the lattice, such that</p>
+<ul>
+<li><img src="https://latex.codecogs.com/png.latex?%7C%7C%5Comega(i)%20-%20%5Comega(i+1)%7C%7C_2%20=%201"> for all <img src="https://latex.codecogs.com/png.latex?1%20%5Cleq%20i%20%3C%20N"> (adjacent residues in the sequence are adjacent in the lattice)</li>
+<li><img src="https://latex.codecogs.com/png.latex?%5Comega(i)%20%5Cneq%20%5Comega(j)"> for all <img src="https://latex.codecogs.com/png.latex?i%20%5Cneq%20j"> (two residues cannot occupy the same point in space)</li>
+</ul>
+<p>Chemistry tells us that the energy of a configuration <img src="https://latex.codecogs.com/png.latex?%5Comega"> depends on hydrophobic contacts. We say two residues at positions <img src="https://latex.codecogs.com/png.latex?%5Comega(i)"> and <img src="https://latex.codecogs.com/png.latex?%5Comega(j)"> are in contact if they are adjacent on the lattice but not consecutive in the sequence so that <img src="https://latex.codecogs.com/png.latex?%7Ci%E2%88%92j%7C%20%3E%201">. This way, we only count the interactions of residues that moved around in 2D space to cluster together, rather than ones that were already next to each other. The energy is then: <img src="https://latex.codecogs.com/png.latex?E(s,%20%5Comega)%20=%20%5Csum_%7Bi%20%5Csim%20j%7D%20E_%7Bs_i,%20s_j%7D"> where <img src="https://latex.codecogs.com/png.latex?i%20%5Csim%20j"> iff <img src="https://latex.codecogs.com/png.latex?%5Comega(i)"> is in contact with <img src="https://latex.codecogs.com/png.latex?%5Comega(j)">, and <img src="https://latex.codecogs.com/png.latex?E_%7BHH%7D%20=%20-1">, <img src="https://latex.codecogs.com/png.latex?E_%7BHP%7D%20=%20E_%7BPH%7D%20=%20E_%7BPP%7D%20=%200">, so only <img src="https://latex.codecogs.com/png.latex?HH"> contacts contribute to lowering the energy, and giving us a way to quantify the clustering behavior of <img src="https://latex.codecogs.com/png.latex?H"> residues.</p>
+</div>
+</div>
+<p>Below is an example sequence <img src="https://latex.codecogs.com/png.latex?HPPHPH"> and possible folded configurations <img src="https://latex.codecogs.com/png.latex?%5Comega">. <img src="https://latex.codecogs.com/png.latex?H"> amino acids are colored green and <img src="https://latex.codecogs.com/png.latex?P"> amino acids are in silver. The configuration <img src="https://latex.codecogs.com/png.latex?%5Comega"> that has the minimum energy of all the listed configurations is circled in red, since it has three <img src="https://latex.codecogs.com/png.latex?HH"> contacts, most out of the others. Image courtesy of <a href="https://math.mit.edu/classes/18.417/Slides/HP-protein-prediction.pdf">MIT: 18.417</a></p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="hp_model.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="https://csuraparaju.github.io/posts/metropolis-hastings/hp_model.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></a></p>
+</figure>
+</div>
+<p>Given this set up, our goal is to study the folded protein structure of an amino acid sequence. Specifically, we want to understand what a typical folded configuration looks like at temperature <img src="https://latex.codecogs.com/png.latex?T">. Thermochemistry tells us that protein folding can actually be thought of sampling from a distribution proportional to the Boltzmann distribution: <img src="https://latex.codecogs.com/png.latex?%0A%5Cpi_u(%5Comega%20%7C%20s)%20:=%20%5Cmathbb%7BP%7D%5B%5Comega%20%7C%20s%5D%20=%20e%5E%7B-%5Cfrac%7BE(s,%20%5Comega)%7D%7Bk_B%20T%7D%7D%0A"> where <img src="https://latex.codecogs.com/png.latex?T"> is the temperature, <img src="https://latex.codecogs.com/png.latex?k_B"> is the Boltzmann constant. To turn <img src="https://latex.codecogs.com/png.latex?%5Cpi_u"> into a probability distribution, we need to compute a normalizing constant <img src="https://latex.codecogs.com/png.latex?%0AZ%20=%20%5Csum_%7B%5Comega%7D%5Cpi_u(%5Comega%20%7C%20s)%0A"> and define <img src="https://latex.codecogs.com/png.latex?%0A%5Cpi(%5Comega%20%7C%20s)%20:=%20%5Cfrac%7B1%7D%7BZ%7D%20%5Cpi_u%20(%5Comega%20%7C%20s)%0A"></p>
+<p>We can now use the algorithm developed at the end of this <a href="https://csuraparaju.github.io/posts/sampling/">post</a> to draw samples from this distribution and understand what typical folded protein configurations look like at temperature <img src="https://latex.codecogs.com/png.latex?T">. There’s just one problem: the normalizing constant <img src="https://latex.codecogs.com/png.latex?Z">.</p>
+</section>
+<section id="intractability-of-z" class="level2">
+<h2 class="anchored" data-anchor-id="intractability-of-z">Intractability of <img src="https://latex.codecogs.com/png.latex?Z"></h2>
+<p>We need to compute <img src="https://latex.codecogs.com/png.latex?%5Cpi_u(%5Comega%20%7C%20s)"> for all possible <img src="https://latex.codecogs.com/png.latex?%5Comega"> given a specific <img src="https://latex.codecogs.com/png.latex?s"> to find <img src="https://latex.codecogs.com/png.latex?Z">. What could happen if the number of possible configurations is computationally intractable? In this case, it turns out that there are about <img src="https://latex.codecogs.com/png.latex?3%5EN"> different <img src="https://latex.codecogs.com/png.latex?%5Comega">’s. This is because we can place the first residue anywhere on the lattice, and so the second residue has <img src="https://latex.codecogs.com/png.latex?4"> choices (up, down, left, right). The third residue has at most three choices (since we can’t backtrack to residue <img src="https://latex.codecogs.com/png.latex?1">’s position), and similarly with the fourth residue. We can continue this argument for <img src="https://latex.codecogs.com/png.latex?N"> and get the rough bound <img src="https://latex.codecogs.com/png.latex?3%5EN"> for the number of possible configurations.</p>
+<p>This is a huge number! Even if we have a relatively small amino acid sequence, with <img src="https://latex.codecogs.com/png.latex?N%20=%20100">, there are roughly <img src="https://latex.codecogs.com/png.latex?3%5E%7B100%7D"> possible configurations to try! Even our fastest computers today will take about <img src="https://latex.codecogs.com/png.latex?10%5E%7B22%7D"> years to finish calculating that a sum of that many terms. What’s worse is that there is no smarter way to compute <img src="https://latex.codecogs.com/png.latex?Z">. We need to evaluate <img src="https://latex.codecogs.com/png.latex?%5Cpi_u"> at every single <img src="https://latex.codecogs.com/png.latex?%5Comega">. This makes it impossible to use our previously developed algorithms since it is hopeless to try to compute <img src="https://latex.codecogs.com/png.latex?%5Cpi%20(%5Comega%20%7C%20s)">. We need to think of another way to solve this problem.</p>
+<p>If we can’t compute <img src="https://latex.codecogs.com/png.latex?%5Cpi(%5Comega%20%7C%20s)"> directly, are there quantities that we can compute? Well, we can evaluate <img src="https://latex.codecogs.com/png.latex?%5Cpi_u%20(%5Comega%20%7C%20s)"> since that just requires counting the <img src="https://latex.codecogs.com/png.latex?HH"> contacts for a single <img src="https://latex.codecogs.com/png.latex?%5Comega">. Does this help us come up with a way to understand how <img src="https://latex.codecogs.com/png.latex?%5Cpi"> looks like? Suppose we have two configurations, <img src="https://latex.codecogs.com/png.latex?%5Comega"> and <img src="https://latex.codecogs.com/png.latex?%5Comega'">. While we don’t know their individual probabilities <img src="https://latex.codecogs.com/png.latex?%5Cpi(%5Comega%20%7C%20s)"> or <img src="https://latex.codecogs.com/png.latex?%5Cpi(%5Comega'%20%7C%20s)">, observe what happens when we look at their ratio:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Cfrac%7B%5Cpi(%5Comega'%20%7C%20s)%7D%7B%5Cpi(%5Comega%20%7C%20s)%7D%20=%20%5Cfrac%7B%5Cpi_u(%5Comega'%20%7C%20s)/Z%7D%7B%5Cpi_u(%5Comega%20%7C%20s)/Z%7D%20=%20%5Cfrac%7B%5Cpi_u(%5Comega'%20%7C%20s)%7D%7B%5Cpi_u(%5Comega%20%7C%20s)%7D%0A"></p>
+<p>The <img src="https://latex.codecogs.com/png.latex?Z"> terms cancel out entirely. We are left with a ratio of unnormalized weights (<img src="https://latex.codecogs.com/png.latex?%5Cpi_u">), which is just a simple calculation of <img src="https://latex.codecogs.com/png.latex?HH"> contacts. Now, notice that the fraction</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Cfrac%7B%5Cpi(%5Comega'%20%7C%20s)%7D%7B%5Cpi(%5Comega%20%7C%20s)%7D%0A"></p>
+<p>tells us the relative probability of two configurations. If this ratio is greater than <img src="https://latex.codecogs.com/png.latex?1">, then <img src="https://latex.codecogs.com/png.latex?%5Comega'"> has higher probability than <img src="https://latex.codecogs.com/png.latex?%5Comega'">. If it’s less than <img src="https://latex.codecogs.com/png.latex?1"> then <img src="https://latex.codecogs.com/png.latex?%5Comega"> has higher probability. Using this, we can compare the likelihood of two configurations.</p>
+<p>This should hopefully give you an idea. Since we can’t look at the whole landscape of <img src="https://latex.codecogs.com/png.latex?3%5EN"> configurations to pick a perfect sample, we start with a single, arbitrary configuration <img src="https://latex.codecogs.com/png.latex?%5Comega_0">. It’s almost certainly not a typical sample from <img src="https://latex.codecogs.com/png.latex?%5Cpi">, but that doesn’t matter yet. We want to produce a sequence of configurations <img src="https://latex.codecogs.com/png.latex?%5Comega_0,%20%5Comega_1,%20%5Comega_2,%20%5Cdots,%20%5Comega_t"> such that, as <img src="https://latex.codecogs.com/png.latex?t%20%5Cto%20%5Cinfty">, the configurations look less like our arbitrary start and more like they were drawn from <img src="https://latex.codecogs.com/png.latex?%5Cpi">. To do this, at each step <img src="https://latex.codecogs.com/png.latex?t">, we should propose a new candidate <img src="https://latex.codecogs.com/png.latex?%5Comega'">. Then, we should decide if we should update our current sample to <img src="https://latex.codecogs.com/png.latex?%5Comega'">, or keep <img src="https://latex.codecogs.com/png.latex?%5Comega_t"> as the candidate. But how do we make this decision?</p>
+<p>Hopefully you see that we can use our ratio <img src="https://latex.codecogs.com/png.latex?%5Cfrac%7B%5Cpi(%5Comega'%20%7C%20s)%7D%7B%5Cpi(%5Comega_t%20%7C%20s)%7D"> as a way to filter. If the ratio is high, <img src="https://latex.codecogs.com/png.latex?%5Comega'"> is more likely than our current state. We should probably update our sample to <img src="https://latex.codecogs.com/png.latex?%5Comega'">. If the ratio is low, it means <img src="https://latex.codecogs.com/png.latex?%5Comega'"> is less likely. We should probably reject it and keep <img src="https://latex.codecogs.com/png.latex?%5Comega_t"> as our sample for this step.</p>
+<p>While our initial choice <img src="https://latex.codecogs.com/png.latex?%5Comega_0"> might be a bad representative of the distribution, the process is self-correcting. Each time we make an update, we are moving the sequence toward states that is more representative under <img src="https://latex.codecogs.com/png.latex?%5Cpi">. If we run this process for long enough, the first arbitrary choice <img src="https://latex.codecogs.com/png.latex?%5Comega_0"> gets drowned out. Eventually, the configurations the algorithm visits become more and more like they are samples drawn from the true distribution <img src="https://latex.codecogs.com/png.latex?%5Cpi">.</p>
+<p>It turns out that <img src="https://latex.codecogs.com/png.latex?%5Comega_t"> defined in this way is a Markov Chain. If you are unfamiliar with Markov Chains, I highly suggest you read my previous blog <a href="https://csuraparaju.github.io/posts/markov-chains/">post</a> on them. Be warned: the rest of this posts assumes you are familiar with the big ideas/theorems from that post!</p>
+</section>
+<section id="the-metropolis-hastings-algorithm" class="level2">
+<h2 class="anchored" data-anchor-id="the-metropolis-hastings-algorithm">The Metropolis-Hastings Algorithm</h2>
+<p>Note: From here on, I’ll remove the dependence on <img src="https://latex.codecogs.com/png.latex?s"> for notational clarity, writing <img src="https://latex.codecogs.com/png.latex?%5Cpi(%5Comega)"> instead of <img src="https://latex.codecogs.com/png.latex?%5Cpi(%5Comega%20%7C%20s)">.</p>
+<p>Notice that the process discussed at the end of the previous section can be thought of as a Markov Chain. We start out with some initial configuration <img src="https://latex.codecogs.com/png.latex?%5Comega_0">, and for each time step decide if we need to resample an <img src="https://latex.codecogs.com/png.latex?%5Comega_1"> or not. If we keep running this process, we’ll have a Markov Chain <img src="https://latex.codecogs.com/png.latex?%5Comega_t">. I’ll leave it as an exercise for you to prove that this process indeed does have the Markov Property.</p>
+<p>To turn this self-correcting sequence idea into an algorithm, we need to formalize how we pick a new candidate and how we decide to accept it.</p>
+<p>First, we need a way to pick a candidate <img src="https://latex.codecogs.com/png.latex?%5Comega'"> given our current state <img src="https://latex.codecogs.com/png.latex?%5Comega_t">. We call this the proposal distribution, denoted <img src="https://latex.codecogs.com/png.latex?Q(%5Comega'%20%7C%20%5Comega_t)">. In the case of our protein lattice, a proposal might be as simple as picking one residue at random and try to move it to an adjacent empty spot. This is just a mechanism to explore the space; <img src="https://latex.codecogs.com/png.latex?Q"> doesn’t need to know anything about the <img src="https://latex.codecogs.com/png.latex?HH"> contacts or the true distribution <img src="https://latex.codecogs.com/png.latex?%5Cpi">.</p>
+<p>Once we have our candidate <img src="https://latex.codecogs.com/png.latex?%5Comega'">, we need an exact rule for the filter. We want this rule to guarantee that the stationary distribution of our chain is exactly <img src="https://latex.codecogs.com/png.latex?%5Cpi">. This rule is the Acceptance Probability, <img src="https://latex.codecogs.com/png.latex?%5Calpha(%5Comega_t,%20%5Comega')">. It tells us the exact probability with which we should move to the new state. If we don’t move, we simply stay at <img src="https://latex.codecogs.com/png.latex?%5Comega_t"> for another time step.</p>
+<p>Combining the ideas gives us the Metropolis-Hastings algorithm</p>
+<div class="algorithm">
+<p><strong>Metropolis-Hastings Algorithm</strong></p>
+<p><img src="https://latex.codecogs.com/png.latex?%5Comega_0%20%5Cgets"> initial configuration</p>
+<p>for <img src="https://latex.codecogs.com/png.latex?t%20=%200"> to <img src="https://latex.codecogs.com/png.latex?T-1">:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%5Cquad"> Propose a new configuration <img src="https://latex.codecogs.com/png.latex?%5Comega'"> with probability <img src="https://latex.codecogs.com/png.latex?Q(%5Comega_t,%20%5Comega')"></p>
+<p><img src="https://latex.codecogs.com/png.latex?%5Cquad"> Define the Acceptance Probability <img src="https://latex.codecogs.com/png.latex?A(%5Comega_t,%20%5Comega')"> by:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0AA(%5Comega_t,%20%5Comega')%20:=%20%5Cmin%5Cleft%5C%7B1,%20%5Cfrac%7B%5Cpi_u(%5Comega')Q(%5Comega',%20%5Comega_t)%7D%7B%5Cpi_u(%5Comega_t)Q(%5Comega_t,%20%5Comega')%7D%5Cright%5C%7D%0A"> <img src="https://latex.codecogs.com/png.latex?%5Cquad"> Choose <img src="https://latex.codecogs.com/png.latex?U_%7Bt%20+%201%7D%20%5Csim%20%5Ctext%7BUnif%7D(%5B0,%201%5D)"> independently and update</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Comega_%7Bt%20+%201%7D%20=%20%5Cbegin%7Bcases%7D%0A%5Comega'%20&amp;&amp;%20%5Ctext%7Bif%20%7D%20U_%7Bt+1%7D%20%5Cleq%20A%20%5C%5C%0A%5Comega_t%20&amp;&amp;%20%5Ctext%7Botherwise%7D%5C%5C%0A%5Cend%7Bcases%7D%0A"></p>
+<p>Note: <img src="https://latex.codecogs.com/png.latex?T"> should be chosen large enough for the chain to reach its stationary distribution.</p>
+</div>
+<p>This algorithm is a more formal version of the intuition we’ve developed so far. It defines a new Markov Chain <img src="https://latex.codecogs.com/png.latex?%5Comega_t"> (called the MH chain) and simulates this chain for a very long time.</p>
+<p>But is this method actually correct? That is, will our sequence <img src="https://latex.codecogs.com/png.latex?%5Comega_0,%20%5Comega_1,%20%5Ccdots,%20%5Comega_t,%20%5Comega_%7Bt%20+%201%7D,%20%5Ccdots"> eventually look like it resembles <img src="https://latex.codecogs.com/png.latex?%5Cpi"> if we follow this algorithm? Well, we have a nice theorem (discussed in this <a href="https://csuraparaju.github.io/posts/markov-chains/">post</a>) that says irreducible and aperiodic Markov chains converge to their stationary distribution, no matter the starting distribution. So, if we can show that <img src="https://latex.codecogs.com/png.latex?%5Cpi"> is a stationary distribution of <img src="https://latex.codecogs.com/png.latex?%5Comega_t">, and <img src="https://latex.codecogs.com/png.latex?%5Comega_t"> is irreducible and aperiodic, then we can apply the theorem to conclude that <img src="https://latex.codecogs.com/png.latex?%0A%5Clim_%7Bt%20%5Cto%20%5Cinfty%7D%20%5Cmathbb%7BP%7D%5B%5Comega_t%20=%20%5Comega%5D%20=%20%5Cpi(%5Comega)%0A"></p>
+<p>The hard part in this is showing that <img src="https://latex.codecogs.com/png.latex?%5Cpi"> is indeed a stationary distribution of <img src="https://latex.codecogs.com/png.latex?%5Comega_t">. There are some useful propositions we should prove first, to help us establish this result.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Proposition 1
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <img src="https://latex.codecogs.com/png.latex?%5Cmu"> is a distribution and <img src="https://latex.codecogs.com/png.latex?P"> is the transition matrix of a Markov Chain such that <img src="https://latex.codecogs.com/png.latex?%0A%5Cmu(x)%20P(x,%20y)%20=%20%5Cmu(y)%20P(y,%20x)%0A"> for every <img src="https://latex.codecogs.com/png.latex?x,%20y%20%5Cin%20%5Cchi">, then <img src="https://latex.codecogs.com/png.latex?%5Cmu"> must be a stationary distribution of <img src="https://latex.codecogs.com/png.latex?P">.</p>
+</div>
+</div>
+<p><em>Proof</em>:</p>
+<p>Note that we have <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0A(%5Cmu%20P)%20(y)%20&amp;=%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%5Cmu(x)%20P(x,%20y)%20%5C%5C%0A&amp;=%20%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20%5Cmu(y)%20P(y,%20x)%20%5Ctag%7BBy%20assumption%7D%5C%5C%0A&amp;=%20%5Cmu(y)%5Csum_%7Bx%20%5Cin%20%5Cchi%7D%20P(y,%20x)%20%5C%5C%0A&amp;=%20%5Cmu(y)%20%5Ctag%7BSince%20rows%20of%20$P$%20sum%20to%201%7D%0A%5Cend%7Balign*%7D"> Therefore, <img src="https://latex.codecogs.com/png.latex?%5Cmu"> is a stationary distribution.</p>
+<p>Now, we can prove our correctness theorem:</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Theorem
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The MH Markov Chain <img src="https://latex.codecogs.com/png.latex?%5Comega_t"> as defined above has <img src="https://latex.codecogs.com/png.latex?%5Cpi"> as a stationary distribution.</p>
+</div>
+</div>
+<p><em>Proof</em>:</p>
+<p>Note: Since ratios <img src="https://latex.codecogs.com/png.latex?%5Cpi(%5Comega')%20/%20%5Cpi(%5Comega)"> equal <img src="https://latex.codecogs.com/png.latex?%5Cpi_u(%5Comega')/%20%5Cpi_u(%5Comega)">, the acceptance probabilities computed with <img src="https://latex.codecogs.com/png.latex?%5Cpi_u"> in the algorithm is equivalent to those computed with <img src="https://latex.codecogs.com/png.latex?%5Cpi">. Therefore, we can write the proof using <img src="https://latex.codecogs.com/png.latex?%5Cpi"> without loss of generality</p>
+<p>First we need to identify the transition matrix of the Markov Chain <img src="https://latex.codecogs.com/png.latex?%5Comega_t">. Observe that for any two configurations <img src="https://latex.codecogs.com/png.latex?%5Comega"> and <img src="https://latex.codecogs.com/png.latex?%5Comega'">, if <img src="https://latex.codecogs.com/png.latex?%5Comega%20%5Cneq%20%5Comega'">, then the probability that <img src="https://latex.codecogs.com/png.latex?%5Comega_t"> transitions from <img src="https://latex.codecogs.com/png.latex?%5Comega"> to <img src="https://latex.codecogs.com/png.latex?%5Comega'"> is <img src="https://latex.codecogs.com/png.latex?Q(%5Comega,%20%5Comega')A(%5Comega,%20%5Comega')"> since we propose <img src="https://latex.codecogs.com/png.latex?%5Comega'"> independently and accept <img src="https://latex.codecogs.com/png.latex?%5Comega'"> independently. Now, if <img src="https://latex.codecogs.com/png.latex?%5Comega%20=%20%5Comega'">, then the probability that <img src="https://latex.codecogs.com/png.latex?%5Comega_t"> transitions from <img src="https://latex.codecogs.com/png.latex?%5Comega"> to <img src="https://latex.codecogs.com/png.latex?%5Comega'"> is same as the probability that we do not make a transition at all. This is <img src="https://latex.codecogs.com/png.latex?%0A1%20-%20%5Csum_%7B%5Comega''%20%5Cneq%20%5Comega%7D%20Q(%5Comega,%20%5Comega'')%20A(%5Comega,%20%5Comega'')%0A"> Therefore, the transition matrix of the MH chain is given by <img src="https://latex.codecogs.com/png.latex?%0AP(%5Comega,%20%5Comega')%20=%20%5Cbegin%7Bcases%7D%0AQ(%5Comega,%20%5Comega')%20A(%5Comega,%20%5Comega')%20&amp;&amp;%20%5Ctext%7Bif%20%7D%20%5Comega%20%5Cneq%20%5Comega'%20%5C%5C%0A1%20-%20%5Csum_%7B%5Comega''%20%5Cneq%20%5Comega%7D%20Q(%5Comega,%20%5Comega'')%20A(%5Comega,%20%5Comega'')%20&amp;&amp;%20%5Ctext%7Bif%20%7D%20%5Comega%20=%20%5Comega'%0A%5Cend%7Bcases%7D%0A"></p>
+<p>Now, if <img src="https://latex.codecogs.com/png.latex?%5Comega%20=%20%5Comega'"> then we trivially have the condition <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0A%5Cpi(%5Comega)%20P(%5Comega,%20%5Comega')%20&amp;=%20%5Cpi(%5Comega')%20P(%5Comega',%20%5Comega)%0A%5Cend%7Balign*%7D"></p>
+<p>Therefore, by proposition <img src="https://latex.codecogs.com/png.latex?1">, we can conclude that <img src="https://latex.codecogs.com/png.latex?%5Cpi"> is a stationary distribution of <img src="https://latex.codecogs.com/png.latex?P"> in this case. Now, assume that <img src="https://latex.codecogs.com/png.latex?%5Comega%20%5Cneq%20%5Comega'">, and WLOG (by symmetry) that</p>
+<p><img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0A%5Cpi(%5Comega)%20Q(%5Comega,%20%5Comega')%20&amp;%5Cleq%20%5Cpi(%5Comega')%20Q(%5Comega',%20%5Comega)%20%5C%5C%0A1%20&amp;%5Cleq%20%5Cfrac%7B%5Cpi(%5Comega')%20Q(%5Comega',%20%5Comega)%7D%7B%5Cpi(%5Comega)%20Q(%5Comega,%20%5Comega')%7D%20%5Ctag%7BAll%20terms%20are%20non-negative%7D%0A%5Cend%7Balign*%7D"></p>
+<p>This must imply that in this case, <img src="https://latex.codecogs.com/png.latex?%5Cbegin%7Balign*%7D%0AA(%5Comega,%20%5Comega')%20&amp;=%20%5Cmin%5Cleft%5C%7B1,%20%5Cfrac%7B%5Cpi(%5Comega')%20Q(%5Comega',%20%5Comega)%7D%7B%5Cpi(%5Comega)%20Q(%5Comega,%20%5Comega')%7D%5Cright%5C%7D%20=%201%0A%5Cend%7Balign*%7D"></p>
+<p>Additionally, we must have <img src="https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Balign*%7D%0AA(%5Comega',%20%5Comega)%20&amp;=%20%5Cmin%5Cleft%5C%7B1,%20%5Cfrac%7B%5Cpi(%5Comega)%20Q(%5Comega,%20%5Comega')%7D%7B%5Cpi(%5Comega')%20Q(%5Comega',%20%5Comega)%7D%5Cright%5C%7D%20=%20%5Cfrac%7B%5Cpi(%5Comega)%20Q(%5Comega,%20%5Comega')%7D%7B%5Cpi(%5Comega')%20Q(%5Comega',%20%5Comega)%7D%0A%5Cend%7Balign*%7D%0A"> Now, we can put everything together and conclude that <img src="https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Balign*%7D%0A%5Cpi(%5Comega)P(%5Comega,%5Comega')%20&amp;=%20%5Cpi(%5Comega)%5BQ(%5Comega,%5Comega')%5Cunderbrace%7BA(%5Comega,%5Comega')%7D_%7B=1%7D%20%5D%20%5C%5C%0A&amp;=%20%5Cpi(%5Comega)%20Q(%5Comega,%5Comega')%20%20%5C%5C%0A%5Cend%7Balign*%7D%0A"></p>
+<p>But we can also write:</p>
+<p><img src="https://latex.codecogs.com/png.latex?%0A%5Cbegin%7Balign*%7D%0A%5Cpi(%5Comega')P(%5Comega',%5Comega)%20&amp;=%20%5Cpi(%5Comega')%20Q(%5Comega',%5Comega)A(%5Comega',%5Comega)%20%5C%5C%0A&amp;=%20%5Cpi(%5Comega')%20Q(%5Comega',%20%5Comega)%20%5Cleft%5B%5Cfrac%7B%5Cpi(%5Comega)%20Q(%5Comega,%20%5Comega')%7D%7B%5Cpi(%5Comega')%20Q(%5Comega',%20%5Comega)%7D%5Cright%5D%20%5C%5C%0A&amp;=%20%5Cpi(%5Comega)%20Q(%5Comega,%20%5Comega')%0A%5Cend%7Balign*%7D%0A"> Therefore, we have that <img src="https://latex.codecogs.com/png.latex?%0A%5Cpi(%5Comega)P(%5Comega,%5Comega')%20=%20%5Cpi(%5Comega')P(%5Comega',%5Comega)%0A"></p>
+<p>and so using proposition <img src="https://latex.codecogs.com/png.latex?1">, we can conclude that <img src="https://latex.codecogs.com/png.latex?%5Cpi"> is in-fact a stationary distribution of <img src="https://latex.codecogs.com/png.latex?P">. The other case is symmetric, and so this completes the proof.</p>
+<p>Now, all that remains to prove correctness and gain apply the limiting theorem of Markov Chains and stationary distribution is to show that the MH chain is irreducible and aperiodic.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Proposition 2
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If the proposal distribution <img src="https://latex.codecogs.com/png.latex?Q"> satisfies <img src="https://latex.codecogs.com/png.latex?Q(%5Comega,%20%5Comega')%20%3E%200"> for all <img src="https://latex.codecogs.com/png.latex?%5Comega,%20%5Comega'%20%5Cin%20%5Cchi">, then the MH chain is irreducible and aperiodic.</p>
+</div>
+</div>
+<p><em>Proof</em>:</p>
+<p><strong>Irreducibility</strong>: We need to show that for any two configurations <img src="https://latex.codecogs.com/png.latex?%5Comega"> and <img src="https://latex.codecogs.com/png.latex?%5Comega'">, there exists some <img src="https://latex.codecogs.com/png.latex?t"> such that <img src="https://latex.codecogs.com/png.latex?P%5Et(%5Comega,%20%5Comega')%20%3E%200">, meaning we can reach <img src="https://latex.codecogs.com/png.latex?%5Comega'"> from <img src="https://latex.codecogs.com/png.latex?%5Comega"> in finitely many steps.</p>
+<p>Since <img src="https://latex.codecogs.com/png.latex?Q(%5Comega,%20%5Comega')%20%3E%200"> by assumption, we can propose <img src="https://latex.codecogs.com/png.latex?%5Comega'"> from <img src="https://latex.codecogs.com/png.latex?%5Comega"> with positive probability. The acceptance probability satisfies <img src="https://latex.codecogs.com/png.latex?A(%5Comega,%20%5Comega')%20%3E%200"> whenever <img src="https://latex.codecogs.com/png.latex?Q(%5Comega,%20%5Comega')%20%3E%200"> since we’ve shown in the previous post that <img src="https://latex.codecogs.com/png.latex?%5Cpi%20%3E%200"> and we assumed that <img src="https://latex.codecogs.com/png.latex?Q%20%3E%200">. Therefore, <img src="https://latex.codecogs.com/png.latex?%0AP(%5Comega,%20%5Comega')%20=%20Q(%5Comega,%20%5Comega')%20A(%5Comega,%20%5Comega')%20%3E%200%0A"> This means we can reach any state from any other state in one step, making the chain irreducible.</p>
+<p><strong>Aperiodicity</strong>: Recall that a chain is aperiodic if for some state <img src="https://latex.codecogs.com/png.latex?%5Comega">, we have <img src="https://latex.codecogs.com/png.latex?%5Cgcd%5C%7Bt%20:%20P%5Et(%5Comega,%20%5Comega)%20%3E%200%5C%7D%20=%201">.</p>
+<p>Notice that there is always a positive probability of rejecting the proposed state and staying at <img src="https://latex.codecogs.com/png.latex?%5Comega">. Specifically, the probability of staying at <img src="https://latex.codecogs.com/png.latex?%5Comega"> is at least the probability of proposing some <img src="https://latex.codecogs.com/png.latex?%5Comega'"> and then rejecting it. Since there always exists some <img src="https://latex.codecogs.com/png.latex?%5Comega'"> such that <img src="https://latex.codecogs.com/png.latex?A(%5Comega,%20%5Comega')%20%3C%201">, we have <img src="https://latex.codecogs.com/png.latex?%0AP(%5Comega,%20%5Comega)%20%5Cgeq%20Q(%5Comega,%20%5Comega')%20(1%20-%20A(%5Comega,%20%5Comega'))%20%3E%200%0A"> for some <img src="https://latex.codecogs.com/png.latex?%5Comega'">. This means we can return to <img src="https://latex.codecogs.com/png.latex?%5Comega"> in one step with positive probability, which immediately implies the chain is aperiodic (since <img src="https://latex.codecogs.com/png.latex?%5Cgcd"> of any set containing <img src="https://latex.codecogs.com/png.latex?1"> is <img src="https://latex.codecogs.com/png.latex?1">).</p>
+<p>Combining our results, we get a powerful convergence theorem:</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Convergence Theorem
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If <img src="https://latex.codecogs.com/png.latex?Q(%5Comega,%20%5Comega')%20%3E%200"> for all <img src="https://latex.codecogs.com/png.latex?%5Comega,%20%5Comega'">, then the MH chain is irreducible and aperiodic with unique stationary distribution <img src="https://latex.codecogs.com/png.latex?%5Cpi">. Therefore, for any starting distribution <img src="https://latex.codecogs.com/png.latex?%5Comega_0">, we have <img src="https://latex.codecogs.com/png.latex?%0A%5Clim_%7Bt%20%5Cto%20%5Cinfty%7D%20%5Cmathbb%7BP%7D%5B%5Comega_t%20=%20%5Comega%5D%20=%20%5Cpi(%5Comega)%0A"> In other words, the distribution of <img src="https://latex.codecogs.com/png.latex?%5Comega_t"> converges to <img src="https://latex.codecogs.com/png.latex?%5Cpi"> regardless of where we start!</p>
+</div>
+</div>
+<p>This is the key result that makes the Metropolis-Hastings algorithm work: if we run the chain long enough, the samples we generate will be approximately distributed according to <img src="https://latex.codecogs.com/png.latex?%5Cpi">, even though we never computed the normalizing constant <img src="https://latex.codecogs.com/png.latex?Z">.</p>
+</section>
+<section id="back-to-protein-folding" class="level2">
+<h2 class="anchored" data-anchor-id="back-to-protein-folding">Back to Protein Folding</h2>
+<p>Now that we’ve established the theoretical guarantees of the Metropolis-Hastings algorithm, let’s return to the HP model for protein folding. We’ve shown that MH can sample from <img src="https://latex.codecogs.com/png.latex?%5Cpi(%5Comega)"> without computing the normalizing constant <img src="https://latex.codecogs.com/png.latex?Z">, but we still need to solve an important problem: what should our proposal chain <img src="https://latex.codecogs.com/png.latex?Q"> be?</p>
+<p>Recall that we need <img src="https://latex.codecogs.com/png.latex?Q(%5Comega,%20%5Comega')%20%3E%200"> for all configurations <img src="https://latex.codecogs.com/png.latex?%5Comega,%20%5Comega'"> to guarantee convergence. In theory, convergence happens eventually, however in practice convergence may happen very slowly, and we might have to wait for a very long time before the distribution of <img src="https://latex.codecogs.com/png.latex?%5Comega_t"> is close enough to <img src="https://latex.codecogs.com/png.latex?%5Cpi">. Therefore, we need to choose the proposal mechanism <img src="https://latex.codecogs.com/png.latex?Q"> in a way that improves the rate of convergence to the stationary distribution. However, coming up with these mechanisms is usually problem specific, and estimating the rate of convergence for a given proposal mechanism is not easy. In general, a good proposal distribution should satisfy the following requirements:</p>
+<ol type="1">
+<li>We want to propose moves that are likely to be accepted, so we don’t waste time rejecting proposals</li>
+<li>We want to explore the configuration space efficiently, not just make tiny local changes</li>
+<li>We need to be able to reach any configuration from any other configuration through a finite sequence of moves</li>
+</ol>
+<p>For the HP model, we will use a proposal mechanism initially developed by Madras and Sokal called pivot moves when working on problems in statistical physics. Refer to this <a href="https://link.springer.com/article/10.1007/BF01022990">paper</a> for more details. What is important for us to know is that the pivot move set is complete (so any configuration can be transformed into any other configuration) and very fast at changing the global shape of the protein. The con is that for a very dense protein, the acceptance rate is low because rotating a large tail usually causes a collision.</p>
+<section id="pivot-moves" class="level3">
+<h3 class="anchored" data-anchor-id="pivot-moves">Pivot Moves</h3>
+<p>The intuition behind a pivot move is that we treat a portion of the protein as fixed and swing the other end around a pivot.</p>
+<p>Imagine the protein chain laid out on the lattice. You pick a random residue <img src="https://latex.codecogs.com/png.latex?i"> to be your pivot point. You keep the segment from <img src="https://latex.codecogs.com/png.latex?1"> to <img src="https://latex.codecogs.com/png.latex?i"> fixed in place. Then, you take the residues from <img src="https://latex.codecogs.com/png.latex?i+1"> to <img src="https://latex.codecogs.com/png.latex?N"> and apply a symmetrical transformation of the square lattice such as a <img src="https://latex.codecogs.com/png.latex?90%5E%5Ccirc"> rotation or a reflection using the pivot point as the origin.</p>
+<p>More formally, a pivot move <img src="https://latex.codecogs.com/png.latex?%5Comega%20%5Cto%20%5Comega'"> can be described as:</p>
+<ol type="1">
+<li>Choose <img src="https://latex.codecogs.com/png.latex?i%20%5Cin%20%5C%7B1,%20%5Cdots,%20N%5C%7D"> uniformly at random.</li>
+<li>Choose an element <img src="https://latex.codecogs.com/png.latex?g"> from the symmetry group of the square lattice, which is the Dihedral group <img src="https://latex.codecogs.com/png.latex?D_4">. These symmetries include rotations by <img src="https://latex.codecogs.com/png.latex?90%5E%5Ccirc,%20180%5E%5Ccirc,%20270%5E%5Ccirc"> and four axes of reflection.</li>
+<li>For all <img src="https://latex.codecogs.com/png.latex?k%20%3E%20i">, the new position <img src="https://latex.codecogs.com/png.latex?%5Comega'(k)"> is updated as <img src="https://latex.codecogs.com/png.latex?%5Comega'(k)%20=%20g(%5Comega(k)%20-%20%5Comega(i))%20+%20%5Comega(i)"></li>
+</ol>
+<p>Below is a visualization of a pivot move. It depicts a pivot move for the amino acid at index <img src="https://latex.codecogs.com/png.latex?i%20=%203"> with a 90 degree clockwise rotation. Notice how only residues <img src="https://latex.codecogs.com/png.latex?3"> and <img src="https://latex.codecogs.com/png.latex?4"> changed positions.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="pivot_moves.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="https://csuraparaju.github.io/posts/metropolis-hastings/pivot_moves.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></a></p>
+</figure>
+</div>
+</section>
+<section id="metropolis-hastings-for-hp-model" class="level3">
+<h3 class="anchored" data-anchor-id="metropolis-hastings-for-hp-model">Metropolis-Hastings for HP Model</h3>
+<p>With our proposal distribution defined, the Metropolis-Hastings algorithm for the HP model becomes:</p>
+<ol type="1">
+<li>Start with an initial valid configuration <img src="https://latex.codecogs.com/png.latex?%5Comega_0"> (e.g., a straight chain)</li>
+<li>At each iteration <img src="https://latex.codecogs.com/png.latex?t">:
+<ul>
+<li>Propose a new configuration <img src="https://latex.codecogs.com/png.latex?%5Comega'"> by performing a pivot move on <img src="https://latex.codecogs.com/png.latex?%5Comega_t"></li>
+<li>Compute the energy difference <img src="https://latex.codecogs.com/png.latex?%5CDelta%20E%20=%20E(s,%20%5Comega')%20-%20E(s,%20%5Comega_t)"></li>
+<li>Calculate the acceptance probability: <img src="https://latex.codecogs.com/png.latex?A(%5Comega_t,%20%5Comega')%20=%20%5Cmin%5Cleft%5C%7B1,%20%5Cfrac%7Be%5E%7B-E(s,%20%5Comega')/k_B%20T%7D%20%5Ccdot%20Q(%5Comega',%20%5Comega_t)%7D%7Be%5E%7B-E(s,%20%5Comega_t)/k_B%20T%7D%20%5Ccdot%20Q(%5Comega_t,%20%5Comega')%7D%20%5Cright%5C%7D%20=%20%5Cmin%5C%7B1,%20e%5E%7B-%5CDelta%20E%20/%20k_B%20T%7D%20%5Ccdot%20R%5C%7D"> where <img src="https://latex.codecogs.com/png.latex?R%20=%20Q(%5Comega',%20%5Comega_t)%20/%20Q(%5Comega_t,%20%5Comega')"></li>
+<li>Accept or reject based on <img src="https://latex.codecogs.com/png.latex?A(%5Comega_t,%20%5Comega')"></li>
+</ul></li>
+<li>Run for <img src="https://latex.codecogs.com/png.latex?T"> iterations until convergence</li>
+</ol>
+<p>Notice how the energy calculation simplifies. We only need to count the <img src="https://latex.codecogs.com/png.latex?HH"> contacts in <img src="https://latex.codecogs.com/png.latex?%5Comega'"> and <img src="https://latex.codecogs.com/png.latex?%5Comega_t">, which is much faster than computing the full partition function <img src="https://latex.codecogs.com/png.latex?Z">. We can write an implementation in python for running this algorithm and visualize how our <img src="https://latex.codecogs.com/png.latex?%5Comega_t"> changes over time for a specific amino acid string. Full disclosure: I’ve generated the following animation by giving Anthropic’s Claude model this algorithm and asking it to write a simulation for the sequence <img src="https://latex.codecogs.com/png.latex?s%20=%20HPPHPPHHPPHHPPHH">. Click on the play button below to see how the configurations evolve over time.</p>
+<div class="quarto-video"><video id="video_shortcode_videojs_video1" width="800" height="600" class="video-js vjs-default-skin " controls="" preload="auto" data-setup="{}" title="My Animation"><source src="protein_folding.webm"></video></div>
+<p>This should line up with our theoretical result. Recall that our probability distribution <img src="https://latex.codecogs.com/png.latex?%5Cpi(%5Comega)%20%5Cpropto%20e%5E%7B-E(%5Comega)%7D">. This function looks something like</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="e_minus_x.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="https://csuraparaju.github.io/posts/metropolis-hastings/e_minus_x.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:70.0%"></a></p>
+</figure>
+</div>
+<p>up to different scales and translations. Therefore, the configurations that are most likely under <img src="https://latex.codecogs.com/png.latex?%5Cpi"> are ones that minimize the energy function <img src="https://latex.codecogs.com/png.latex?E">. Since we defined <img src="https://latex.codecogs.com/png.latex?E"> to only count <img src="https://latex.codecogs.com/png.latex?HH"> contacts, the configuration that minimizes energy are the ones with the most <img src="https://latex.codecogs.com/png.latex?HH"> contacts. This is exactly what we see in the video above! As <img src="https://latex.codecogs.com/png.latex?t"> grows, we see that we sample configurations which have more and more <img src="https://latex.codecogs.com/png.latex?HH"> contacts. Remember the diagram at the beginning showing how hydrophobic residues cluster together on the inside while polar residues remain on the outside? Now we know exactly why this happens.</p>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>The main benefit of this approach is its generality. Whether we’re studying protein folding, sampling from complex Bayesian posteriors, or exploring other high-dimensional probability distributions, the same algorithm can be used. The theoretical guarantees from Markov Chains tells us that given enough time, our samples will be representatives of the true distribution <img src="https://latex.codecogs.com/png.latex?%5Cpi">.</p>
+<p>Of course, there are practical challenges we didn’t fully address. How many iterations <img src="https://latex.codecogs.com/png.latex?T"> do we need before convergence? How do we detect convergence? Can we do better than pivot moves for protein folding? These are active areas of research in computational statistics and biophysics. Variants like Hamiltonian Monte Carlo, Gibbs sampling, and replica exchange methods build on the MH framework to improve convergence rates for specific problem classes. Check out those approaches if this was interesting to you!</p>
+
+
+</section>
+
+ ]]></description>
+  <category>math</category>
+  <category>cs</category>
+  <guid>https://csuraparaju.github.io/posts/metropolis-hastings/</guid>
+  <pubDate>Wed, 15 Oct 2025 04:00:00 GMT</pubDate>
+</item>
+<item>
   <title>PageRank and Markov Chains</title>
   <dc:creator>Krish Suraparaju</dc:creator>
   <link>https://csuraparaju.github.io/posts/markov-chains/</link>
