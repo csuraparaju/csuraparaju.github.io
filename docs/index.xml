@@ -10,7 +10,7 @@
 <atom:link href="https://csuraparaju.github.io/index.xml" rel="self" type="application/rss+xml"/>
 <description>Krish Suraparaju&#39;s personal website and blog.</description>
 <generator>quarto-1.8.26</generator>
-<lastBuildDate>Wed, 15 Oct 2025 04:00:00 GMT</lastBuildDate>
+<lastBuildDate>Fri, 30 Jan 2026 05:00:00 GMT</lastBuildDate>
 <item>
   <title>The Metropolis-Hastings Algorithm for Sampling</title>
   <dc:creator>Krish Suraparaju</dc:creator>
@@ -236,7 +236,7 @@
   <category>math</category>
   <category>cs</category>
   <guid>https://csuraparaju.github.io/posts/metropolis-hastings/</guid>
-  <pubDate>Wed, 15 Oct 2025 04:00:00 GMT</pubDate>
+  <pubDate>Fri, 30 Jan 2026 05:00:00 GMT</pubDate>
 </item>
 <item>
   <title>PageRank and Markov Chains</title>
@@ -694,7 +694,7 @@
   <category>math</category>
   <category>cs</category>
   <guid>https://csuraparaju.github.io/posts/markov-chains/</guid>
-  <pubDate>Wed, 15 Oct 2025 04:00:00 GMT</pubDate>
+  <pubDate>Sat, 10 Jan 2026 05:00:00 GMT</pubDate>
 </item>
 <item>
   <title>Algorithms for Sampling from a probability distribution</title>
