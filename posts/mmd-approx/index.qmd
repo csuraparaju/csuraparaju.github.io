@@ -1,0 +1,199 @@
+---
+title: "Building Coresets by Minimizing MMD Distance"
+author: "Krish Suraparaju"
+date: "2026-3-13"
+categories: [math]
+---
+
+## Introduction
+
+Suppose we have a large dataset $Z = \{z_1, \ldots, z_N\} \subset \mathbb{R}^d$ with $N$ very large. Many of the things we want to do with this dataset for example, training a model, estimating statistics, running a downstream algorithm have cost that scales with $N$. For a modern dataset, $N$ might be in the billions or hundreds of billions, and looking at every point repeatedly is expensive and sometimes infeasible.
+
+A natural question is whether we actually need all $N$ points. Often, the dataset contains a lot of redundancy like clusters of nearly identical points. If we could pick out a small, carefully chosen subset of the data, we could do our downstream computation on the subset and get an answer that is almost as good as if we had used the full dataset. Such a weighted subset is called a coreset.
+
+### The coreset problem
+
+We can phrase this geometrically in terms of probability measures. The full dataset defines an empirical distribution
+
+$$
+\mu_N(x) = \frac{1}{N} \sum_{\ell=1}^N \delta_{z_\ell}(x)
+$$
+
+where $\delta_{z_\ell}$ is the Dirac mass at $z_\ell$. A coreset of size $n \ll N$ is a weighted set of points $X = \{x_1, \ldots, x_n\}$ (not necessarily from $Z$) with weights $w_1, \ldots, w_n \geq 0$ satisfying $\sum_{i=1}^n w_i = 1$. It defines its own discrete distribution
+
+$$
+\nu_n(x) = \sum_{i=1}^n w_i \, \delta_{x_i}(x).
+$$
+
+If $\nu_n$ is a good approximation of $\mu_N$, then for any function $f : \mathbb{R}^d \to \mathbb{R}$ we expect
+
+\begin{align*}
+\mathbb{E}_{\mu_N}[f] &= \frac{1}{N}\sum_{\ell=1}^N f(z_\ell) \\
+&\approx \sum_{i=1}^n w_i \, f(x_i) \\
+&= \mathbb{E}_{\nu_n}[f]\\
+\end{align*}
+
+The right-hand side costs $O(n)$ to evaluate, whereas the left-hand side costs $O(N)$. If this approximation is accurate for the functions $f$ we actually care about (loss functions, feature maps, etc), then $\nu_n$ can be used in all computations instead of $\mu_N$.
+
+The simplest way to pick a coreset is to sample $n$ points uniformly at random from $Z$ and assign them equal weights $w_i = 1/n$. While this approach works, the approximation error decats  as $O(1/\sqrt{n})$ (we can apply a Monte-Calor based bound to see this). This means cutting the error in half requires quadrupling the coreset size. What's worse is that uniform sampling is blind to the structure of the data , it can miss small but important regions entirely. We need to do better.
+
+But first, how do you quanity what is better? So far we have been speaking about $\nu_n$ being a "good approximation" of $\mu_N$, but we have not said how to measure the quality of such an approximation. Without a concrete measure, we cannot compare two candidate coresets, let alone search for a better one.
+So, we want to develop a notion of distance between any pair $(\mu_N, \nu_n)$ so that we can measure how well the approximation preserves the computations we actually care about. Then, choosing a good coreset becomes an optimization problem.
+
+## MMD as a metric
+
+Recall that for a single function $f$, the approximation error is
+
+$$
+\left| \mathbb{E}_{\mu_N}[f] - \mathbb{E}_{\nu_n}[f] \right| \;=\; \left| \frac{1}{N}\sum_{\ell=1}^N f(z_\ell) - \sum_{i=1}^n w_i \, f(x_i) \right|.
+$$
+
+If we want $\nu_n$ to be a good representation for $\mu_N$ against all functions in some class $\mathcal{F}$ that we care about, a natural choice is the worst-case error over $\mathcal{F}$:
+
+$$
+\sup_{f \in \mathcal{F}} \left| \mathbb{E}_{\mu_N}[f] - \mathbb{E}_{\nu_n}[f] \right| \;=:\; \text{MMD}_{\mathcal{F}}(\mu_N, \nu_n).
+$$
+
+This quantity is known as the Maximum Mean Discrepancy (MMD) between $\mu_N$ and $\nu_n$ with respect to $\mathcal{F}$, and we will use it as our objective when building the coreset.
+
+This definition immediately raises the question of what $\mathcal{F}$ should be. If $\mathcal{F}$ is too large, the MMD is useless as a metric. For example, take $\mathcal{F}$ to be the set of all bounded measurable functions. Whenever the coreset $X \subset Z$ is a strict subset of $Z$, then there is some $z_\ell$ that is not in the coreset. Now, consider $f = M \cdot \mathbb{1}_{\{z_\ell\}}$ for large $M$. Then, note:
+
+\begin{align*}
+\text{MMD}_{\mathcal{F}}(\mu_N, \nu_n)
+&= \sup_{f \in \mathcal{F}} \left| \frac{1}{N}\sum_{\ell'=1}^N f(z_{\ell'}) - \sum_{i=1}^n w_i \, f(x_i) \right| \\
+&\geq \left| \frac{1}{N} \cdot M - 0 \right| \\ &\;=\; \frac{M}{N}
+\end{align*}
+
+Since $M$ can be arbitrary large, the supremum is unbounded.
+
+Similarly, if $\mathcal{F}$ is too small, then $\text{MMD}_{\mathcal{F}}(\mu_N, \nu_n)$ is not powerful enough to detect differences between $\mu_N$ and $\nu_n$. For instance, if $\mathcal{F}$ is the set of all linear functions with bounded coefficients, i.e. $\mathcal{F} = \{f(x) = a^T x : \|a\| \leq 1\}$, then observe that
+
+\begin{align*}
+\text{MMD}_{\mathcal{F}}(\mu_N, \nu_n)
+&= \sup_{\|a\| \leq 1} \left| \mathbb{E}_{\mu_N}[a^T X] - \mathbb{E}_{\nu_n}[a^T X] \right| \\
+&= \sup_{\|a\| \leq 1} \left| a^T \left( \frac{1}{N}\sum_{\ell=1}^N z_\ell - \sum_{i=1}^n w_i \, x_i \right) \right| \\
+&= \left\| \frac{1}{N}\sum_{\ell=1}^N z_\ell - \sum_{i=1}^n w_i \, x_i \right\|
+\end{align*}
+
+where the last step follows by Cauchy-Schwarz. For this class of functions, the MMD reduces to comparing the means of the two distributions, which is not powerful since clearly any coreset that matches the dataset mean has zero MMD, even if it concentrates all its weight on one point.
+
+### Reproducing kernel Hilbert spaces
+
+So we need a function class $\mathcal{F}$ that is rich enough to distinguish between $\mu_N$ and $\nu_n$ but not so large that the MMD is unbounded. The theory here comes from reproducing kernel Hilbert spaces (RKHSs). Given a positive-definite kernel $k : \mathbb{R}^d \times \mathbb{R}^d \to \mathbb{R}$, the RKHS $\mathcal{H}_k$ is the set of all functions built from linear combinations of kernel section:
+
+$$
+\mathcal{H}_k = \left\{ f : \mathbb{R}^d \to \mathbb{R} \;\middle|\; f(x) = \sum_{i=1}^m \alpha_i \, k(x, y_i) \text{ for some } m \in \mathbb{N}, \; y_i \in \mathbb{R}^d, \; \alpha_i \in \mathbb{R} \right\}.
+$$
+
+For $f(\cdot) = \sum_{i=1}^m \alpha_i \, k(\cdot, y_i)$ and $g(\cdot) = \sum_{j=1}^{m'} \beta_j \, k(\cdot, y'_j)$, we can equip this space with an inner product
+
+$$
+\langle f, g \rangle_{\mathcal{H}_k} = \sum_{i=1}^m \sum_{j=1}^{m'} \alpha_i \beta_j \, k(y_i, y'_j),
+$$
+
+which induces a norm $\|f\|_{\mathcal{H}_k} = \sqrt{\langle f, f \rangle_{\mathcal{H}_k}}$.
+
+Note that for a fixed $x$, the function $k(x, \cdot)$ is itself an element of $\mathcal{H}_k$ (why?). So we can expand:
+
+$$
+f(x) = \sum_{i=1}^m \alpha_i \, k(x, y_i) = \left\langle f, \, k(x, \cdot) \right\rangle_{\mathcal{H}_k}.
+$$
+
+This is the reproducing property, and it is the key fact that makes MMD computable. As a special case, setting $f = k(y, \cdot)$ gives
+
+$$
+\left\langle k(x, \cdot), \, k(y, \cdot) \right\rangle_{\mathcal{H}_k} = k(x, y),
+$$
+
+so the inner product between two kernel sections is just the kernel evaluated at those two points (this is sometimes referred to as the kernel trick in machine learning literature). For a full construction of the RKHS from a kernel (including the completion to handle limits of finite sums), see Berlinet & Thomas-Agnan [2004] or Steinwart & Christmann [2008].
+
+We can now take the function class $\mathcal{F}$ to be the unit ball of the RKHS:
+
+$$
+\mathcal{F} = \left\{ f \in \mathcal{H}_k : \|f\|_{\mathcal{H}_k} \leq 1 \right\}.
+$$
+
+For a suitable ("characteristic") kernel, this makes the MMD a proper metric on distributions (i.e., it is non-negative, non-degenerate, symmetric metric with the triangle inequality). A common choice is the Gaussian RBF kernel
+
+$$
+k(x, y) = \exp\left(-\frac{\|x - y\|^2}{2\sigma^2}\right)
+$$
+
+which is close to 1 when $x \approx y$ and decays toward 0 as they separate, with the bandwidth $\sigma$ controlling the length scale.
+
+### Closed-form expression for MMD
+
+The definition of the MMD in terms of the RKHS is not yet useful in practice, because it has a supremum over the entire function space. We want a closed form. The key move is to push the expectation inside the inner product using the reproducing property.
+
+Fix any $f \in \mathcal{H}_k$. Applying the reproducing property, we note that:
+
+\begin{align*}
+\mathbb{E}_{Y \sim \mu_N}[f(Y)] &= \mathbb{E}_{Y \sim \mu_N}\!\left[\left\langle f, \, k(Y, \cdot) \right\rangle_{\mathcal{H}_k}\right] \\
+&= \frac{1}{N} \sum_{\ell=1}^N \left\langle f, \, k(z_\ell, \cdot) \right\rangle_{\mathcal{H}_k} \\
+&= \left\langle f, \, \frac{1}{N} \sum_{\ell=1}^N k(z_\ell, \cdot) \right\rangle_{\mathcal{H}_k} \\
+&= \left\langle f, \, \mathbb{E}_{Y \sim \mu_N}[k(Y, \cdot)] \right\rangle_{\mathcal{H}_k}
+\end{align*}
+
+
+Applying the same logic to $\nu_n$, we can derive a closed form expression for the MMD as
+
+\begin{align*}
+\text{MMD}_{\mathcal{F}}(\mu_N, \nu_n)
+&= \sup_{\|f\|_{\mathcal{H}_k} \leq 1} \left| \mathbb{E}_{\mu_N}[f] - \mathbb{E}_{\nu_n}[f] \right|  \\
+&= \sup_{\|f\|_{\mathcal{H}_k} \leq 1} \left| \left\langle f, \; \mathbb{E}_{Y \sim \mu_N}[k(Y, \cdot)] \right\rangle_{\mathcal{H}_k} - \left\langle f, \; \mathbb{E}_{V \sim \nu_n}[k(V, \cdot)] \right\rangle_{\mathcal{H}_k} \right| && \text{(reproducing property)} \\
+&= \sup_{\|f\|_{\mathcal{H}_k} \leq 1} \left| \left\langle f, \; \mathbb{E}_{Y \sim \mu_N}[k(Y, \cdot)] - \mathbb{E}_{V \sim \nu_n}[k(V, \cdot)] \right\rangle_{\mathcal{H}_k} \right| && \text{(linearity of inner product)} \\
+&= \left\| \mathbb{E}_{Y \sim \mu_N}[k(Y, \cdot)] - \mathbb{E}_{V \sim \nu_n}[k(V, \cdot)] \right\|_{\mathcal{H}_k} && \text{(Cauchy-Schwarz)}
+\end{align*}
+This is a closed form expression for MMD since there are no supremums over function spaces. We can now square both sides and expand the squared norm to see:
+
+\begin{align*}
+\text{MMD}_{\mathcal{F}}^2(\mu_N, \nu_n)
+&= \left\| \mathbb{E}_{\mu_N}[k(Y, \cdot)] - \mathbb{E}_{\nu_n}[k(V, \cdot)] \right\|_{\mathcal{H}_k}^2 \\
+&= \left\langle \mathbb{E}_{Y}[k(Y, \cdot)], \, \mathbb{E}_{Y'}[k(Y', \cdot)] \right\rangle_{\mathcal{H}_k} \\
+&\quad - 2 \left\langle \mathbb{E}_{Y}[k(Y, \cdot)], \, \mathbb{E}_{V}[k(V, \cdot)] \right\rangle_{\mathcal{H}_k} \\
+&\quad + \left\langle \mathbb{E}_{V}[k(V, \cdot)], \, \mathbb{E}_{V'}[k(V', \cdot)] \right\rangle_{\mathcal{H}_k}.
+\end{align*}
+
+where $Y, Y'$ are independent draws from $\mu_N$ and $V, V'$ are independent draws from $\nu_n$. By the same linearity argument as before, each of these inner products pulls the expectations outside:
+
+\begin{align*}
+\left\langle \mathbb{E}_{Y}[k(Y, \cdot)], \, \mathbb{E}_{Y'}[k(Y', \cdot)] \right\rangle_{\mathcal{H}_k}
+&= \mathbb{E}_{Y, Y'}\!\left[ \left\langle k(Y, \cdot), \, k(Y', \cdot) \right\rangle_{\mathcal{H}_k} \right] \\
+&= \mathbb{E}_{Y, Y' \sim \mu_N}[k(Y, Y')],
+\end{align*}
+
+where the second step is the reproducing property $\langle k(x, \cdot), k(y, \cdot) \rangle_{\mathcal{H}_k} = k(x, y)$ from earlier. The other two terms simplify the same way, giving
+
+$$
+\text{MMD}_{\mathcal{F}}^2(\mu_N, \nu_n) = \mathbb{E}_{Y, Y' \sim \mu_N}[k(Y, Y')] - 2\,\mathbb{E}_{Y \sim \mu_N, \, V \sim \nu_n}[k(Y, V)] + \mathbb{E}_{V, V' \sim \nu_n}[k(V, V')].
+$$
+
+This seems complicated and hard to compute, but because both $\mu_N$ and $\nu_n$ are discrete in our case, every expectation is just finite sum:
+
+\begin{align*}
+\mathbb{E}_{Y, Y' \sim \mu_N}[k(Y, Y')] &= \frac{1}{N^2} \sum_{\ell=1}^N \sum_{\ell'=1}^N k(z_\ell, z_{\ell'}), \\
+\mathbb{E}_{Y \sim \mu_N, \, V \sim \nu_n}[k(Y, V)] &= \frac{1}{N} \sum_{\ell=1}^N \sum_{i=1}^n w_i \, k(z_\ell, x_i), \\
+\mathbb{E}_{V, V' \sim \nu_n}[k(V, V')] &= \sum_{i=1}^n \sum_{j=1}^n w_i w_j \, k(x_i, x_j)
+\end{align*}
+
+Therefore, the final formula for MMD that we can use is
+
+\begin{align*}
+\text{MMD}_{\mathcal{F}}^2 (\mu_N, \nu_n) = \frac{1}{N^2} \sum_{\ell=1}^N \sum_{\ell'=1}^N k(z_\ell, z_{\ell'}) - \frac{2}{N} \sum_{\ell=1}^N \sum_{i=1}^n w_i \, k(z_\ell, x_i) + \sum_{i=1}^n \sum_{j=1}^n w_i w_j \, k(x_i, x_j)
+\end{align*}
+
+### Minimizing the MMD
+
+We now have an explicit, finite-sum expression for $\text{MMD}^2(\mu_N, \nu_n)$ in terms of the coreset points $x_i$ and weights $w_i$. So finding a good coreset approximation of our original dataset $Z$ reduces to finding $\{x_i\}$ and $\{w_i\}$ such that
+the $\text{MMD}^2(\mu_N, \nu_n)$ is minimized.
+
+But before we begin the optimization, we can simplify this expression a bit more. Note that the sum $\frac{1}{N^2}\sum_{\ell, \ell'} k(z_\ell, z_{\ell'})$ depends only on the full dataset $Z$ and the kernel $k$, not on $\nu_n$ at all. Since we are minimizing over the $x_i$ and $w_i$, we can drop it from the objective entirely. (It takes $O(N^2)$ work to compute if we ever want its value, but we don't need to). Dropping all constants, the coreset minimization objective becomes
+
+$$
+\min_{\substack{x_1, \ldots, x_n \\ w_1, \ldots, w_n}} \left( \sum_{i=1}^n \sum_{j=1}^n w_i w_j \, k(x_i, x_j) \;-\; \frac{2}{N} \sum_{i=1}^n \sum_{\ell=1}^N w_i k(z_\ell, x_i), \right).
+$$
+
+A few practical notes. If we restrict each $x_i$ to be elements of the dataset $Z$, the problem becomes combinatorial in which points are selected, but is convex in the weights once the selection is fixed. A popular approach is kernel herding (Chen, Welling & Smola, 2010), a greedy algorithm that adds one point at a time, at each step picking the point that most reduces the MMD. If instead we let the $x_i$ roam freely over $\mathbb{R}^d$, the entire objective is a differentiable function of the $x_i$ and $w_i$, and we can minimize it with gradient descent. This gives us coreset points that need not be actual data points but are optimized directly for the distributional $Z$ represents.
+
+In either case, the result is a small weighted set $\nu_n$ that matches the full dataset $\mu_N$ in the MMD sense, and so serves as a faithful stand-in for any downstream task whose loss or statistic lives in the RKHS.
+

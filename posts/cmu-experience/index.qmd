@@ -1,0 +1,46 @@
+---
+title: "My CMU Experience"
+author: "Krish Suraparaju"
+date: "2026-5-13"
+categories: [personal]
+---
+
+# I didn't see any of it coming
+
+I recently graduated from CMU with university honors, earning a bachelor of science in Mathematical Sciences and an additional major in Computer Science. I'm so grateful to my parents and my mentors for supporting me for the last four years. Thank you mom and dad for working so hard to get me here. This is you accomplishment as much as it is mine.
+
+I wanted to take some time reflecting on the past four years. The short version: I came to CMU planning to go to medical school, and I'm leaving to work in drug discovery as a mathematician who loves to teach. I didn't see any of it coming.
+
+## Falling for math
+
+My first year was mostly spent fighting imposter syndrome and figuring out what I wanted to study. I came in planning to major in computational neuroscience and apply to medical school, but that plan went out the window the moment I took Concepts of Mathematics ("Concepts").
+
+Throughout high school, I always thought math was just memorizing esoteric tips and tricks you needed for solving a problem. Concepts taught me that math is actually how we formalize reasoning, a way to think about things rigorously. You start with four or five axioms you believe to be true and derive an entire field of rich theory from them. For example, we learned about Peano's axioms in this class, and I was fascinated that those axioms are all you need to formalize arithmetic. For the first time, I got a taste of real mathematics, and it was addicting. I declared math as my major soon after, and I haven't looked back.
+
+## Math, applied
+
+I took Great Ideas in Computational Biology towards the end of the year, and that course solidified the choice. Working through deBruijn graphs, the Nussinov algorithm for protein folding, and expectation maximization for DNA motif finding, I realized that if I wanted to contribute meaningfully to medicine, I needed a deep and rigorous education in mathematics first. Math wasn't taking me away from medicine; it was showing me a different door into it.
+
+During my sophomore year, I worked at the Mohimani lab under Abhinav Adduri, then a PhD student in computational biology who took me on as his undergrad RA. Most people know ribosomes as the enzymes that produce proteins, but non-ribosomal peptide synthetases (NRPSs) are arguably just as important. They're responsible for synthesizing many antibiotics, including penicillin and amoxicillin. My research was on using ML techniques to predict, given the genome for an NRPS, which amino acids it picks and what the produced protein will be like. Looking back, working with Dr. Adduri was the first time I saw a way to keep medicine in my life through math, rather than alongside it.
+
+## Teaching
+
+Also in my second year, I started TAing CMU's course in data structures and C programming (15-122). I had no idea how much that decision would shape the rest of my time here.
+
+I've TAed 15-122 for six semesters, three of them as a Head TA. Because it's an introductory course, students of all backgrounds take it. I've taught people who were in USACO gold and platinum divisions, students who know the C99 standard like the back of their hand, and complete beginners. Every student has a different set of needs, and across six semesters, I learned to meet them where they are. I became a better communicator, and I learned to have patience and empathy for struggling students. The final assignment for the course is to write the C0VM, a virtual machine bytecode interpreter, and seeing my recitation students go from never having written a single line of C to writing an entire VM interpreter in C99 was rewarding every single semester. For example,  a student came to office hours saying they were really struggling with C, that their code was full of memory leaks and undefined behavior. We talked through valgrind and went over some best practices for writing C. Weeks later, during the C0VM assignment, they came back and told me they'd finished the whole thing with almost no C bugs. That's kind of impact on students learning kept me going every semester. If you're currently at CMU, I highly recommend you TA a course!
+
+One of the most unusual things about CMU is that the faculty empowers undergraduate TAs to have real agency over their course. As a CS head TA, I was invited to a roundtable with the other CS head TAs hosted by the TA coordinator every semester, where we shared how our courses were tackling different problems. The meetings weren't always productive, but they were a great way to think about what to bring back to my own course. Professors are receptive to TA feedback, too. When I first started at CMU, 15-122 had two midterms, a final, and weekly homeworks, and that format wasn't working with the rise of AI. Students would use AI on their homeworks and then perform very poorly on the midterms and finals. We brought this up, and one of the biggest changes was replacing midterms with low-stakes weekly quizzes, since students didn't have much reason to lean on AI if they'd be tested on the material at the end of the week anyway. Since the change, students have been more engaged with the course and have performed better on proctored activities.
+
+This summer, I have the incredible opportunity to be an instructor for 15-122 along with Sheng Shu, a fellow TA and recent CMU grad. I don't know any other university that lets recently graduated TAs teach a course, and I'm very grateful to CMU, and to Iliano Cervesato and Anne Kohlbrenner, the professors I TAed under, for letting us do this.
+
+## The detour
+
+Of course, I had some detours along the way. I applied to SWE internship roles because everyone around me was doing so, and I was a CS major too, so why wouldn't I? I spent two summers as a SWE intern at Amazon and Meta, and I'm glad I did. The work was very cool, and I got to learn a lot about distributed systems from some of the best engineers in the field.
+
+But something always felt off, like I was leaving the best parts of my training on the table. I'd spent years learning to reason from first principles in math, and I was drawn to biology in a way I couldn't shake, and SWE didn't really ask either of those things from me. Thinking about math, and how I could apply what I'd learned to drug discovery and medicine, brought me much more joy. It took me until the beginning of senior year to fully admit this to myself, but better late than never!
+
+## What's next
+
+After teaching this summer, I'll be working at D. E. Shaw Research (the drug discovery company, not the hedge fund) on the ML data team as a Data Associate. In a way it brings me back to where I started, but from a direction I never expected. I'm excited to be working with people who have PhDs in bio and chem but then also write CUDA kernels and think about the mathematics behind AI for chemistry.  I spent four years figuring out what I wanted to work on, even when I didn't know I was figuring it out.
+
+I don't know what comes after this job, and after the last four years, I've stopped trying to know. Whatever I plan, the thing I actually end up loving has a way of surprising me. I'm looking forward to being surprised again.
