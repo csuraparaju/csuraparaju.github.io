@@ -6,8 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Krish Suraparaju">
+<meta name="dcterms.date" content="2026-05-13">
 
-<title>Home – Krish’s blog</title>
+<title>My CMU Experience – Krish’s blog</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -23,26 +25,24 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<script src="site_libs/quarto-listing/list.min.js"></script>
-<script src="site_libs/quarto-listing/quarto-listing.js"></script>
-<script src="site_libs/quarto-html/quarto.js" type="module"></script>
-<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="site_libs/quarto-html/axe/axe-check.js" type="module"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-5b4ad623e5705c0698d39aec6f10cf02.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-5b4ad623e5705c0698d39aec6f10cf02.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -70,77 +70,19 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
 
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-listing .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
-
-    const options = {
-      valueNames: ['listing-date','listing-title','listing-author','listing-image','listing-description','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-date","listing-title","listing-author","listing-image","listing-description","listing-categories"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-listing'] = new List('listing-listing', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
-
-  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
-
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
 
 <link rel="stylesheet" href="styles.css">
-<link rel="alternate" type="application/rss+xml" title="Krish's blog" href="index.xml" data-external="1"></head>
+</head>
 
-<body class="nav-fixed quarto-light">
+<body class="nav-fixed fullcontent quarto-light">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top quarto-banner">
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../../index.html">
     <span class="navbar-title">Krish’s blog</span>
     </a>
   </div>
@@ -151,7 +93,7 @@ window.Quarto = {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link" href="./about.html"> 
+    <a class="nav-link" href="../../about.html"> 
 <span class="menu-text">Krish Suraparaju</span></a>
   </li>  
   <li class="nav-item compact">
@@ -174,293 +116,82 @@ window.Quarto = {
 <!-- content -->
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
-    <div class="quarto-title column-page-left">
-      <h1 class="title">Home</h1>
-                      </div>
+    <div class="quarto-title column-body">
+      <h1 class="title">My CMU Experience</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">personal</div>
+              </div>
+                  </div>
   </div>
     
   
-  <div class="quarto-title-meta column-page-left">
+  <div class="quarto-title-meta">
 
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Krish Suraparaju </p>
+            </div>
+    </div>
       
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">May 13, 2026</p>
+      </div>
+    </div>
     
       
     </div>
     
   
-  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
-    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(8)</span></div><div class="category" data-category="Y3M=">cs <span class="quarto-category-count">(3)</span></div><div class="category" data-category="ZWNl">ece <span class="quarto-category-count">(1)</span></div><div class="category" data-category="bWF0aA==">math <span class="quarto-category-count">(7)</span></div><div class="category" data-category="cGVyc29uYWw=">personal <span class="quarto-category-count">(1)</span></div></div></div>
+    
 <!-- main -->
-<main class="content quarto-banner-title-block column-page-left" id="quarto-document-content">
+<main class="content quarto-banner-title-block" id="quarto-document-content">
 
 
 
 
 
-<blockquote class="blockquote">
-<p><em>As each new author finds cleverer proofs or treatments of a theory, the treatment evolves towards the one that contains the ‘shortest proofs’. Unfortunately, these are often in a form that causes the new student to ponder ‘How did anyone think this?’ By going back to the original sources, one can usually see the subject evolving naturally.”</em> — Peter Sarnak</p>
-</blockquote>
+<section id="i-didnt-see-any-of-it-coming" class="level1">
+<h1>I didn’t see any of it coming</h1>
+<p>I recently graduated from CMU with university honors, earning a bachelor of science in Mathematical Sciences and an additional major in Computer Science. I’m so grateful to my parents and my mentors for supporting me for the last four years. Thank you mom and dad for working so hard to get me here. This is you accomplishment as much as it is mine.</p>
+<p>I wanted to take some time reflecting on the past four years. The short version: I came to CMU planning to go to medical school, and I’m leaving to work in drug discovery as a mathematician who loves to teach. I didn’t see any of it coming.</p>
+<section id="falling-for-math" class="level2">
+<h2 class="anchored" data-anchor-id="falling-for-math">Falling for math</h2>
+<p>My first year was mostly spent fighting imposter syndrome and figuring out what I wanted to study. I came in planning to major in computational neuroscience and apply to medical school, but that plan went out the window the moment I took Concepts of Mathematics (“Concepts”).</p>
+<p>Throughout high school, I always thought math was just memorizing esoteric tips and tricks you needed for solving a problem. Concepts taught me that math is actually how we formalize reasoning, a way to think about things rigorously. You start with four or five axioms you believe to be true and derive an entire field of rich theory from them. For example, we learned about Peano’s axioms in this class, and I was fascinated that those axioms are all you need to formalize arithmetic. For the first time, I got a taste of real mathematics, and it was addicting. I declared math as my major soon after, and I haven’t looked back.</p>
+</section>
+<section id="math-applied" class="level2">
+<h2 class="anchored" data-anchor-id="math-applied">Math, applied</h2>
+<p>I took Great Ideas in Computational Biology towards the end of the year, and that course solidified the choice. Working through deBruijn graphs, the Nussinov algorithm for protein folding, and expectation maximization for DNA motif finding, I realized that if I wanted to contribute meaningfully to medicine, I needed a deep and rigorous education in mathematics first. Math wasn’t taking me away from medicine; it was showing me a different door into it.</p>
+<p>During my sophomore year, I worked at the Mohimani lab under Abhinav Adduri, then a PhD student in computational biology who took me on as his undergrad RA. Most people know ribosomes as the enzymes that produce proteins, but non-ribosomal peptide synthetases (NRPSs) are arguably just as important. They’re responsible for synthesizing many antibiotics, including penicillin and amoxicillin. My research was on using ML techniques to predict, given the genome for an NRPS, which amino acids it picks and what the produced protein will be like. Looking back, working with Dr.&nbsp;Adduri was the first time I saw a way to keep medicine in my life through math, rather than alongside it.</p>
+</section>
+<section id="teaching" class="level2">
+<h2 class="anchored" data-anchor-id="teaching">Teaching</h2>
+<p>Also in my second year, I started TAing CMU’s course in data structures and C programming (15-122). I had no idea how much that decision would shape the rest of my time here.</p>
+<p>I’ve TAed 15-122 for six semesters, three of them as a Head TA. Because it’s an introductory course, students of all backgrounds take it. I’ve taught people who were in USACO gold and platinum divisions, students who know the C99 standard like the back of their hand, and complete beginners. Every student has a different set of needs, and across six semesters, I learned to meet them where they are. I became a better communicator, and I learned to have patience and empathy for struggling students. The final assignment for the course is to write the C0VM, a virtual machine bytecode interpreter, and seeing my recitation students go from never having written a single line of C to writing an entire VM interpreter in C99 was rewarding every single semester. For example, a student came to office hours saying they were really struggling with C, that their code was full of memory leaks and undefined behavior. We talked through valgrind and went over some best practices for writing C. Weeks later, during the C0VM assignment, they came back and told me they’d finished the whole thing with almost no C bugs. That’s kind of impact on students learning kept me going every semester. If you’re currently at CMU, I highly recommend you TA a course!</p>
+<p>One of the most unusual things about CMU is that the faculty empowers undergraduate TAs to have real agency over their course. As a CS head TA, I was invited to a roundtable with the other CS head TAs hosted by the TA coordinator every semester, where we shared how our courses were tackling different problems. The meetings weren’t always productive, but they were a great way to think about what to bring back to my own course. Professors are receptive to TA feedback, too. When I first started at CMU, 15-122 had two midterms, a final, and weekly homeworks, and that format wasn’t working with the rise of AI. Students would use AI on their homeworks and then perform very poorly on the midterms and finals. We brought this up, and one of the biggest changes was replacing midterms with low-stakes weekly quizzes, since students didn’t have much reason to lean on AI if they’d be tested on the material at the end of the week anyway. Since the change, students have been more engaged with the course and have performed better on proctored activities.</p>
+<p>This summer, I have the incredible opportunity to be an instructor for 15-122 along with Sheng Shu, a fellow TA and recent CMU grad. I don’t know any other university that lets recently graduated TAs teach a course, and I’m very grateful to CMU, and to Iliano Cervesato and Anne Kohlbrenner, the professors I TAed under, for letting us do this.</p>
+</section>
+<section id="the-detour" class="level2">
+<h2 class="anchored" data-anchor-id="the-detour">The detour</h2>
+<p>Of course, I had some detours along the way. I applied to SWE internship roles because everyone around me was doing so, and I was a CS major too, so why wouldn’t I? I spent two summers as a SWE intern at Amazon and Meta, and I’m glad I did. The work was very cool, and I got to learn a lot about distributed systems from some of the best engineers in the field.</p>
+<p>But something always felt off, like I was leaving the best parts of my training on the table. I’d spent years learning to reason from first principles in math, and I was drawn to biology in a way I couldn’t shake, and SWE didn’t really ask either of those things from me. Thinking about math, and how I could apply what I’d learned to drug discovery and medicine, brought me much more joy. It took me until the beginning of senior year to fully admit this to myself, but better late than never!</p>
+</section>
+<section id="whats-next" class="level2">
+<h2 class="anchored" data-anchor-id="whats-next">What’s next</h2>
+<p>After teaching this summer, I’ll be working at D. E. Shaw Research (the drug discovery company, not the hedge fund) on the ML data team as a Data Associate. In a way it brings me back to where I started, but from a direction I never expected. I’m excited to be working with people who have PhDs in bio and chem but then also write CUDA kernels and think about the mathematics behind AI for chemistry. I spent four years figuring out what I wanted to work on, even when I didn’t know I was figuring it out.</p>
+<p>I don’t know what comes after this job, and after the last four years, I’ve stopped trying to know. Whatever I plan, the thing I actually end up loving has a way of surprising me. I’m looking forward to being surprised again.</p>
 
 
+</section>
+</section>
 
-
-<div class="quarto-listing quarto-listing-container-default" id="listing-listing">
-<div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="cGVyc29uYWw=" data-listing-date-sort="1778644800000" data-listing-file-modified-sort="1778693836697" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="7" data-listing-word-count-sort="1254">
-<div class="thumbnail"><a href="./posts/cmu-experience/index.html" class="no-external">
-
-<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/cmu-experience/index.html" class="no-external">My CMU Experience</a>
-</h3>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('cGVyc29uYWw='); return false;">personal</div>
-
-</div>
-<div class="delink listing-description"><a href="./posts/cmu-experience/index.html" class="no-external">
-I recently graduated from CMU with university honors, earning a bachelor of science in Mathematical Sciences and an additional major in Computer Science. I’m so grateful to…
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/cmu-experience/index.html" class="no-external">
-<div class="listing-date">
-May 13, 2026
-</div>
-<div class="listing-author">
-Krish Suraparaju
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="1" data-categories="bWF0aA==" data-listing-date-sort="1773374400000" data-listing-file-modified-sort="1778692389770" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="10" data-listing-word-count-sort="1896">
-<div class="thumbnail"><a href="./posts/mmd-approx/index.html" class="no-external">
-
-<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/mmd-approx/index.html" class="no-external">Building Coresets by Minimizing MMD Distance</a>
-</h3>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('bWF0aA=='); return false;">math</div>
-
-</div>
-<div class="delink listing-description"><a href="./posts/mmd-approx/index.html" class="no-external">
-Suppose we have a large dataset <span class="math inline">\(Z = \{z_1, \ldots, z_N\} \subset \mathbb{R}^d\)</span> with <span class="math inline">\(N\)</span> very large. Many of the things we want to do with this dataset for example…<span class="math inline"></span><span class="math inline"></span>
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/mmd-approx/index.html" class="no-external">
-<div class="listing-date">
-Mar 13, 2026
-</div>
-<div class="listing-author">
-Krish Suraparaju
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="2" data-categories="bWF0aCUyQ2Nz" data-listing-date-sort="1769749200000" data-listing-file-modified-sort="1769815781991" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="19" data-listing-word-count-sort="3670">
-<div class="thumbnail"><a href="./posts/metropolis-hastings/index.html" class="no-external">
-
-<p class="card-img-top"><img src="posts/metropolis-hastings/hydrophobic_collapse.png"  class="thumbnail-image card-img"/></p>
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/metropolis-hastings/index.html" class="no-external">The Metropolis-Hastings Algorithm for Sampling</a>
-</h3>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('bWF0aA=='); return false;">math</div>
-
-<div class="listing-category" onclick="window.quartoListingCategory('Y3M='); return false;">cs</div>
-
-</div>
-<div class="delink listing-description"><a href="./posts/metropolis-hastings/index.html" class="no-external">
-In a previous blog post, I discussed various algorithms for sampling from a probability distribution <span class="math inline">\(\pi\)</span>. These algorithms all made a simple assumption: we can compute <span class="math inline">\(…</span><span class="math inline"></span><span class="math inline"></span><span class="math inline"></span>
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/metropolis-hastings/index.html" class="no-external">
-<div class="listing-date">
-Jan 30, 2026
-</div>
-<div class="listing-author">
-Krish Suraparaju
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="3" data-categories="bWF0aCUyQ2Nz" data-listing-date-sort="1768021200000" data-listing-file-modified-sort="1769815796588" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="31" data-listing-word-count-sort="6165">
-<div class="thumbnail"><a href="./posts/markov-chains/index.html" class="no-external">
-
-<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/markov-chains/index.html" class="no-external">PageRank and Markov Chains</a>
-</h3>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('bWF0aA=='); return false;">math</div>
-
-<div class="listing-category" onclick="window.quartoListingCategory('Y3M='); return false;">cs</div>
-
-</div>
-<div class="delink listing-description"><a href="./posts/markov-chains/index.html" class="no-external">
-Markov Chains are fundamental mathematical models for sequence of random events, where the probability of the next event depends only on the current event, not the entire…
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/markov-chains/index.html" class="no-external">
-<div class="listing-date">
-Jan 10, 2026
-</div>
-<div class="listing-author">
-Krish Suraparaju
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="4" data-categories="bWF0aCUyQ2Nz" data-listing-date-sort="1759896000000" data-listing-file-modified-sort="1767501333198" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="13" data-listing-word-count-sort="2530">
-<div class="thumbnail"><a href="./posts/sampling/index.html" class="no-external">
-
-<p class="card-img-top"><img src="posts/sampling/segmented_numberline.png"  class="thumbnail-image card-img"/></p>
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/sampling/index.html" class="no-external">Algorithms for Sampling from a probability distribution</a>
-</h3>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('bWF0aA=='); return false;">math</div>
-
-<div class="listing-category" onclick="window.quartoListingCategory('Y3M='); return false;">cs</div>
-
-</div>
-<div class="delink listing-description"><a href="./posts/sampling/index.html" class="no-external">
-Drawing samples from a probability distribution <span class="math inline">\(\pi\)</span> is a problem that arises often in computer science. For example in generative AI, language models sample tokens from…
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/sampling/index.html" class="no-external">
-<div class="listing-date">
-Oct 8, 2025
-</div>
-<div class="listing-author">
-Krish Suraparaju
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="5" data-categories="bWF0aA==" data-listing-date-sort="1744084800000" data-listing-file-modified-sort="1767501075310" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="7" data-listing-word-count-sort="1366">
-<div class="thumbnail"><a href="./posts/dual-numbers/index.html" class="no-external">
-
-<div class="listing-item-img-placeholder card-img-top" >&nbsp;</div>
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/dual-numbers/index.html" class="no-external">Automatic Differentiation using Dual Numbers</a>
-</h3>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('bWF0aA=='); return false;">math</div>
-
-</div>
-<div class="delink listing-description"><a href="./posts/dual-numbers/index.html" class="no-external">
-I recently came across a curious algebraic structure called the Dual Number system, denoted as <span class="math inline">\(\mathbb{R} (\epsilon)\)</span>. The dual numbers are an extension of the real…<span class="math inline"></span><span class="math inline"></span><span class="math inline"></span><span class="math inline"></span>
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/dual-numbers/index.html" class="no-external">
-<div class="listing-date">
-Apr 8, 2025
-</div>
-<div class="listing-author">
-Krish Suraparaju
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="6" data-categories="bWF0aCUyQ2VjZQ==" data-listing-date-sort="1735102800000" data-listing-file-modified-sort="1766461033863" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="5" data-listing-word-count-sort="930">
-<div class="thumbnail"><a href="./posts/noisy-channels/index.html" class="no-external">
-
-<p class="card-img-top"><img src="posts/noisy-channels/sampling.png"  class="thumbnail-image card-img"/></p>
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/noisy-channels/index.html" class="no-external">Sending Messages over Noisy Channels</a>
-</h3>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('bWF0aA=='); return false;">math</div>
-
-<div class="listing-category" onclick="window.quartoListingCategory('ZWNl'); return false;">ece</div>
-
-</div>
-<div class="delink listing-description"><a href="./posts/noisy-channels/index.html" class="no-external">
-A fundamental problem in electrical engineering is sending messages over noisy channels. For example, all messages sent over the internet have to eventually be transmitted…
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/noisy-channels/index.html" class="no-external">
-<div class="listing-date">
-Dec 25, 2024
-</div>
-<div class="listing-author">
-Krish Suraparaju
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="7" data-categories="bWF0aA==" data-listing-date-sort="1734670800000" data-listing-file-modified-sort="1766453772737" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="8" data-listing-word-count-sort="1484">
-<div class="thumbnail"><a href="./posts/bourgain-embedding/index.html" class="no-external">
-
-<p class="card-img-top"><img src="posts/bourgain-embedding/index_files/figure-html/cell-3-output-1.png"  class="thumbnail-image card-img"/></p>
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./posts/bourgain-embedding/index.html" class="no-external">Metric Spaces, dimension reduction, and Bourgain Embeddings</a>
-</h3>
-<div class="listing-categories">
-
-<div class="listing-category" onclick="window.quartoListingCategory('bWF0aA=='); return false;">math</div>
-
-</div>
-<div class="delink listing-description"><a href="./posts/bourgain-embedding/index.html" class="no-external">
-Metric embeddings and dimension reduction are important tools in computer science and mathematics for solving the curse of dimensionality. In this post, I want to examine…<span class="math inline"></span><span class="math inline"></span>
-</a></div>
-</div>
-<div class="metadata">
-<a href="./posts/bourgain-embedding/index.html" class="no-external">
-<div class="listing-date">
-Dec 20, 2024
-</div>
-<div class="listing-author">
-Krish Suraparaju
-</div>
-</a>
-</div>
-</div>
-</div>
-<div class="listing-no-matching d-none">No matching items</div>
-</div></main> <!-- /main -->
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";
