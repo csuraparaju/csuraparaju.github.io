@@ -9,33 +9,75 @@ about:
     - icon: github
       text: Github
       href: https://github.com/csuraparaju
+    - icon: envelope
+      text: email
+      href: mailto:chaitutej10@gmail.com
 ---
 
-
 :::{#hero-heading}
+I recently graduated from Carnegie Mellon University (CMU), with university honors, earning
+a degree in mathematics and computer science. I blog here about things I find interesting.
 
-I'm an undergraduate at Carnegie Mellon University studying mathematics and computer science.
-I blog here about things I find interesting.
-
-My favorite classes at CMU have been Theoretical Computer Science (15-251), Markov Chains (21-326) and Computational Biology (02-251).
-
-
+My favorite classes at CMU have been Theoretical Computer Science (15-251),
+Markov Chains (21-326) and Computational Biology (02-251).
+:::
 
 ## Education
 
-Carnegie Mellon University | Pittsburgh, PA | Aug 2022 - May 2026 \
-B.S. in Mathematics, Additional Major in Computer Science
+::: {.cv-entry}
+::: {.body}
+[Carnegie Mellon University]{.org} · Pittsburgh, PA\
+[B.S. in Mathematics, Additional Major in Computer Science]{.role}
+:::
+[Aug 2022 – May 2026]{.date}
+:::
 
 ## Experience
 
-Meta | SWE Intern | May 2025 - Aug 2025
-
-Amazon | SDE Intern | May 2024 - Aug 2024
-
-CMU | Head TA for 15-122 | Aug 2023 - present
-
-Mohimani Lab @ CMU | Undergraduate RA | Jan 2023 - Aug 2024
-
-
+::: {.cv-entry}
+::: {.body}
+[D. E. Shaw Research]{.org}\
+[ML Data]{.role}
+:::
+[Aug 2026 – present]{.date}
 :::
 
+::: {.cv-entry}
+::: {.body}
+[CMU, Department of Computer Science]{.org}\
+[Course Instructor for 15-122]{.role}
+:::
+[Jun 2026 – Aug 2026]{.date}
+:::
+
+::: {.cv-entry}
+::: {.body}
+[Meta]{.org}\
+[SWE Intern]{.role}
+:::
+[May 2025 – Aug 2025]{.date}
+:::
+
+::: {.cv-entry}
+::: {.body}
+[Amazon]{.org}\
+[SDE Intern]{.role}
+:::
+[May 2024 – Aug 2024]{.date}
+:::
+
+::: {.cv-entry}
+::: {.body}
+[CMU, Department of Computer Science]{.org}\
+[Teaching Assistant, 15-122; Lead TA from Jan 2025 - May 2026]{.role}
+:::
+[Aug 2023 – May 2026]{.date}
+:::
+
+::: {.cv-entry}
+::: {.body}
+[Mohimani Lab, CMU]{.org}\
+[Undergraduate Research Assistant]{.role}
+:::
+[Jan 2023 – Aug 2024]{.date}
+:::

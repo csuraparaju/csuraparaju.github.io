@@ -13,6 +13,8 @@ website:
         href: https://github.com/csuraparaju
       - icon: linkedin
         href: https://www.linkedin.com/in/krish-suraparaju/
+      - icon: envelope
+        href: mailto:chaitutej10@gmail.com
 format:
   html:
     theme:

@@ -1,0 +1,30 @@
+.cv-entry {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: start;
+  margin-bottom: 1.3rem;
+  padding-left: 1rem;
+  border-left: 2px solid #e0e0e0;
+  transition: border-color 0.2s ease;
+}
+
+.cv-entry:hover {
+  border-left-color: var(--bs-primary);
+}
+
+.cv-entry .org {
+  font-weight: 600;
+  color: var(--bs-primary);
+}
+
+.cv-entry .role {
+  color: #555;
+}
+
+.cv-entry .date {
+  color: #999;
+  font-size: 0.85em;
+  white-space: nowrap;
+  text-align: right;
+}
