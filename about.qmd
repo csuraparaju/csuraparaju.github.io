@@ -44,7 +44,7 @@ Markov Chains (21-326) and Computational Biology (02-251).
 
 ::: {.cv-entry}
 ::: {.body}
-[CMU, Department of Computer Science]{.org}\
+[CMU, Computer Science Department]{.org}\
 [Course Instructor for 15-122]{.role}
 :::
 [Jun 2026 – Aug 2026]{.date}
@@ -68,7 +68,7 @@ Markov Chains (21-326) and Computational Biology (02-251).
 
 ::: {.cv-entry}
 ::: {.body}
-[CMU, Department of Computer Science]{.org}\
+[CMU, Computer Science Department]{.org}\
 [Teaching Assistant, 15-122; Lead TA from Jan 2025 - May 2026]{.role}
 :::
 [Aug 2023 – May 2026]{.date}
