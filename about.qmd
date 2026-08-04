@@ -26,7 +26,7 @@ Markov Chains (21-326) and Computational Biology (02-251).
 
 ::: {.cv-entry}
 ::: {.body}
-[Carnegie Mellon University]{.org} · Pittsburgh, PA\
+[Carnegie Mellon University]{.org} Pittsburgh, PA\
 [B.S. in Mathematics, Additional Major in Computer Science]{.role}
 :::
 [Aug 2022 – May 2026]{.date}
