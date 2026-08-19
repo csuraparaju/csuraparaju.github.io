@@ -57,7 +57,7 @@ I had to learn to meet people where they actually were, not where I expect them 
 :::
 
 It was hard, and I didn't always succeed. But, when I did manage it, seeing a lightbulb go off on a student's face brought me so much joy. I felt like I wasn't just teaching, but also
-sharing my immense passing for the subject, and having that passion recognized. Although I still felt a little annoyed when my students didn't understand what I was saying, I now learned to be annoyed at *myself* rather than at the students.
+sharing my immense passion for the subject, and having that passion recognized. Although I still felt a little annoyed when my students didn't understand what I was saying, I now learned to be annoyed at *myself* rather than at the students.
 
 
 I kept getting more involved with 122, and after three semesters became a head TA. By the end, I had TA'ed
@@ -73,13 +73,12 @@ if a similar opportunity existed for 15-122. I don't think there was initially a
 with the department to get me hired! I will be forever grateful to them for that.
 
 :::{.callout}
-##
 Anne was an undergrad at CMU, TA'ed the course for years (she was actually the first head TA ever), and became a summer instructor immediately after graduating.
 She finished her PhD at Princeton and came back to CMU as a professor teaching 15-122 full time.
 :::
 
 
-I couldn't believe it. I got the opportunity to teach the course course I loved, at one of the best computer science programs in the world, to some of the most
+I couldn't believe it. I got the opportunity to teach the course I loved, at one of the best computer science programs in the world, to some of the most
 talented students I would ever meet.
 
 I hope my grandmother would be proud.
