@@ -11,8 +11,8 @@ format:
 
 I was recently an instructor on record for 15-122: Principles of Imperative Computation at Carnegie Mellon University for the Summer 2026 semester.
 The best way to describe this course is as an introductory computer science class focusing on formal reasoning with code, data structures and algorithms,
-all while using the C programming language. As the instructor, I was responsible for my students in a way I never was as a TA. I wanted to document
-and reflect on this experience and share with you some of my key learnings.
+all while using the C programming language. As the instructor, I was responsible for my students in a way I never was as a TA. I wanted to reflect on this
+experience and share with you some of my key learnings.
 
 ## On this page
 
