@@ -676,7 +676,7 @@
     "href": "posts/teaching-cs/index.html#on-this-page",
     "title": "Reflections on Teaching Computer Science at CMU",
     "section": "On this page",
-    "text": "On this page\n\nMy journey to teaching\nLessons learned\n\nLearning only happens through struggle\nTeach them not to need me\nTake them seriously\nConsistency is key to everything\n\nThank you, Anne"
+    "text": "On this page\n\nMy journey to teaching\nLessons learned\n\nLearning only happens through struggle\nTeach them not to need me\nTake them seriously\nConsistency is key to everything\n\nThank you, Anne\nA bonus lecture"
   },
   {
     "objectID": "posts/teaching-cs/index.html#thank-you-anne",
@@ -684,5 +684,12 @@
     "title": "Reflections on Teaching Computer Science at CMU",
     "section": "Thank you, Anne",
     "text": "Thank you, Anne\nThis post is full of lessons I learned about teaching. I want to end with one I couldn’t have taught myself, because it belongs to Anne.\nOver the summer, a lot of struggling students came to meet with me. Some meetings were ten minutes, when students knew exactly what was wrong and just needed me to point the way out. Others ran over an hour, with students who had no idea where to even begin. But one meeting was different from everything else. For the first time, the problem in front of me wasn’t one with the course, but about something much bigger.\nIt became clear pretty quickly that this student wasn’t struggling because of anything in the course. They were going through a lot in their life, and it was showing up in their performance. I realized, sitting there, that I did not have the skills or the experience to help them with what they actually needed. This was not a problem I could solve by asking “does this remind you of anything from lecture?”\nSo I asked if it would be okay for us to walk over to Anne’s office. They agreed and we made the short walk from my office to hers, and I said, “Please help. I don’t know what to do here.”\nAnne took over. She spent the next hour with that student, and by then the conversation had drifted far from 15-122. It was about life, and about help I couldn’t give.\nI think about that walk a lot. Every other lesson in this post is about me becoming a better teacher. This one is about knowing what I couldn’t do, and being lucky enough to have someone three floors away who did know.\n\n\n\n\n\n\nThe best thing I did for that student all summer was admit I was the wrong person to help, and know exactly who the right person was.\n\n\n\nSo, thank you, Anne. For taking over when I was out of my depth, for showing me that the most important teaching sometimes has nothing to do with the subject, and for being the person I could always walk down the hall to. I hope that one day I can be that person for someone else."
+  },
+  {
+    "objectID": "posts/teaching-cs/index.html#a-bonus-lecture",
+    "href": "posts/teaching-cs/index.html#a-bonus-lecture",
+    "title": "Reflections on Teaching Computer Science at CMU",
+    "section": "A bonus lecture",
+    "text": "A bonus lecture\nHalfway through the semester, I put together something that wasn’t on the course syllabus: a bonus lecture for my students on how we can get a computer to prove that our code is correct. This is a topic that I’ve been very excited about during my time at CMU and I wanted to share that excitement with my students. It starts from the ground up and builds toward the idea of automated program verification, the same kind of formal reasoning that we teach our students in 15-122.\nPreparing these slides on top of teaching, grading, office hours, and everything else the summer demanded was hard, and it cost me more than a few sleepless nights. But it was worth every one of them. This lecture is the closest thing I have to a distillation of why I love this material, and getting to hand it to my students felt like the right way to show that.\nIf any of this sounds interesting, give it a watch: link"
   }
 ]

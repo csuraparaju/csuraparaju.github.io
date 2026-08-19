@@ -23,6 +23,7 @@ experience and share with you some of my key learnings.
   - [Take them seriously](#take-them-seriously)
   - [Consistency is key to everything](#consistency-is-key-to-everything)
 - [Thank you, Anne](#thank-you-anne)
+- [A bonus lecture](#a-bonus-lecture)
 
 ## My journey to teaching
 
@@ -236,3 +237,14 @@ The best thing I did for that student all summer was admit I was the wrong perso
 :::
 
 So, thank you, Anne. For taking over when I was out of my depth, for showing me that the most important teaching sometimes has nothing to do with the subject, and for being the person I could always walk down the hall to. I hope that one day I can be that person for someone else.
+
+
+## A bonus lecture
+
+Halfway through the semester, I put together something that wasn't on the course syllabus: a bonus lecture for my students on how we can get a computer to prove that our code is correct. This is a topic that I've been very excited about during
+my time at CMU and I wanted to share that excitement with my students. It starts from the ground up and builds toward the idea of automated program verification, the same kind of formal reasoning that we teach our students in 15-122.
+
+Preparing these slides on top of teaching, grading, office hours, and everything else the summer demanded was hard, and it cost me more than a few sleepless nights. But it was worth every one of them. This lecture is the closest thing I have to a
+distillation of why I love this material, and getting to hand it to my students felt like the right way to show that.
+
+If any of this sounds interesting, give it a watch: [link](https://youtu.be/arW8WTIPaSo)
