@@ -1,5 +1,5 @@
 ---
-title: "My CMU Experience"
+title: "Reflections on CMU as an undergrad"
 author: "Krish Suraparaju"
 date: "2026-5-13"
 categories: [personal]

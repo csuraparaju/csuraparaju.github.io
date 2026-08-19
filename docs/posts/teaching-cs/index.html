@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Krish Suraparaju">
+<meta name="dcterms.date" content="2026-08-17">
+
+<title>Reflections on Teaching Computer Science at CMU – Krish’s blog</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-5b4ad623e5705c0698d39aec6f10cf02.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../../site_libs/quarto-contrib/glightbox/glightbox.min.js"></script>
+<link href="../../site_libs/quarto-contrib/glightbox/glightbox.min.css" rel="stylesheet">
+<link href="../../site_libs/quarto-contrib/glightbox/lightbox.css" rel="stylesheet">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../../styles.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="nav-fixed fullcontent quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top quarto-banner">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Krish’s blog</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html"> 
+<span class="menu-text">Krish Suraparaju</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/csuraparaju"> <i class="bi bi-github" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/krish-suraparaju/"> <i class="bi bi-linkedin" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="mailto:chaitutej10@gmail.com"> <i class="bi bi-envelope" role="img">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Reflections on Teaching Computer Science at CMU</h1>
+                                <div class="quarto-categories">
+                <div class="quarto-category">personal</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Krish Suraparaju </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">August 17, 2026</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<p>I recently finished my summer as an instructor on record for 15-122: Principles of Imperative Computation at Carnegie Mellon University for the Summer 2026 semester. The best way to describe this course is as an introductory computer science class focusing on formal reasoning with code, data structures and algorithms, all while using the C programming language.</p>
+<section id="on-this-page" class="level2">
+<h2 class="anchored" data-anchor-id="on-this-page">On this page</h2>
+<ul>
+<li><a href="#my-journey-to-teaching">My journey to teaching</a></li>
+<li><a href="#lessons-learned">Lessons learned</a>
+<ul>
+<li><a href="#learning-only-happens-through-struggle">Learning only happens through struggle</a></li>
+<li><a href="#teach-them-not-to-need-me">Teach them not to need me</a></li>
+<li><a href="#take-them-seriously">Take them seriously</a></li>
+<li><a href="#consistency-is-key-to-everything">Consistency is key to everything</a></li>
+</ul></li>
+<li><a href="#thank-you-anne">Thank you, Anne</a></li>
+</ul>
+</section>
+<section id="my-journey-to-teaching" class="level2">
+<h2 class="anchored" data-anchor-id="my-journey-to-teaching">My journey to teaching</h2>
+<p>My grandmother was a teacher; she taught social studies in India. Growing up, I would hear stories about how she ran her classroom, how she was firm but fair to her students. I had already gotten a glimpse into what it was like to teach.</p>
+<p>In high school, I realized I was good at <em>coding</em>, and saw that a local tutoring center was hiring <em>coding</em> instructors for a summer camp. I wanted to apply because I was inspired by my grandmother, but I’d be lying if I said that was my only motivation. The job also paid $18/hr. I ended up getting the job, and spent the summer teaching JavaScript and Python to middle-schoolers. I enjoyed teaching, but the thing I remember the most from that summer was being annoyed at students who just did not understand what I was teaching them.</p>
+<p>It wasn’t until Fall 2023, though, that I got to teach <em>computer science</em>. I only learned what <em>computer science</em> is after taking 15-122, and I was captivated. I realized that coding was just a small tip of the iceberg that is CS and I was fascinated by the way 122 started peeling back the layers. I wanted to get others excited about CS and I thought the best way to achieve that is to be a teaching assistant for 122.</p>
+<div class="callout callout-style-simple callout-none no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<p>15-122 is one of CMU’s largest courses. About 500 students a semester take it, and has a staff of roughly 40 TAs and two professors.</p>
+</div>
+</div>
+</div>
+<p>I’d like to say that it was love at first sight with 122. It wasn’t. My first semester as a TA was pretty uneventful, and like every new TA, I spent most of the fall just learning the ropes. I was debating if I should even come back as a TA next semester.</p>
+<p>But I returned for the Spring 2024 semester anyway, and with my newfound confidence as a no-longer-new-TA, I started getting more involved in the course. I taught recitations and lab sections, and started to truly fall in love with teaching. Because 122 is required for everyone, my recitation had USACO gold and platinum qualifiers and people who’d memorized the C99 standard, sitting next to complete beginners. Unlike high school, I had to learn how to teach to completely different kinds of students at once.</p>
+<div class="callout callout-style-simple callout-none no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<p>I had to learn to meet people where they actually were, not where I expect them to be.</p>
+</div>
+</div>
+</div>
+<p>It was hard, and I didn’t always succeed. But, when I did manage it, seeing a lightbulb go off on a student’s face brought me so much joy. I felt like I wasn’t just teaching, but also sharing my immense passing for the subject, and having that passion recognized. Although I still felt a little annoyed when my students didn’t understand what I was saying, I now learned to be annoyed at <em>myself</em> rather than at the students.</p>
+<p>I kept getting more involved with 122, and after three semesters became a head TA. By the end, I had TA’ed the course for six semesters (roughly three years), and loved every semester. Over time, I started to understand how much joy teaching brought me</p>
+<p>I adored talking to my students. I adored stepping through an algorithm together, pretending we were the computer following instructions. I adored the tangents related to but beyond the syllabus (ex. implementing malloc, garbage collection, program verification). And I adored the hour-long conversations about the future of computer science.</p>
+<p>Through those conversations, I learned as much from my students as they learned from me.</p>
+<p>During my final semesters at CMU, I was not yet ready to leave teaching behind. I had a job lined up in industry and knew I’d have little chance to teach there. Luckily, CMU’s CS department has a long history of hiring newly graduated students as summer instructors. So, I asked my professors, Iliano Cervesato and Anne Kohlbrenner if a similar opportunity existed for 15-122. I don’t think there was initially a role, but Iliano and Anne seemed to have pulled some strings with the department to get me hired! I will be forever grateful to them for that.</p>
+<div class="callout callout-style-simple callout-none no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<p>Anne was an undergrad at CMU, TA’ed the course for years (she was actually the first head TA ever), and became a summer instructor immediately after graduating. She finished her PhD at Princeton and came back to CMU as a professor teaching 15-122 full time.</p>
+</div>
+</div>
+</div>
+<p>I couldn’t believe it. I got the opportunity to teach the course course I loved, at one of the best computer science programs in the world, to some of the most talented students I would ever meet.</p>
+<p>I hope my grandmother would be proud.</p>
+</section>
+<section id="lessons-learned" class="level2">
+<h2 class="anchored" data-anchor-id="lessons-learned">Lessons Learned</h2>
+<p>Since this was my first time being an instructor, I learned a lot of things. I’ve tried to <em>show</em> you my key insights below, rather than telling them to you. A lot of these ideas are not solely my own; they’ve been moulded by hours of conversations with Anne and Iliano.</p>
+<section id="learning-only-happens-through-struggle" class="level3">
+<h3 class="anchored" data-anchor-id="learning-only-happens-through-struggle">Learning only happens through struggle</h3>
+<p>In 15-122, we started the first lecture by showing students this piece of code:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="mystrey_f.png" class="lightbox" data-gallery="quarto-lightbox-gallery-1"><img src="mystrey_f.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:50.0%"></a></p>
+</figure>
+</div>
+<p>and asked a simple question: what does it do? I urge you (the reader) to think about it!</p>
+<p>Intuitively, since the function takes in two integers and outputs an integer, it <em>feels</em> like it computes some mathematical function. But what does it actually do? It’s a mystery.</p>
+<p>I am not going to tell you what the function does. Because if I tell you right now, I would have robbed you the opportunity to discover it yourself. You should struggle with the problem yourself: try different experiments, trace through the code, come up with conjectures on what it could be doing, and then <em>prove</em> to yourself that your conjecture is right. This struggle is the learning. Knowing the answer is not learning.</p>
+<p>So, I learned to give my students the chance to really struggle. This sounds easy, but it is one of the hardest things I’ve ever had to do. When a student is stuck, desperate and looking at me with puppy eyes, every instinct is to just tell them the answer. But I had to learn to resist this at all costs. The moment I hand over the answer, I’ve taken the struggle away from them when that struggle <em>was</em> the exercise.</p>
+<p>And this is also why I still haven’t told you what that function does. It’s not because I’m being mean. It’s because the moment I tell you, I’ve robbed you of the struggle. So sit with it a little longer. I promise it’ll click, and I promise it’s cute.</p>
+</section>
+<section id="teach-them-not-to-need-me" class="level3">
+<h3 class="anchored" data-anchor-id="teach-them-not-to-need-me">Teach them not to need me</h3>
+<p>This was the hardest lesson to learn. I had to realize that a good teacher isn’t one who <em>just</em> answers questions. It’s one who allows students to answer their own questions.</p>
+<p>A student came to office hours stuck on a homework problem. They had a piece of code that looked something like this:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode cpp code-with-copy"><code class="sourceCode cpp"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> <span class="op">(</span>vertex u <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> u <span class="op">&lt;</span> graph_size<span class="op">(</span>G<span class="op">);</span> u<span class="op">++)</span> <span class="op">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">neighbors_t</span> nbors <span class="op">=</span> graph_get_neighbors<span class="op">(</span>G<span class="op">,</span> u<span class="op">);</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> <span class="op">(</span>graph_hasmore_neighbors<span class="op">(</span>nbors<span class="op">))</span> <span class="op">{</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>        vertex w <span class="op">=</span> graph_next_neighbor<span class="op">(</span>nbors<span class="op">);</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        process_edge<span class="op">(</span>u<span class="op">,</span> w<span class="op">);</span>  <span class="co">// O(1) cost</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>where <code>G</code> is a graph implemented as an adjacency list. The problem asked them to find its big-O complexity. They looked at me and said “I’m very confused and I don’t know.”</p>
+<p>I knew the answer and it would have taken me five seconds to say the answer.</p>
+<p>Instead, I asked them a question back “Does this remind you of anything we saw in class?” They guessed a few things, and finally it clicked that this looked a lot like the function we wrote to print a graph in lecture. “Great,” I said. “So how did we find the complexity of that one?”</p>
+<p>After a moment, they admitted that they never really understood that part from lecture.</p>
+<p>And that’s when I realized the issue was never this homework question. They weren’t stuck because this problem was hard. They were stuck because something from an earlier lecture had never clicked. So I explained graph print. We walked through how to reason about the cost of traversing every vertex and every edge in an adjacency list, and how that contributes to the final complexity. They said they understood that portion of lecture a lot better.</p>
+<p>Then I came back to the homework problem and said “you should be able to figure it out from here” and left.</p>
+<p>Because I am not there to give them the answer. I could have. But if I had just told them, they would have written it down, gotten their points, and learned nothing except that I am someone who gives out answers. The next time they got stuck, they’d come find me, which means they did not learn anything I was teaching them.</p>
+<div class="callout callout-style-simple callout-none no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<p>My job was never to be the answer key. It is to make my students not need one, and eventually, to not need me.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="take-them-seriously" class="level3">
+<h3 class="anchored" data-anchor-id="take-them-seriously">Take them seriously</h3>
+<p>This is a lesson I learned pretty quickly. I need to take their ideas seriously and test them, even when I already know it’s wrong. From a student’s perspective, it is one thing to be told your idea is wrong. It is another to go on a journey which concludes in you discovering <em>why</em> your idea is wrong. And the latter is much more valuable than the former.</p>
+<p>Once, a student in office hours asked me about the address-of operator in C. She’d noticed that in every example, we only ever took the address of a named variable like <code>&amp;x</code> and she wanted to know if that was a rule. She thought that you could only do it to something with a name.</p>
+<p>I knew that the rule was more complicated than that, but I did not immediately reject her hypothesis. Instead, I said “Yes, that seems plausible. Let’s find out!”</p>
+<p>So, I opened the <a href="https://godbolt.org/">Godbolt</a> C compiler and asked her to try different examples. First, we tried to take the address of an unnamed <code>int</code> literal <code>5</code> and saw that that produced the error:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="lvalue_error.png" class="lightbox" data-gallery="quarto-lightbox-gallery-2"><img src="lvalue_error.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></a></p>
+</figure>
+</div>
+<p>Then, we tried to give <code>5</code> a name called <code>x</code> and take the address of <code>x</code>, which compiled fine:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="named_var.png" class="lightbox" data-gallery="quarto-lightbox-gallery-3"><img src="named_var.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></a></p>
+</figure>
+</div>
+<p>She argued that this proves her hypothesis since it didn’t compile when we tried taking the address of an unnamed variable, and did compile when we gave it a name. So I asked her to try one more example – just to be really sure – this time by taking the address of a string literal:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><a href="string.png" class="lightbox" data-gallery="quarto-lightbox-gallery-4"><img src="string.png" class="img-fluid quarto-figure quarto-figure-center figure-img" style="width:100.0%"></a></p>
+</figure>
+</div>
+<p>But this compiled even though the literal is not a named variable!</p>
+<p>I had proven her conjecture wrong. But now, she <em>had</em> to know why it was wrong. So, we opened the C99 standard, and the two of us looked for the passage that discussed the address-of operator. We spent twenty minutes reading the specification, and by the end, she finally understood the rule enough to know by heart.</p>
+<p>And of course, I am not going to tell you what the rules are.</p>
+<p>This only happened because I was willing to say “that seems plausible” to her. If I’d brushed off the question and just told her what the rules were, I would have robbed her of this excellent learning opportunity.</p>
+</section>
+<section id="consistency-is-key-to-everything" class="level3">
+<h3 class="anchored" data-anchor-id="consistency-is-key-to-everything">Consistency is key to everything</h3>
+<p>There’s one last thing I learned, and it took me the longest to appreciate. My job as a teacher is to make sure that every student gets a consistent experience with the course.</p>
+<p>If two students write down the same answer, they should get the same number of points. If two students ask the same question at office hours, they should walk away with the same answer. If two students take the course in different semesters, they should get the same course.</p>
+<p>At first, consistency felt like bureaucracy to me. We had to maintain strong grading rubrics, grading rules, trainings/onboardings, and endless debates about whether a particular mistake should cost one point or two. But I’ve realized over time that consistency is what makes everything else I’ve written about actually work.</p>
+<p>For example, the first lesson I mentioned was that learning happens through struggle. A student will only choose to struggle if they trust that the struggle is worth it. The moment a student suspects that their grade is a coin flip, that the same answer might earn full points from one TA and half points from another, they stop struggling and start gaming. They shop around for the “easy” TA at office hours. They start optimizing for points rather than their learning. Inconsistency tells students that their effort doesn’t matter, and that is the opposite of everything I was trying to teach.</p>
+<div class="callout callout-style-simple callout-none no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<p>Consistency is not about being fair for fairness’s sake. It is what earns you the trust that lets students take the hard, slow path instead of the shortcut.</p>
+</div>
+</div>
+</div>
+<p>But I want to be careful here because consistency is not the same as uniformity. A consistent <em>experience</em> is not the same as identical <em>treatment</em>.</p>
+<p>Two students who ask the same question deserve the same answer. But <em>which</em> student needs <em>which</em> help is a completely different matter. The beginner who has never seen a pointer and the student who memorized the C99 standard do not need the same thing from me, and pretending they do would help neither of them. Meeting people where they are means the support is handed out by need. What has to stay constant is the bar every student is held to, and the answer every student can expect when they ask.</p>
+</section>
+</section>
+<section id="thank-you-anne" class="level2">
+<h2 class="anchored" data-anchor-id="thank-you-anne">Thank you, Anne</h2>
+<p>This post is full of lessons I learned about teaching. I want to end with one I couldn’t have taught myself, because it belongs to Anne.</p>
+<p>Over the summer, a lot of struggling students came to meet with me. Some meetings were ten minutes, when students knew exactly what was wrong and just needed me to point the way out. Others ran over an hour, with students who had no idea where to even begin. But one meeting was different from everything else.</p>
+<p>It became clear pretty quickly that this student wasn’t struggling because of anything in the course. They were going through a lot, and it was showing up in their performance. And I realized, sitting there, that I did not have the skills or the experience to help them with what they actually needed. This was not a problem I could solve by asking “does this remind you of anything from lecture?”</p>
+<p>So I asked if it would be okay for us to walk over to Anne’s office. They agreed and we made the short walk from my office to hers, and I said, “Please help. I don’t know what to do here.”</p>
+<p>Anne took over. She spent the next hour with that student, and by then the conversation had drifted far from 15-122. It was about life, and about help I couldn’t give.</p>
+<p>I think about that walk a lot. Every other lesson in this post is about me becoming a better teacher. This one is about knowing what I couldn’t do, and being lucky enough to have someone three floors away who did know.</p>
+<div class="callout callout-style-simple callout-none no-icon">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon no-icon"></i>
+</div>
+<div class="callout-body-container">
+<p>The best thing I did for that student all summer was admit I was the wrong person to help, and know exactly who the right person was.</p>
+</div>
+</div>
+</div>
+<p>So, thank you, Anne. For taking over when I was out of my depth, for showing me that the most important teaching sometimes has nothing to do with the subject, and for being the person I could always walk down the hall to. I hope that one day I can be that person for someone else.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/csuraparaju\.github\.io\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<script>var lightboxQuarto = GLightbox({"closeEffect":"zoom","descPosition":"bottom","loop":false,"openEffect":"zoom","selector":".lightbox"});
+(function() {
+  let previousOnload = window.onload;
+  window.onload = () => {
+    if (previousOnload) {
+      previousOnload();
+    }
+    lightboxQuarto.on('slide_before_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      const href = trigger.getAttribute('href');
+      if (href !== null) {
+        const imgEl = window.document.querySelector(`a[href="${href}"] img`);
+        if (imgEl !== null) {
+          const srcAttr = imgEl.getAttribute("src");
+          if (srcAttr && srcAttr.startsWith("data:")) {
+            slideConfig.href = srcAttr;
+          }
+        }
+      } 
+    });
+  
+    lightboxQuarto.on('slide_after_load', (data) => {
+      const { slideIndex, slideNode, slideConfig, player, trigger } = data;
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(slideNode);
+      }
+    });
+  
+  };
+  
+})();
+          </script>
+
+
+
+
+</body></html>

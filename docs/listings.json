@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/teaching-cs/index.html",
       "/posts/cmu-experience/index.html",
       "/posts/mmd-approx/index.html",
       "/posts/metropolis-hastings/index.html",
