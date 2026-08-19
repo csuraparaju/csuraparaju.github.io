@@ -1,7 +1,7 @@
 ---
 title: "Reflections on Teaching Computer Science at CMU"
 author: "Krish Suraparaju"
-date: "2026-8-17"
+date: "2026-8-19"
 categories: [personal]
 format:
   html:
@@ -11,7 +11,8 @@ format:
 
 I recently finished my summer as an instructor on record for 15-122: Principles of Imperative Computation at Carnegie Mellon University for the Summer 2026 semester.
 The best way to describe this course is as an introductory computer science class focusing on formal reasoning with code, data structures and algorithms,
-all while using the C programming language.
+all while using the C programming language. As instructor on record, I was responsible for my students in a way I never was as a TA; I needed to care not just
+about the course material but also how they were learning.
 
 ## On this page
 
@@ -219,8 +220,9 @@ Two students who ask the same question deserve the same answer. But *which* stud
 This post is full of lessons I learned about teaching. I want to end with one I couldn't have taught myself, because it belongs to Anne.
 
 Over the summer, a lot of struggling students came to meet with me. Some meetings were ten minutes, when students knew exactly what was wrong and just needed me to point the way out. Others ran over an hour, with students who had no idea where to even begin. But one meeting was different from everything else.
+For the first time, the problem in front of me wasn't one with the course, but about something much bigger.
 
-It became clear pretty quickly that this student wasn't struggling because of anything in the course. They were going through a lot, and it was showing up in their performance. And I realized, sitting there, that I did not have the skills or the experience to help them with what they actually needed.
+It became clear pretty quickly that this student wasn't struggling because of anything in the course. They were going through a lot in their life, and it was showing up in their performance. I realized, sitting there, that I did not have the skills or the experience to help them with what they actually needed.
 This was not a problem I could solve by asking "does this remind you of anything from lecture?"
 
 So I asked if it would be okay for us to walk over to Anne's office. They agreed and we made the short walk from my office to hers, and I said, "Please help. I don't know what to do here."
